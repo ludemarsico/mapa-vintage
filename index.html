@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mapa Vintage — Cartografía textil &amp; recommerce en Buenos Aires</title>
+<meta content="Guía territorial y archivo urbano de locales de segunda mano, ferias americanas, boutiques y tiendas de época en Buenos Aires." name="description"/>
+<meta content="#F9F8F6" name="theme-color"/>
+<link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='16 2 68 130'%3E%3Cpath d='M32.5 29 L67.5 29 L78 39.5 L78 92 L50 127 L22 92 L22 39.5 Z M57 50 A7 7 0 1 0 43 50 A7 7 0 1 0 57 50 Z' fill='%231A1A1A' fill-rule='evenodd'/%3E%3Cpath d='M50 43 C50 32 43 25 45 17 C47 9 57 6 61 12' fill='none' stroke='%23B5654A' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" rel="icon"/>
+<!-- Tipografías Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Jost:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Leaflet CSS -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<style>
+    /* ============================================================
+       1. TOKENS DE MARCA — fuente única de verdad
+       Este bloque es IDÉNTICO en manual-de-marca.html y en index.html.
+       Si cambiás un valor acá, copialo tal cual en el otro archivo.
+       ============================================================ */
+    :root {
+      /* Paleta oficial */
+      --hueso: #F9F8F6;      /* Blanco Hueso · Primario · fondo y aire (56%) */
+      --grafito: #1A1A1A;    /* Negro Grafito · Primario · texto y estructura (24%) */
+      --terracota: #B5654A;  /* Terracota · Secundario · acento cálido, con medida (8%) */
+      --verde: #8A8F6A;      /* Verde Seco · Secundario · acento botánico (5%) */
+      --piedra: #E6E1D8;     /* Piedra · Secundario · superficies (2%) */
+      --manteca: #F0D97A;    /* Manteca · Apoyo · resaltador (3%) */
+      --rosa: #ECB3A6;       /* Rosa Etiqueta · Apoyo · stickers y estados activos (2%) */
+      --kraft: #DCCBA4;      /* Kraft · papel de notas pegadas */
+
+      /* Derivados funcionales */
+      --texto-suave: #5F5C57;
+      --error: #A63D2A;
+      --borde: rgb(26 26 26 / 0.14);
+      --borde-input: rgb(26 26 26 / 0.2);
+
+      /* Tipografía: dos familias, nunca más */
+      --fuente-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+      --fuente-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
+
+      /* Forma */
+      --radio: 0;
+      --sombra-sticker: 3px 3px 0 var(--grafito);
+      --sombra-papel: 6px 10px 24px rgb(26 26 26 / 0.18);
+    }
+
+    /* ============================================================
+       2. PIEZAS DE MARCA — también idénticas en ambos archivos
+       Chip, resaltado, botón sticker, cinta, dato técnico y fondos.
+       ============================================================ */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.125rem 0.375rem;
+      font-family: var(--fuente-sans);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--grafito);
+      color: var(--hueso);
+    }
+    .chip--manteca { background: var(--manteca); color: var(--grafito); }
+    .chip--rosa { background: var(--rosa); color: var(--grafito); }
+    .chip--verde { background: var(--verde); color: var(--hueso); }
+
+    .resaltado {
+      background-image: linear-gradient(transparent 12%, var(--manteca) 12%, var(--manteca) 88%, transparent 88%);
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      padding-inline: 0.18em;
+    }
+
+    .boton-sticker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid var(--grafito);
+      background: var(--hueso);
+      color: var(--grafito);
+      padding: 0.375rem 0.75rem;
+      font-family: var(--fuente-sans);
+      font-size: 0.875rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      box-shadow: var(--sombra-sticker);
+      transition: transform 0.15s;
+     line-height: 1.4286; }
+    .boton-sticker:hover { transform: translateY(-2px); }
+
+    .cinta {
+      position: absolute;
+      display: block;
+      height: 1.75rem;
+      width: 7rem;
+      background-color: rgb(249 248 246 / 0.75);
+      background-image: radial-gradient(rgb(26 26 26 / 0.55) 1.2px, transparent 1.4px);
+      background-size: 7px 7px;
+      box-shadow: 0 1px 2px rgb(26 26 26 / 0.12);
+    }
+
+    .dato {
+      font-family: var(--fuente-sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .fondo-calles {
+      background-image:
+        repeating-linear-gradient(32deg, transparent 0 46px, rgb(26 26 26 / 0.045) 46px 62px),
+        repeating-linear-gradient(-58deg, transparent 0 90px, rgb(26 26 26 / 0.035) 90px 102px);
+    }
+    .fondo-reticula {
+      background-image:
+        linear-gradient(to right, rgb(26 26 26 / 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgb(26 26 26 / 0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* Isotipo y formas (se dibujan con <use> desde el sprite del final del body).
+       --hilo pinta el hilo de la etiqueta; por defecto, el mismo color que el cuerpo. */
+    .iso, .forma { display: block; height: auto; flex-shrink: 0; }
+    .iso { aspect-ratio: 68 / 130; }
+    .forma { aspect-ratio: 1; }
+    .forma.garabato { aspect-ratio: 200 / 60; }
+    .forma.flecha-mano { aspect-ratio: 120 / 80; }
+
+    /* ============================================================
+       3. VARIABLES DE LA APP → apuntan a los tokens de marca
+       Se conservan los nombres viejos (--bg, --text, etc.) para no
+       tocar los estilos inline del HTML ni los scripts.
+       ============================================================ */
+    :root {
+      --bg: var(--hueso);
+      --surface: var(--hueso);
+      --text: var(--grafito);
+      --text-muted: var(--texto-suave);
+      --border: var(--borde);
+      --border-dark: var(--grafito);
+      --radius: var(--radio);
+      --maxw: 1140px;
+      --font-display: var(--fuente-serif);
+      --font-body: var(--fuente-sans);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.55;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: var(--terracota); color: var(--hueso); }
+    :focus-visible { outline: 2px solid rgb(181 101 74 / 0.5); outline-offset: 2px; }
+
+    /* Instrument Serif tiene un solo peso (400): nunca negrita en títulos */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    h1 em, h2 em, h3 em { font-style: italic; }
+
+    p { margin-bottom: 1rem; color: var(--text-muted); }
+    /* Links: grafito subrayado (el terracota no alcanza contraste en texto chico) */
+    a { color: var(--text); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    a:hover { color: var(--terracota); }
+
+    .container {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 72px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    section h2 {
+      font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.025em;
+      max-width: 900px;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Kicker = chip de marca */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.125rem 0.375rem;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.25; /* el chip del manual usa 1; acá algunos kickers se parten en dos líneas */
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--grafito);
+      color: var(--hueso);
+      margin-bottom: 1rem;
+    }
+
+    /* Encabezado de sección: número con estrella manteca + chip */
+    .encabezado-marca { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .encabezado-marca .kicker { margin-bottom: 0; }
+    .numero-estrella { position: relative; display: inline-flex; width: 3.5rem; height: 3.5rem; flex-shrink: 0; align-items: center; justify-content: center; }
+    .numero-estrella .forma { position: absolute; inset: 0; width: 3.5rem; color: var(--manteca); }
+    .numero-estrella span { position: relative; font-family: var(--fuente-serif); font-size: 1.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
+
+    /* Botones: grafito, rectos, versalitas; al pasar, sombra sticker terracota */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--grafito);
+      color: var(--hueso) !important;
+      padding: 12px 20px;
+      border: 1px solid var(--grafito);
+      border-radius: var(--radius);
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none !important;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 3px 3px 0 var(--terracota); }
+    .btn:disabled { opacity: 0.6; cursor: progress; transform: none; box-shadow: none; }
+
+    /* Secundario = botón sticker del manual */
+    .btn-secondary {
+      background: var(--hueso);
+      border-color: var(--grafito);
+      color: var(--grafito) !important;
+      box-shadow: var(--sombra-sticker);
+    }
+
+    .btn-secondary:hover { box-shadow: var(--sombra-sticker); }
+
+    /* HEADER */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgb(249 248 246 / 0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      height: 72px;
+    }
+
+    .logo {
+      display: inline-flex;
+      flex-shrink: 0;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      line-height: 1;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      text-decoration: none !important;
+    }
+    .logo:hover { color: var(--text); }
+    .logo .iso { width: 14px; --hilo: var(--terracota); }
+
+    /* Menú = chips grafito; activo/al pasar, rosa etiqueta */
+    nav.main-nav {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    nav.main-nav a {
+      background: var(--grafito);
+      color: var(--hueso);
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      line-height: 1.333;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    nav.main-nav a:hover { background: var(--rosa); color: var(--grafito); }
+
+    nav.main-nav .nav-btn {
+      background: var(--manteca);
+      color: var(--grafito) !important;
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+    nav.main-nav .nav-btn:hover { background: var(--rosa); }
+
+    /* HERO */
+    .hero {
+      padding: 80px 0 50px;
+      border-top: none;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 7vw, 5.75rem);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero .bajada {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      line-height: 1.6;
+      margin-bottom: 2.2rem;
+    }
+
+    .hero .bajada .resaltado { font-family: var(--font-display); font-style: italic; font-size: 1.15em; color: var(--text); }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 4rem;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      border-top: 1px solid var(--border-dark);
+      padding-top: 2rem;
+      gap: 1.5rem;
+    }
+
+    .stat-number {
+      font-family: var(--font-display);
+      font-size: 2.75rem;
+      font-weight: 400;
+      color: var(--terracota);
+      display: block;
+      line-height: 1;
+    }
+
+    .stat-label {
+      display: block;
+      margin-top: 0.4rem;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* MANIFIESTO */
+    .manifesto-title {
+      font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+      line-height: 0.95;
+      max-width: 880px;
+      margin-bottom: 3.5rem;
+    }
+
+    .manifesto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .manifesto-col {
+      border-top: 1px solid var(--border-dark);
+      padding-top: 1.5rem;
+    }
+
+    .manifesto-col h3 {
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .manifesto-col p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+section#recorrido {
+      position: relative;
+      background-color: var(--hueso);
+      background-image:
+        repeating-linear-gradient(32deg, transparent 0 46px, rgb(26 26 26 / 0.045) 46px 62px),
+        repeating-linear-gradient(-58deg, transparent 0 90px, rgb(26 26 26 / 0.035) 90px 102px);
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+    /* ARMÁ TU RECORRIDO */
+    /* ARMÁ TU RECORRIDO */
+.planner-box {
+    border: 1px solid var(--grafito);
+    /* Bajamos la opacidad del color hueso para que se trasluzca la foto */
+    background: rgb(249 248 246 / 0.82); 
+    /* Opcional: le suma un efecto de sutil desenfoque por detrás que queda genial */
+    backdrop-filter: blur(6px); 
+    box-shadow: 6px 10px 24px rgb(26 26 26 / 0.25);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    margin-top: 2rem;
+}
+
+    .step-group { margin-bottom: 1.8rem; }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .options-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .pill-radio { cursor: pointer; }
+    .pill-radio input { display: none; }
+
+    .pill-text {
+      display: inline-block;
+      padding: 0.55rem 1.1rem;
+      border: 1px solid var(--borde-input);
+      border-radius: var(--radius);
+      background: var(--bg);
+      font-size: 0.88rem;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .pill-radio:hover .pill-text { background: var(--piedra); }
+
+    .pill-radio input:checked + .pill-text {
+      background: var(--text);
+      color: var(--hueso);
+      border-color: var(--text);
+    }
+
+    .route-result {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px dashed var(--borde-input);
+    }
+
+    .route-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .route-name { font-size: 1.75rem; }
+
+    /* El hilo terracota del recorrido */
+    .route-timeline {
+      list-style: none;
+      margin-left: 0.8rem;
+      padding-left: 1.5rem;
+      border-left: 2px solid var(--terracota);
+      margin-bottom: 2rem;
+    }
+
+    .timeline-item { position: relative; margin-bottom: 1.5rem; }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -1.95rem;
+      top: 0.25rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--terracota);
+    }
+
+    .timeline-place { font-weight: 500; font-size: 0.98rem; }
+    .timeline-desc { font-size: 0.88rem; color: var(--text-muted); }
+
+    .route-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+    .btn-action {
+      padding: 0.65rem 1.2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--grafito);
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-maps { background: var(--grafito); color: var(--hueso) !important; text-decoration: none !important; }
+    .btn-maps:hover { transform: translateY(-2px); box-shadow: 3px 3px 0 var(--terracota); }
+    .btn-share { background: var(--bg); color: var(--text); box-shadow: var(--sombra-sticker); }
+    .btn-share:hover { transform: translateY(-2px); }
+
+    /* DIRECTORIO & MAPA */
+    .directorio-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 32px;
+      margin-top: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .directorio-layout { grid-template-columns: 1fr; }
+    }
+
+    .filtros {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      background: var(--surface);
+      position: sticky;
+      top: 90px;
+    }
+
+    @media (max-width: 900px) { .filtros { position: static; } }
+
+    .filtros h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .filtro-grupo { margin-bottom: 20px; }
+    .filtro-grupo label.grupo-label, .filtro-grupo .grupo-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
+
+    select {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--borde-input);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .tag-options { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .tag-toggle {
+      border: 1px solid var(--borde-input);
+      border-radius: var(--radius);
+      padding: 5px 10px;
+      font-size: 12.5px;
+      background: var(--bg);
+      cursor: pointer;
+      color: var(--text-muted);
+      user-select: none;
+      font-family: var(--font-body);
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .tag-toggle:hover { background: var(--piedra); color: var(--text); }
+
+    /* Filtro activo = sticker rosa */
+    .tag-toggle[aria-pressed="true"] {
+      background: var(--rosa);
+      border-color: var(--grafito);
+      color: var(--grafito);
+      font-weight: 500;
+    }
+
+    #limpiar-filtros {
+      font-size: 13px;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      font-family: var(--font-body);
+      font-weight: 500;
+    }
+    #limpiar-filtros:hover { color: var(--terracota); }
+
+    #mapa {
+      height: 380px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      z-index: 10;
+    }
+
+    .resultados-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; font-weight: 500; }
+    .fichas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+
+    .ficha {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--surface);
+    }
+
+    .ficha h4 { margin: 0 0 6px; font-size: 1.6rem; line-height: 1; }
+    .ficha .meta-line { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+    .ficha .precio { font-weight: 500; color: var(--terracota); }
+    .ficha p.desc { font-size: 0.88rem; margin-bottom: 12px; color: var(--text); }
+    .ficha .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .pill { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.12em; background: var(--piedra); padding: 3px 7px; border-radius: var(--radius); color: var(--text); font-weight: 500; }
+    .ficha .links { display: flex; gap: 14px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; }
+
+    .sin-resultados { padding: 40px 0; text-align: center; color: var(--text-muted); display: none; }
+
+    /* Leaflet: solo estética, sin tocar el script */
+    .leaflet-container { font-family: var(--font-body); background: var(--piedra); }
+    .leaflet-tile-pane { filter: grayscale(0.4) sepia(0.12); }
+    .leaflet-marker-icon { filter: hue-rotate(168deg) saturate(0.65) brightness(0.95); }
+    .leaflet-popup-content-wrapper { border-radius: 0; border: 1px solid var(--grafito); box-shadow: var(--sombra-sticker); background: var(--hueso); color: var(--grafito); }
+    .leaflet-popup-tip { background: var(--hueso); box-shadow: none; border: 1px solid var(--grafito); }
+    .leaflet-popup-content { font-size: 13px; line-height: 1.45; }
+    .leaflet-popup-content strong { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; }
+    .leaflet-bar, .leaflet-bar a { border-radius: 0 !important; }
+    .leaflet-bar a { color: var(--grafito); background: var(--hueso); }
+
+    /* AGENDA */
+    .agenda-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+
+    .agenda-tab-btn {
+      border: 1px solid var(--borde-input);
+      background: var(--surface);
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-weight: 400;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .agenda-tab-btn:hover { background: var(--piedra); }
+
+    .agenda-tab-btn[aria-selected="true"] {
+      background: var(--text);
+      color: var(--hueso);
+      border-color: var(--text);
+    }
+
+    .agenda-panel { display: none; }
+    .agenda-panel.activo { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+
+    .evento-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--surface);
+    }
+
+    /* Badge = sticker rosa etiqueta */
+    .evento-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.4;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--rosa);
+      color: var(--grafito);
+      padding: 2px 6px;
+      margin-bottom: 10px;
+    }
+
+    .evento-card h4 { font-size: 1.5rem; margin-bottom: 4px; }
+    .evento-card .meta-line { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+    .evento-entrada { font-size: 0.82rem; font-weight: 500; color: var(--text); }
+
+    /* CIRCUITOS */
+    .circuito-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-top: 24px;
+      background: var(--surface);
+    }
+
+    .circuito-card .kicker { background: var(--rosa); color: var(--grafito); }
+    .circuito-card h3 { font-size: 2.25rem; margin-bottom: 8px; }
+
+    .paradas-list { list-style: none; margin: 20px 0 0; counter-reset: parada; }
+    .paradas-list li {
+      counter-increment: parada;
+      padding: 12px 0 12px 38px;
+      position: relative;
+      border-top: 1px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .paradas-list li:before {
+      content: counter(parada);
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius);
+      background: var(--manteca);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--grafito);
+    }
+
+    .historico-modulo {
+      margin-top: 20px;
+      border-radius: var(--radius);
+      padding: 16px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      background: var(--piedra);
+    }
+
+    /* GLOSARIO */
+    .glosario-list { margin-top: 24px; }
+
+    details.glosario-item {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+    }
+
+    details.glosario-item summary {
+      cursor: pointer;
+      font-weight: 400;
+      font-size: 1.6rem;
+      line-height: 1.1;
+      font-family: var(--font-display);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    details.glosario-item summary::-webkit-details-marker { display: none; }
+    details.glosario-item summary:after { content: "+"; font-family: var(--font-body); font-size: 22px; color: var(--terracota); font-weight: 300; }
+    details.glosario-item[open] summary:after { content: "–"; }
+    details.glosario-item p { margin-top: 10px; font-size: 0.92rem; }
+
+    /* COMUNIDAD / FORM */
+    .form-comunidad {
+      max-width: 640px;
+      margin-top: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px;
+      background: var(--surface);
+    }
+
+    .campo { margin-bottom: 18px; }
+    .campo label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 6px; }
+
+    .campo input[type="text"], .campo input[type="url"], .campo textarea, .campo select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--borde-input);
+      border-radius: var(--radius);
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .campo input[type="text"]:focus, .campo input[type="url"]:focus, .campo textarea:focus, .campo select:focus {
+      outline: none;
+      border-color: var(--terracota);
+      box-shadow: 0 0 0 1px var(--terracota);
+    }
+
+    .campo textarea { resize: vertical; min-height: 80px; }
+    .checkbox-line { display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; }
+    .checkbox-line input { accent-color: var(--terracota); }
+
+    .criterios-box {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: var(--piedra);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      max-width: 640px;
+    }
+
+    .criterios-box strong { color: var(--text); font-weight: 500; }
+    .criterios-box ol { margin: 8px 0 0; padding-left: 18px; }
+    #form-status { margin-top: 14px; font-size: 14px; font-weight: 500; display: none; }
+    #form-status.ok { color: #1a7a3d; }
+    #form-status.error { color: var(--error); }
+
+    /* FOOTER */
+    footer.site-footer {
+      background: var(--grafito);
+      color: var(--hueso);
+      padding: 48px 0 36px;
+      border-top: none;
+    }
+
+    footer.site-footer .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    footer.site-footer p { color: rgb(249 248 246 / 0.7); font-size: 0.85rem; max-width: 50ch; margin: 0; }
+    footer.site-footer nav { display: flex; gap: 18px; flex-wrap: wrap; }
+    footer.site-footer nav a { color: var(--hueso); font-size: 0.85rem; text-decoration: none; }
+    footer.site-footer nav a:hover { color: var(--manteca); }
+
+    /* Tablet: el menú completo entra justo, se compacta un poco */
+    @media (min-width: 769px) and (max-width: 1000px) {
+      .nav-row { gap: 1rem; }
+      nav.main-nav { gap: 4px; }
+      nav.main-nav a { padding: 0.25rem 0.375rem; font-size: 0.7rem; letter-spacing: 0.04em; }
+      nav.main-nav .nav-btn { margin-left: 0.25rem; }
+    }
+
+    @media (max-width: 768px) {
+      nav.main-nav a:not(.nav-btn) { display: none; }
+      .planner-box { padding: 1.5rem; }
+    }
+  
+    /* CUIDADO TEXTIL: tarjetas en cinta horizontal de derecha a izquierda */
+    #cuidado { overflow: hidden; }
+    #cuidado .cuidado-intro { max-width: 720px; margin-bottom: 2rem; }
+    .cuidado-carrusel {
+      display: flex;
+      gap: 1rem;
+      width: max-content;
+      max-width: none;
+      overflow: hidden;
+      padding: 0.5rem 0 1.25rem;
+      margin-inline: -24px;
+    }
+    .cuidado-track {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 1rem;
+      animation: cuidado-deslizar 180s linear infinite;
+      padding-left: 1rem;
+    }
+    .cuidado-carrusel:hover .cuidado-track,
+    .cuidado-carrusel:focus-within .cuidado-track { animation-play-state: paused; }
+    .cuidado-card {
+      display: flex;
+      flex-direction: column;
+      width: clamp(250px, 27vw, 330px);
+      min-height: 300px;
+      padding: 1.5rem;
+      border: 1px solid var(--grafito);
+      background: var(--hueso);
+      box-shadow: 4px 4px 0 var(--grafito);
+    }
+    .cuidado-card--rosa { background: var(--rosa); }
+    .cuidado-card--verde { background: var(--verde); color: var(--hueso); }
+    .cuidado-card--verde h3,
+    .cuidado-card--verde p,
+    .cuidado-card--verde .cuidado-numero { color: var(--hueso); }
+    .cuidado-card--manteca { background: var(--manteca); }
+    .cuidado-numero {
+      display: block;
+      margin-bottom: 2.5rem;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+    .cuidado-card h3 { font-size: 1.8rem; line-height: 1; margin-bottom: 0.8rem; }
+    .cuidado-card p { color: inherit; font-size: 0.9rem; line-height: 1.55; }
+    .cuidado-chip {
+      align-self: flex-start;
+      margin-top: auto;
+      padding: 0.25rem 0.45rem;
+      border: 1px solid currentColor;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .cuidado-pie { margin-top: 1rem; font-size: 0.82rem; }
+    @keyframes cuidado-deslizar {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cuidado-track { animation: none; }
+      .cuidado-carrusel { width: 100%; overflow-x: auto; }
+      .cuidado-track--copia { display: none; }
+    }
+
+  </style>
+</head>
+<body>
+<!-- Sprite de formas de marca: isotipo, ilustraciones e íconos -->
+<svg aria-hidden="true" height="0" style="position:absolute" width="0">
+<defs>
+<symbol id="isotipo" viewbox="16 2 68 130">
+<path d="M32.5 29 L67.5 29 L78 39.5 L78 92 L50 127 L22 92 L22 39.5 Z M57 50 A7 7 0 1 0 43 50 A7 7 0 1 0 57 50 Z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M50 43 C50 32 43 25 45 17 C47 9 57 6 61 12" fill="none" stroke-linecap="round" stroke-width="3" style="stroke: var(--hilo, currentColor)"></path>
+</symbol>
+<symbol id="estrella" viewbox="0 0 100 100">
+<path d="M50 2 C55 38 62 45 98 50 C62 55 55 62 50 98 C45 62 38 55 2 50 C38 45 45 38 50 2 Z" fill="currentColor"></path>
+</symbol>
+</defs>
+</svg>
+<!-- HEADER NAVEGACIÓN -->
+<header class="site-header">
+<div class="container nav-row">
+<a aria-label="Mapa Vintage, volver al inicio" class="logo" href="#top"><svg aria-hidden="true" class="iso"><use href="#isotipo"></use></svg><span>Mapa Vintage</span></a>
+<nav aria-label="Navegación principal" class="main-nav">
+<a href="#manifiesto">Manifiesto</a>
+<a href="#recorrido">Armá tu Ruta</a>
+<a href="#directorio">Mapa</a>
+<a href="#agenda">Agenda</a>
+<a href="#cuidado">Cuidado textil</a>
+<a href="#glosario">Glosario</a>
+<a class="nav-btn" href="#directorio">Ver Mapa →</a>
+</nav>
+</div>
+</header>
+<main id="top">
+<!-- HERO TIPOGRÁFICO -->
+<section class="hero fondo-calles">
+<div class="container">
+<span class="kicker">Ropa vintage y second hand en Buenos Aires</span>
+<h1>El mapa de los <em>vintage</em> en Buenos Aires</h1>
+<p class="bajada">
+          Un directorio curado de locales, ferias barriales, showrooms y eventos itinerantes para recorrer Buenos Aires <span class="resaltado">de perchero en perchero</span>.
+        </p>
+<div class="hero-ctas">
+<a class="btn" href="#directorio">Explorar el mapa y directorio ↓</a>
+<a class="btn btn-secondary" href="#recorrido">Armar un recorrido</a>
+</div>
+<div class="hero-stats">
+<div>
+<span class="stat-number" id="stat-total-puntos">+30</span>
+<span class="stat-label">Locales y showrooms</span>
+</div>
+<div>
+<span class="stat-number" id="stat-total-barrios">CABA</span>
+<span class="stat-label">Barrios Porteños</span>
+</div>
+<div>
+<span class="stat-number">1</span>
+<span class="stat-label">Mapa</span>
+</div>
+<div>
+<span class="stat-number">100%</span>
+<span class="stat-label">Acceso abierto y gratuito</span>
+</div>
+</div>
+</div>
+</section>
+<!-- MANIFIESTO EDITORIAL -->
+<section id="manifiesto">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella"><svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg><span>01</span></span>
+<span class="kicker">Visión</span>
+</div>
+<h2 class="manifesto-title">Por qué Mapa Vintage</h2>
+<div class="manifesto-grid"><div class="manifesto-col"><p>Comprar ropa de segunda mano es mucho más que un haul. El calce perfecto, la textura del satén o la caída de una falda vintage son experiencias únicas que merecen vivirse en primera persona. Nuestra misión es ordenar la sobreinformación digital mediante una guía territorial curada que simplifique la búsqueda y el descubrimiento de indumentaria vintage y de segunda mano en Buenos Aires.</p></div><div class="manifesto-col"><p>Aspiramos a consolidarnos como la herramienta definitiva del consumo circular en la ciudad. Queremos impulsar el reencuentro con el espacio físico frente a la despersonalización algorítmica, conectando a una comunidad activa de compradores con ferias de fin de semana, showrooms de autor y locales independientes.</p></div><div class="manifesto-col"><p>Creemos que la forma de vestir es una vía de expresión legítima en un mundo que tiende a la uniformidad. Mapa Vintage no es un negocio: es un proyecto de acceso libre y gratuito basado en la transparencia, la curaduría humana, el respeto por el trabajo independiente y la construcción colectiva de comunidad.</p></div></div>
+</div>
+</section>
+<!-- ARMÁ TU RECORRIDO -->
+<section id="recorrido">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella"><svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg><span>02</span></span>
+<span class="kicker">Experiencia a medida</span>
+</div>
+<h2>Armá tu recorrido</h2>
+<p>Elegí la zona, el tiempo que tenés y qué día vas. Te armamos un recorrido a medida para disfrutar solo o acompañado.</p>
+<div class="planner-box">
+<div class="step-group">
+<span class="step-label">¿Qué barrio querés caminar?</span>
+<div class="options-row">
+<label class="pill-radio">
+<input checked="" name="zona" onchange="actualizarRuta()" type="radio" value="chacarita"/>
+<span class="pill-text">Chacarita</span>
+</label>
+<label class="pill-radio">
+<input name="zona" onchange="actualizarRuta()" type="radio" value="palermo"/>
+<span class="pill-text">Palermo</span>
+</label>
+<label class="pill-radio">
+<input name="zona" onchange="actualizarRuta()" type="radio" value="santelmo"/>
+<span class="pill-text">San Telmo</span>
+</label>
+</div>
+</div>
+<div class="step-group">
+<span class="step-label">¿Cuánto tiempo tenés?</span>
+<div class="options-row">
+<label class="pill-radio">
+<input checked="" name="tiempo" onchange="actualizarRuta()" type="radio" value="express"/>
+<span class="pill-text">Recorrido express</span>
+</label>
+<label class="pill-radio">
+<input name="tiempo" onchange="actualizarRuta()" type="radio" value="tarde"/>
+<span class="pill-text">Tarde completa</span>
+</label>
+</div>
+</div>
+<div class="step-group">
+<span class="step-label">¿Qué día salís?</span>
+<div class="options-row">
+<label class="pill-radio">
+<input checked="" name="dia" onchange="actualizarRuta()" type="radio" value="semana"/>
+<span class="pill-text">En la semana</span>
+</label>
+<label class="pill-radio">
+<input name="dia" onchange="actualizarRuta()" type="radio" value="finde"/>
+<span class="pill-text">El finde</span>
+</label>
+</div>
+</div>
+<div class="step-group"><span class="step-label">¿Qué estás buscando?</span><div class="options-row"><label class="pill-radio"><input checked="" name="prenda" onchange="actualizarRuta()" type="radio" value="cuero-tapados"/><span class="pill-text">Cuero y Tapados</span></label><label class="pill-radio"><input name="prenda" onchange="actualizarRuta()" type="radio" value="denim-streetwear"/><span class="pill-text">Denim y Streetwear</span></label><label class="pill-radio"><input name="prenda" onchange="actualizarRuta()" type="radio" value="sastreria-archivo"/><span class="pill-text">Sastrería y Archivo</span></label><label class="pill-radio"><input name="prenda" onchange="actualizarRuta()" type="radio" value="carteras"/><span class="pill-text">Carteras</span></label><label class="pill-radio"><input name="prenda" onchange="actualizarRuta()" type="radio" value="calzado-accesorios"/><span class="pill-text">Calzado y Accesorios</span></label><label class="pill-radio"><input name="prenda" onchange="actualizarRuta()" type="radio" value="sin-genero-oversized"/><span class="pill-text">Sin género / Oversized</span></label></div></div><div class="route-result">
+<div class="route-header">
+<h3 class="route-name" id="ruta-titulo">Circuito Chacarita</h3>
+<span id="ruta-distancia" style="font-size: 0.85rem; color: var(--terracota); font-weight: 700;">1.4 km de caminata</span>
+</div>
+<ul class="route-timeline" id="ruta-pasos"></ul>
+<div class="route-actions">
+<a class="btn-action btn-maps" href="#" id="btn-maps" target="_blank">
+                Abrir ruta en Google Maps ↗
+              </a>
+<button class="btn-action btn-share" onclick="compartirWhatsApp()">
+                Compartir plan por WhatsApp 💬
+              </button>
+<button class="btn-action btn-share" onclick="copiarLink()">
+                Copiar enlace 🔗
+              </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- DIRECTORIO Y MAPA LEAFLET -->
+<section id="directorio">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella"><svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg><span>03</span></span>
+<span class="kicker">Directorio</span>
+</div>
+<h2>Mapa Vintage</h2>
+<p>Mapa Vintage es una herramienta para facilitar la búsqueda y el descubrimiento de locales de ropa vintage y segunda mano en la ciudad de Buenos Aires. Filtrá por barrio, tipo de local o especialidad y encontrá lo que estás buscando.</p>
+<p style="font-size: 13px; font-style: italic;">Criterio de inclusión: solo locales físicos, showrooms y ferias presenciales en CABA. Mapa Vintage no contempla emprendimientos que operen 100% online.</p>
+<div class="directorio-layout">
+<!-- FILTROS -->
+<aside aria-label="Filtros del directorio" class="filtros">
+<h3>Filtrar espacios</h3>
+<div class="filtro-grupo">
+<label class="grupo-label" for="filtro-barrio">Barrio</label>
+<select id="filtro-barrio">
+<option value="todos">Todos los barrios</option>
+</select>
+</div>
+<div class="filtro-grupo">
+<span class="grupo-label">Tipología de espacio</span>
+<div aria-label="Tipología de espacio" class="tag-options" id="grupo-tipologia" role="group">
+<button aria-pressed="false" class="tag-toggle" data-filter-group="tipologia" data-value="Boutique Vintage" type="button">Boutique Vintage</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="tipologia" data-value="Feria americana" type="button">Feria americana</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="tipologia" data-value="Showroom (con cita)" type="button">Showroom</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="tipologia" data-value="Feria colectiva" type="button">Feria colectiva</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="tipologia" data-value="Cadena de reventa" type="button">Cadena de reventa</button>
+</div>
+</div>
+<div class="filtro-grupo">
+<label class="grupo-label" for="filtro-precio">Rango de precio</label>
+<select id="filtro-precio">
+<option value="todos">Todos los rangos</option>
+<option value="$">$ Accesible / Popular</option>
+<option value="$$">$$ Intermedio</option>
+<option value="$$$">$$$ Colección / Archivo</option>
+</select>
+</div>
+<div class="filtro-grupo">
+<span class="grupo-label">Especialidades</span>
+<div aria-label="Especialidades" class="tag-options" id="grupo-especialidad" role="group">
+<button aria-pressed="false" class="tag-toggle" data-filter-group="especialidad" data-value="Cuero &amp; Tapados" type="button">Cuero y Tapados</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="especialidad" data-value="Denim &amp; Streetwear 90s" type="button">Denim y Streetwear 90s</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="especialidad" data-value="Sastrería &amp; Archivo" type="button">Sastrería y Archivo</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="especialidad" data-value="Carteras, Calzado &amp; Accesorios" type="button">Carteras, Calzado y Accesorios</button>
+<button aria-pressed="false" class="tag-toggle" data-filter-group="especialidad" data-value="Sin género / Oversized" type="button">Sin género / Oversized</button>
+</div>
+</div>
+<button id="limpiar-filtros" type="button">Limpiar todos los filtros</button>
+</aside>
+<!-- MAPA Y RESULTADOS -->
+<div>
+<div aria-label="Mapa interactivo de Buenos Aires con los espacios geolocalizados" id="mapa" role="img"></div>
+<p class="resultados-meta" id="resultados-meta">Cargando espacios desde la planilla...</p>
+<div class="fichas-grid" id="fichas-grid"></div>
+<p class="sin-resultados" id="sin-resultados">No hay espacios que coincidan con esta búsqueda. Probá otros filtros.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- AGENDA -->
+<section id="agenda">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella"><svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg><span>04</span></span>
+<span class="kicker">Ferias y eventos</span>
+</div>
+<h2>Agenda</h2>
+<p>Un calendario pensado para que sepas exactamente cuándo hay ferias o eventos en la ciudad.</p>
+<div aria-label="Tipo de agenda" class="agenda-tabs" role="tablist">
+<button aria-selected="true" class="agenda-tab-btn" data-panel="panel-permanentes" role="tab">Ferias permanentes</button>
+<button aria-selected="false" class="agenda-tab-btn" data-panel="panel-popups" role="tab">Pop-ups y eventos</button>
+</div>
+<div class="agenda-panel activo" id="panel-permanentes" role="tabpanel">
+<div class="evento-card">
+<span class="evento-badge">Todos los fines de semana</span>
+<h4>Feria de Plaza Dorrego</h4>
+<p class="meta-line">San Telmo · Domingos</p>
+<p class="evento-entrada">Entrada libre</p>
+</div>
+<div class="evento-card">
+<span class="evento-badge">Fin de semana</span>
+<h4>Parque Centenario</h4>
+<p class="meta-line">Caballito</p>
+<p class="evento-entrada">Entrada libre</p>
+</div>
+<div class="evento-card">
+<span class="evento-badge">Fin de semana</span>
+<h4>Parque Los Andes</h4>
+<p class="meta-line">Chacarita</p>
+<p class="evento-entrada">Entrada libre</p>
+</div>
+<div class="evento-card">
+<span class="evento-badge">Domingos</span>
+<h4>Mercado de Pulgas Dorrego</h4>
+<p class="meta-line">Chacarita / Colegiales</p>
+<p class="evento-entrada">Entrada libre</p>
+</div>
+</div>
+<div class="agenda-panel" id="panel-popups" role="tabpanel">
+<div class="evento-card">
+<span class="evento-badge">Fecha a confirmar</span>
+<h4>[Próximo Pop-up de feria itinerante]</h4>
+<p class="meta-line">Barrio a confirmar · Horario a confirmar</p>
+<p class="desc" style="font-size:13.5px; color:var(--text-muted); margin-bottom:8px;">Espacio reservado para cargar el próximo evento confirmado.</p>
+<p class="evento-entrada">Entrada libre</p>
+</div>
+</div>
+</div>
+</section>
+<!-- CIRCUITOS -->
+<section class="fondo-reticula" id="cuidado">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella">
+<svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg>
+<span>05</span>
+</span>
+<span class="kicker">Materiales y fibras</span>
+</div>
+<h2>Cómo cuidar tu ropa</h2>
+<p class="cuidado-intro">La ropa dura cuando mejor la cuidás. Antes de lavar una prenda, mirá su etiqueta, identificá de qué está hecha y preguntate si realmente necesita pasar por el agua. A veces, ventilarla alcanza. Otras, un cambio en la forma de secarla o guardarla puede hacer toda la diferencia.</p>
+<div aria-label="Consejos para cuidar la ropa" class="cuidado-carrusel">
+<div class="cuidado-track"><article class="cuidado-card"><span class="cuidado-numero">01 / Materiales y cuidados</span><h3>Seda</h3><p>La seda es una fibra natural extremadamente delicada. Si la etiqueta lo permite, lavala siempre a mano, con agua fría y jabón neutro para prendas delicadas. Nunca la retuerzas ni la escurras, dejala secar por goteo, en una percha y siempre a la sombra. Evitá el sol directo, la secadora y los secadores de pelo, que pueden dañar y decolorar el tejido. No la planches. Si la dejás secar correctamente, podés aprovechar su caída natural y ahorrarte ese paso, te va a quedar impecable.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--rosa"><span class="cuidado-numero">02 / Materiales y cuidados</span><h3>Satén o raso</h3><p>El satén no es una fibra, sino una forma de tejido: puede estar hecho de seda, poliéster o acetato. Por eso, antes de lavarlo, revisá su composición. Si es de seda, seguí los cuidados de esa fibra. Si es sintético, puede admitir lavarropas en un ciclo delicado y con agua fría, siempre que la etiqueta lo indique. Usá detergente líquido suave y evitá retorcer la prenda. Para secarla, colgala por goteo en una percha y a la sombra. Evitá la secadora y, si podés, también la plancha, el calor puede alterar su textura y su brillo.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--verde"><span class="cuidado-numero">03 / Materiales y cuidados</span><h3>Lana</h3><p>La lana repele la suciedad de forma natural, así que no necesita lavarse después de cada uso. Muchas veces, ventilarla alcanza. Cuando toque lavarla, hacelo a mano con agua fría y jabón neutro, o usá el programa específico para lana si la etiqueta permite el lavarropas. Evitá el centrifugado y nunca la cuelgues mojada: el peso del agua puede deformar las fibras. Para secarla, retirale el exceso de agua con una toalla y dejala extendida en horizontal. Guardá los sweaters doblados, nunca en perchas, para que no pierdan su forma. La lavanda puede ayudar a mantener las polillas alejadas y perfumar el armario. Evitá la naftalina.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--manteca"><span class="cuidado-numero">04 / Materiales y cuidados</span><h3>Cashmere</h3><p>El cashmere necesita cuidados similares a los de la lana, pero conviene priorizar el lavado a mano. Usá agua fría y jabón neutro para prendas delicadas, masajeando suavemente sin frotar ni restregar. Para secarlo, enrollá el sweater en una toalla y presioná para absorber el exceso de agua, después, dejalo extendido sobre una superficie plana, sin tironear las fibras. Es normal que el roce genere pilling (esas bolitas que hacen ver tu prenda vieja). Retiralas con un peine específico para cashmere o una máquina quitapelusas, sin abusar para no desgastar el tejido. Guardalo limpio, seco y doblado.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card"><span class="cuidado-numero">05 / Materiales y cuidados</span><h3>Lino</h3><p>El lino es resistente, fresco y transpirable, aunque tiene una particularidad: se arruga con facilidad. Y sí, esas arrugas son parte de su encanto. Podés lavarlo en lavarropas con un ciclo delicado, agua fría y centrifugado suave. Evitá el calor porque puede encoger. Para secarlo, colgalo bien estirado o dejalo en plano, a la sombra. Si necesitás plancharlo, hacelo del revés y mientras todavía esté húmedo, con temperatura media-alta y vapor, siempre que la composición lo permita. Así las fibras se relajan y las arrugas salen más fácilmente. Si te encanta la ropa sin arrugas, el lino no es para vos.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--rosa"><span class="cuidado-numero">06 / Materiales y cuidados</span><h3>Denim / jean</h3><p>El jean no necesita lavarse después de cada uso. Si no está sucio, podés airearlo y volver a usarlo: así ayudás a preservar el color y la forma. Cuando lo laves, hacelo del revés, con agua fría y, especialmente si es nuevo u oscuro, por separado para evitar que destiña sobre otras prendas. Evitá los suavizantes, que pueden afectar las fibras elásticas de los jeans con elastano. Para secarlo, colgalo del revés y al aire libre, sin recurrir a la secadora: el calor puede encoger el tejido y acortar su vida útil. La plancha generalmente no hace falta. Si la usás, elegí una temperatura media y hacelo del revés.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--verde"><span class="cuidado-numero">07 / Materiales y cuidados</span><h3>Algodón</h3><p>El algodón es versátil y resistente, pero también puede encogerse con el calor. Para conservar tus prendas, lavalas según la etiqueta y, cuando sea posible, con agua fría o tibia. Separá los colores claros de los oscuros y evitá sobrecargar el lavarropas. Para secarlas, el aire suele ser suficiente y ayuda a reducir el desgaste. Si la prenda tiene estampas, bordados o detalles delicados, lavarla del revés es un buen recurso para protegerlos.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--manteca"><span class="cuidado-numero">08 / Materiales y cuidados</span><h3>Microtul</h3><p>El microtul es liviano y delicado: un cierre, un gancho o un roce fuerte pueden engancharlo. Lavá tu prenda a mano con agua fría y jabón suave, sin frotar ni retorcer. Si vas a recurrir al lavarropas, usá una bolsa de lavado para proteger la malla. Dejala secar al aire y a la sombra. Evitá la secadora y nunca, jamás, la planches. Para guardarla, doblala con cuidado y mantenela separada de accesorios que puedan engancharla.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card"><span class="cuidado-numero">09 / Materiales y cuidados</span><h3>Prendas plisadas</h3><p>Los pliegues son parte del diseño, así que el objetivo es conservarlos. Antes de lavar una prenda plisada, revisá la etiqueta: según la tela y el tipo de plisado, puede necesitar limpieza profesional. Evitá retorcerla, aplastarla o dejarla amontonada mientras está húmeda. Para guardarla, colgala si la estructura lo permite y asegurate de que tenga espacio para que los pliegues no se deformen. No la planches directamente ni intentes rehacer los pliegues con calor sin conocer la composición: podés alterar su forma original.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--rosa"><span class="cuidado-numero">10 / Materiales y cuidados</span><h3>Tapados de lana</h3><p>Un buen tapado puede acompañarte durante años. Después de usarlo, dejalo ventilar y retirale el polvo con un cepillo suave. No necesita lavarse seguido, y muchas veces alcanza con airearlo. Antes de limpiarlo, revisá la etiqueta: por su estructura, forro y entretelas, algunos tapados necesitan limpieza profesional. Al terminar la temporada, guardalo limpio y completamente seco, en una percha ancha que sostenga bien los hombros. Mantenelo en un lugar ventilado y sin humedad. Para prevenir polillas, podés sumar una bolsita de lavanda al armario, sin que esté en contacto directo con la prenda.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--verde"><span class="cuidado-numero">11 / Materiales y cuidados</span><h3>Ropa interior</h3><p>La ropa interior necesita una limpieza frecuente, pero eso no significa que todas las piezas deban tratarse igual. El algodón suele resistir mejor el lavado cotidiano, mientras que el encaje, la microfibra y los elásticos delicados necesitan menos fricción. Si usás lavarropas, colocá los corpiños en una bolsa de lavado y cerrá los ganchos para que no se enganchen con otras prendas. Evitá retorcerlos y dejalos secar al aire. En los corpiños, no los cuelgues de los breteles cuando están mojados: el peso puede estirarlos y hacerles perder sujeción.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card cuidado-card--manteca"><span class="cuidado-numero">12 / Materiales y cuidados</span><h3>Trajes de baño</h3><p>El cloro, la sal y los protectores solares pueden deteriorar las fibras elásticas y alterar los colores. Después de cada uso, enjuagá la malla con agua fría para retirar los residuos. Lavala a mano con jabón suave cuando corresponda y no la retuerzas para escurrirla. Dejala secar a la sombra, lejos de fuentes de calor: el sol directo y la secadora pueden debilitar el elastano. Y un detalle clave: no la guardes húmeda ni hecha un bollo en una bolsa. Antes de guardarla hasta el próximo verano, asegurate de que esté completamente seca.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article class="cuidado-card"><span class="cuidado-numero">13 / Materiales y cuidados</span><h3>Calzado de cuero</h3><p>El cuero necesita limpieza suave, ventilación y protección frente a la humedad. Después de usar tus zapatos, retirales el polvo con un paño seco o un cepillo adecuado y dejalos airearse antes de guardarlos. Si se mojan, no los acerques a una estufa ni uses secador: rellenalos con papel limpio para absorber la humedad y dejalos secar a temperatura ambiente. Cuando el material lo permita, aplicá una crema específica para cuero, probándola primero en una zona poco visible. Guardalos lejos del sol directo y sin apretarlos contra otros pares. Si son de gamuza, charol u otro acabado especial, usá productos específicos para ese material.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card"><span class="cuidado-numero">01 / Materiales y cuidados</span><h3>Seda</h3><p>La seda es una fibra natural extremadamente delicada. Si la etiqueta lo permite, lavala siempre a mano, con agua fría y jabón neutro para prendas delicadas. Nunca la retuerzas ni la escurras, dejala secar por goteo, en una percha y siempre a la sombra. Evitá el sol directo, la secadora y los secadores de pelo, que pueden dañar y decolorar el tejido. No la planches. Si la dejás secar correctamente, podés aprovechar su caída natural y ahorrarte ese paso, te va a quedar impecable.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--rosa"><span class="cuidado-numero">02 / Materiales y cuidados</span><h3>Satén o raso</h3><p>El satén no es una fibra, sino una forma de tejido: puede estar hecho de seda, poliéster o acetato. Por eso, antes de lavarlo, revisá su composición. Si es de seda, seguí los cuidados de esa fibra. Si es sintético, puede admitir lavarropas en un ciclo delicado y con agua fría, siempre que la etiqueta lo indique. Usá detergente líquido suave y evitá retorcer la prenda. Para secarla, colgala por goteo en una percha y a la sombra. Evitá la secadora y, si podés, también la plancha, el calor puede alterar su textura y su brillo.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--verde"><span class="cuidado-numero">03 / Materiales y cuidados</span><h3>Lana</h3><p>La lana repele la suciedad de forma natural, así que no necesita lavarse después de cada uso. Muchas veces, ventilarla alcanza. Cuando toque lavarla, hacelo a mano con agua fría y jabón neutro, o usá el programa específico para lana si la etiqueta permite el lavarropas. Evitá el centrifugado y nunca la cuelgues mojada: el peso del agua puede deformar las fibras. Para secarla, retirale el exceso de agua con una toalla y dejala extendida en horizontal. Guardá los sweaters doblados, nunca en perchas, para que no pierdan su forma. La lavanda puede ayudar a mantener las polillas alejadas y perfumar el armario. Evitá la naftalina.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--manteca"><span class="cuidado-numero">04 / Materiales y cuidados</span><h3>Cashmere</h3><p>El cashmere necesita cuidados similares a los de la lana, pero conviene priorizar el lavado a mano. Usá agua fría y jabón neutro para prendas delicadas, masajeando suavemente sin frotar ni restregar. Para secarlo, enrollá el sweater en una toalla y presioná para absorber el exceso de agua, después, dejalo extendido sobre una superficie plana, sin tironear las fibras. Es normal que el roce genere pilling (esas bolitas que hacen ver tu prenda vieja). Retiralas con un peine específico para cashmere o una máquina quitapelusas, sin abusar para no desgastar el tejido. Guardalo limpio, seco y doblado.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card"><span class="cuidado-numero">05 / Materiales y cuidados</span><h3>Lino</h3><p>El lino es resistente, fresco y transpirable, aunque tiene una particularidad: se arruga con facilidad. Y sí, esas arrugas son parte de su encanto. Podés lavarlo en lavarropas con un ciclo delicado, agua fría y centrifugado suave. Evitá el calor porque puede encoger. Para secarlo, colgalo bien estirado o dejalo en plano, a la sombra. Si necesitás plancharlo, hacelo del revés y mientras todavía esté húmedo, con temperatura media-alta y vapor, siempre que la composición lo permita. Así las fibras se relajan y las arrugas salen más fácilmente. Si te encanta la ropa sin arrugas, el lino no es para vos.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--rosa"><span class="cuidado-numero">06 / Materiales y cuidados</span><h3>Denim / jean</h3><p>El jean no necesita lavarse después de cada uso. Si no está sucio, podés airearlo y volver a usarlo: así ayudás a preservar el color y la forma. Cuando lo laves, hacelo del revés, con agua fría y, especialmente si es nuevo u oscuro, por separado para evitar que destiña sobre otras prendas. Evitá los suavizantes, que pueden afectar las fibras elásticas de los jeans con elastano. Para secarlo, colgalo del revés y al aire libre, sin recurrir a la secadora: el calor puede encoger el tejido y acortar su vida útil. La plancha generalmente no hace falta. Si la usás, elegí una temperatura media y hacelo del revés.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--verde"><span class="cuidado-numero">07 / Materiales y cuidados</span><h3>Algodón</h3><p>El algodón es versátil y resistente, pero también puede encogerse con el calor. Para conservar tus prendas, lavalas según la etiqueta y, cuando sea posible, con agua fría o tibia. Separá los colores claros de los oscuros y evitá sobrecargar el lavarropas. Para secarlas, el aire suele ser suficiente y ayuda a reducir el desgaste. Si la prenda tiene estampas, bordados o detalles delicados, lavarla del revés es un buen recurso para protegerlos.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--manteca"><span class="cuidado-numero">08 / Materiales y cuidados</span><h3>Microtul</h3><p>El microtul es liviano y delicado: un cierre, un gancho o un roce fuerte pueden engancharlo. Lavá tu prenda a mano con agua fría y jabón suave, sin frotar ni retorcer. Si vas a recurrir al lavarropas, usá una bolsa de lavado para proteger la malla. Dejala secar al aire y a la sombra. Evitá la secadora y nunca, jamás, la planches. Para guardarla, doblala con cuidado y mantenela separada de accesorios que puedan engancharla.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card"><span class="cuidado-numero">09 / Materiales y cuidados</span><h3>Prendas plisadas</h3><p>Los pliegues son parte del diseño, así que el objetivo es conservarlos. Antes de lavar una prenda plisada, revisá la etiqueta: según la tela y el tipo de plisado, puede necesitar limpieza profesional. Evitá retorcerla, aplastarla o dejarla amontonada mientras está húmeda. Para guardarla, colgala si la estructura lo permite y asegurate de que tenga espacio para que los pliegues no se deformen. No la planches directamente ni intentes rehacer los pliegues con calor sin conocer la composición: podés alterar su forma original.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--rosa"><span class="cuidado-numero">10 / Materiales y cuidados</span><h3>Tapados de lana</h3><p>Un buen tapado puede acompañarte durante años. Después de usarlo, dejalo ventilar y retirale el polvo con un cepillo suave. No necesita lavarse seguido, y muchas veces alcanza con airearlo. Antes de limpiarlo, revisá la etiqueta: por su estructura, forro y entretelas, algunos tapados necesitan limpieza profesional. Al terminar la temporada, guardalo limpio y completamente seco, en una percha ancha que sostenga bien los hombros. Mantenelo en un lugar ventilado y sin humedad. Para prevenir polillas, podés sumar una bolsita de lavanda al armario, sin que esté en contacto directo con la prenda.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--verde"><span class="cuidado-numero">11 / Materiales y cuidados</span><h3>Ropa interior</h3><p>La ropa interior necesita una limpieza frecuente, pero eso no significa que todas las piezas deban tratarse igual. El algodón suele resistir mejor el lavado cotidiano, mientras que el encaje, la microfibra y los elásticos delicados necesitan menos fricción. Si usás lavarropas, colocá los corpiños en una bolsa de lavado y cerrá los ganchos para que no se enganchen con otras prendas. Evitá retorcerlos y dejalos secar al aire. En los corpiños, no los cuelgues de los breteles cuando están mojados: el peso puede estirarlos y hacerles perder sujeción.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card cuidado-card--manteca"><span class="cuidado-numero">12 / Materiales y cuidados</span><h3>Trajes de baño</h3><p>El cloro, la sal y los protectores solares pueden deteriorar las fibras elásticas y alterar los colores. Después de cada uso, enjuagá la malla con agua fría para retirar los residuos. Lavala a mano con jabón suave cuando corresponda y no la retuerzas para escurrirla. Dejala secar a la sombra, lejos de fuentes de calor: el sol directo y la secadora pueden debilitar el elastano. Y un detalle clave: no la guardes húmeda ni hecha un bollo en una bolsa. Antes de guardarla hasta el próximo verano, asegurate de que esté completamente seca.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article><article aria-hidden="true" class="cuidado-card"><span class="cuidado-numero">13 / Materiales y cuidados</span><h3>Calzado de cuero</h3><p>El cuero necesita limpieza suave, ventilación y protección frente a la humedad. Después de usar tus zapatos, retirales el polvo con un paño seco o un cepillo adecuado y dejalos airearse antes de guardarlos. Si se mojan, no los acerques a una estufa ni uses secador: rellenalos con papel limpio para absorber la humedad y dejalos secar a temperatura ambiente. Cuando el material lo permita, aplicá una crema específica para cuero, probándola primero en una zona poco visible. Guardalos lejos del sol directo y sin apretarlos contra otros pares. Si son de gamuza, charol u otro acabado especial, usá productos específicos para ese material.</p><span class="cuidado-chip">Cómo cuidar esta prenda</span></article></div></div>
+<p class="cuidado-pie">Antes de lavar, revisá siempre la etiqueta de cuidado y la composición de la prenda.</p>
+</div>
+</section>
+<!-- GLOSARIO -->
+<section id="glosario">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella"><svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg><span>06</span></span>
+<span class="kicker">Diccionario</span>
+</div>
+<h2>Glosario</h2>
+<p>En el universo de lo vintage circulan términos que se usan de forma intercambiable pero que no quieren decir exactamente lo mismo. Esta guía es un diccionario para entender esas diferencias.</p>
+<div class="glosario-list"><details class="glosario-item"><summary>Vintage</summary><p>Mínimo 20 años de antigüedad. Ropa que refleja fielmente el diseño, técnicas de confección o materiales de su época. Terminaciones que la industria rápida abandonó (cierres metálicos, botones de nácar, tejidos puros).</p></details><details class="glosario-item"><summary>Retro</summary><p>Fabricación reciente o contemporánea. Indumentaria actual que recrea la estética o tendencias del pasado. No posee valor histórico.</p></details><details class="glosario-item"><summary>Antiguo</summary><p>Un siglo o más de historia. Tiene un valor más cercano al coleccionismo, la conservación museística o histórica.</p></details><details class="glosario-item"><summary>Segunda Mano / Thrift</summary><p>Sin restricción de antigüedad. Prendas que regresan al circuito de consumo alargando su ciclo de vida y promoviendo la economía circular y precios accesibles.</p></details><details class="glosario-item"><summary>Upcycling</summary><p>Confección artesanal y rediseño a partir de descarte textil para producir piezas de autor nuevas y exclusivas.</p></details></div>
+</div>
+</section>
+<!-- FORMULARIO COMUNIDAD CON GOOGLE SHEETS (APPS SCRIPT) -->
+<section id="sumar">
+<div class="container">
+<div class="encabezado-marca">
+<span class="numero-estrella"><svg aria-hidden="true" class="forma"><use href="#estrella"></use></svg><span>07</span></span>
+<span class="kicker">Comunidad</span>
+</div>
+<h2>Tu local en el mapa</h2>
+<p>Si sos dueño o dueña de un local o conocés un vintage que merece estar en el mapa, ¡sumalo! Mapa Vintage se construye entre todos. Sumá tu local al mapa completando el formulario.</p>
+<div class="criterios-box">
+<strong>Criterios:</strong>
+<ol>
+<li>Presencia territorial verificable en CABA (local a la calle, showroom o puesto regular de feria).</li>
+<li>Al menos 60% del catálogo enfocado en vintage, segunda mano o upcycled.</li>
+<li>Canales de contacto y horarios.</li>
+</ol>
+</div>
+<!-- Iframe invisible para conectar con Google Sheets sin salir de la web -->
+<iframe id="hidden_iframe" name="hidden_iframe" style="display:none;"></iframe>
+<form action="https://script.google.com/macros/s/AKfycbyAOwtD6FOe6xkByXj2hK89gkCdFfydW9FqIH7WDYIdkurvwpYdUD7T9seNHL-CrcjS_Q/exec" class="form-comunidad" id="form-sumar" method="POST" target="hidden_iframe">
+<div class="campo">
+<label for="f-nombre">Nombre del espacio</label>
+<input id="f-nombre" name="nombre" required="" type="text"/>
+</div>
+<div class="campo">
+<label for="f-tipologia">Tipología</label>
+<select id="f-tipologia" name="tipologia" required="">
+<option value="">Elegí una opción</option>
+<option value="Boutique Vintage">Boutique Vintage</option>
+<option value="Feria americana">Feria americana</option>
+<option value="Showroom (con cita)">Showroom (con cita)</option>
+<option value="Feria colectiva">Feria colectiva</option>
+<option value="Cadena de reventa">Cadena de reventa</option>
+</select>
+</div>
+<div class="campo">
+<label for="f-direccion">Dirección / Barrio</label>
+<input id="f-direccion" name="direccion" required="" type="text"/>
+</div>
+<div class="campo">
+<label for="f-instagram">Enlace / Instagram</label>
+<input id="f-instagram" name="instagram" placeholder="https://instagram.com/..." type="url"/>
+</div>
+<div class="campo">
+<label for="f-descripcion">Breve descripción de especialidades</label>
+<textarea id="f-descripcion" name="descripcion"></textarea>
+</div>
+<div class="campo checkbox-line">
+<input id="f-confirma" name="confirma" required="" style="margin-top:3px;" type="checkbox"/>
+<label for="f-confirma" style="font-weight:400; margin-bottom:0;">Confirmo que este espacio tiene presencia territorial verificable en CABA.</label>
+</div>
+<button class="btn" id="btn-submit-form" type="submit">Enviar espacio</button>
+<p id="form-status" role="status"></p>
+</form>
+</div>
+</section>
+</main>
+<!-- FOOTER -->
+<footer class="site-footer">
+<div class="container">
+<div>
+<p>Mapa Vintage — Cartografía textil y archivo de segunda mano en Buenos Aires.</p>
+<p style="margin-top: 6px;">Trabajo Integrador Final de Producción (TIF) · Licenciatura en Ciencias de la Comunicación, Facultad de Ciencias Sociales, UBA, 2026. Cátedra Burgos.</p>
+<p class="contacto-footer">Contacto: mapavintage@gmail.com</p></div>
+<nav aria-label="Enlaces del pie">
+<a href="#manifiesto">Manifiesto</a>
+<a href="#recorrido">Armá tu Ruta</a>
+<a href="#directorio">Mapa</a>
+<a href="#agenda">Agenda</a>
+<a href="#cuidado">Cuidado textil</a>
+<a href="#glosario">Glosario</a>
+<a href="#directorio">Ver Mapa →</a>
+</nav>
+</div>
+</footer>
+<!-- Leaflet JS & PapaParse (Lector de Google Sheets CSV) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+    /* ============================================================
+       1. ARMÁ TU RECORRIDO (PLANNER)
+       ============================================================ */
+    const rutasData = {
+      chacarita: {
+        titulo: "Circuito Chacarita & Colegiales",
+        distancia: "~1.4 km de caminata",
+        pasos: [
+          { nombre: "Showroom Fruto Selección", desc: "Sastrería 80s y camisería de seda curada a puertas cerradas." },
+          { nombre: "Parada cafetera recomendada", desc: "Café de especialidad de paso sobre Av. Jorge Newbery." },
+          { nombre: "Archivo Textil Boreal", desc: "Prendas de autor vintage y piezas de denim seleccionadas." }
+        ],
+        mapsQuery: "https://www.google.com/maps/dir/Chacarita,+CABA/Colegiales,+CABA"
+      },
+      palermo: {
+        titulo: "Cacería Palermo & Villa Crespo",
+        distancia: "~2.1 km de caminata",
+        pasos: [
+          { nombre: "Local Vintage Garage", desc: "Camperas deportivas noventeras y remeras gráficas importadas." },
+          { nombre: "Tienda Segunda Época", desc: "Tapados de paño y accesorios de cuero recuperados." },
+          { nombre: "Feria de Diseño & Ropa Circular", desc: "Percheros rotativos al aire libre de fin de semana." }
+        ],
+        mapsQuery: "https://www.google.com/maps/dir/Palermo,+CABA/Villa+Crespo,+CABA"
+      },
+      santelmo: {
+        titulo: "Ruta de Archivo San Telmo",
+        distancia: "~1.1 km de caminata",
+        pasos: [
+          { nombre: "Galería del Solar de French", desc: "Puestos de antigüedades textiles, vestidos 60s/70s y bijouterie de época." },
+          { nombre: "Local La Cueva Vintage", desc: "Buzos universitarios y jeans clásicos de archivo." },
+          { nombre: "Plaza Dorrego & alrededores", desc: "Paseo entre puestos seleccionados y percheros a la calle." }
+        ],
+        mapsQuery: "https://www.google.com/maps/dir/Plaza+Dorrego,+Defensa,+Buenos+Aires/San+Telmo,+CABA"
+      }
+    };
+
+    function actualizarRuta() {
+      const zona = document.querySelector('input[name="zona"]:checked').value;
+      const data = rutasData[zona] || rutasData.chacarita;
+
+      document.getElementById('ruta-titulo').innerText = data.titulo;
+      document.getElementById('ruta-distancia').innerText = data.distancia;
+      document.getElementById('btn-maps').href = data.mapsQuery;
+
+      const lista = document.getElementById('ruta-pasos');
+      lista.innerHTML = data.pasos.map(p => `
+        <li class="timeline-item">
+          <div class="timeline-place">${p.nombre}</div>
+          <div class="timeline-desc">${p.desc}</div>
+        </li>
+      `).join('');
+    }
+
+    function compartirWhatsApp() {
+      const zona = document.querySelector('input[name="zona"]:checked').value;
+      const data = rutasData[zona] || rutasData.chacarita;
+      const prendaInput = document.querySelector('input[name="prenda"]:checked');
+      const prenda = prendaInput ? prendaInput.nextElementSibling.textContent.trim() : "sin preferencia de prenda";
+      const texto = `¡Mirá este plan vintage que armé en Buenos Aires! 📍 ${data.titulo} (${data.distancia}). Busco: ${prenda}. Podés ver la ruta acá: https://mapavintage.com.ar/#recorrido`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+    }
+
+    function copiarLink() {
+      navigator.clipboard.writeText(window.location.href.split('#')[0] + '#recorrido');
+      alert('¡Enlace del recorrido copiado al portapapeles!');
+    }
+
+    actualizarRuta();
+
+    /* ============================================================
+       2. LECTURA DE GOOGLE SHEETS & MAPA LEAFLET
+       ============================================================ */
+    (function () {
+      "use strict";
+
+      var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8k2lfSgDs566JtZ3TGN9e1u5Wx7XFV-bIsk4iq4aGhKtbZBEMvW385AdhMRd3nfHyoZC12-ti3rUU/pub?output=csv";
+
+      var ESPACIOS = [];
+      var marcadores = {};
+
+      var estadoFiltros = {
+        barrio: "todos",
+        precio: "todos",
+        tipologia: new Set(),
+        especialidad: new Set()
+      };
+
+      // Inicialización de Leaflet
+      var mapa = L.map('mapa', { scrollWheelZoom: false }).setView([-34.6037, -58.3816], 12.3);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(mapa);
+
+      Papa.parse(SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+          ESPACIOS = results.data.map(function (row) {
+            var espArray = [];
+            if (row["Especialidad"]) {
+              espArray = row["Especialidad"].split(',').map(function (s) { return s.trim(); });
+            }
+
+            var latNum = parseFloat(String(row["Latitud"]).replace(',', '.'));
+            var lngNum = parseFloat(String(row["Longitud"]).replace(',', '.'));
+
+            return {
+              id: row["ID"] || Math.random().toString(),
+              nombre: row["Nombre"] || "Sin nombre",
+              barrio: row["Barrio"] ? row["Barrio"].trim() : "Otro",
+              direccion: row["Dirección"] || "",
+              lat: isNaN(latNum) ? null : latNum,
+              lng: isNaN(lngNum) ? null : lngNum,
+              tipologia: row["Tipología"] ? row["Tipología"].trim() : "",
+              precio: row["Rango Precio"] ? row["Rango Precio"].trim() : "$",
+              especialidades: espArray,
+              horarios: row["Horarios"] || "",
+              instagram: row["Instagram"] || "#",
+              descripcion: row["Descripción breve"] || ""
+            };
+          }).filter(function (e) { return e.lat && e.lng; });
+
+          ESPACIOS.forEach(function (e) {
+            var m = L.marker([e.lat, e.lng]).addTo(mapa);
+            m.bindPopup("<strong>" + e.nombre + "</strong><br>" + e.barrio + " · " + e.tipologia + "<br><em>" + e.direccion + "</em>");
+            marcadores[e.id] = m;
+          });
+
+          poblarSelectBarrios();
+          renderFichas();
+
+          var statPuntos = document.getElementById('stat-total-puntos');
+          if (statPuntos) statPuntos.textContent = "+" + ESPACIOS.length;
+        },
+        error: function (err) {
+          console.error("Error al cargar la planilla de Google:", err);
+          document.getElementById('resultados-meta').textContent = "No se pudieron cargar los datos de la planilla. Verificá que esté publicada como CSV.";
+        }
+      });
+
+      function poblarSelectBarrios() {
+        var selectBarrio = document.getElementById('filtro-barrio');
+        var barriosUnicos = [];
+        ESPACIOS.forEach(function (e) {
+          if (e.barrio && barriosUnicos.indexOf(e.barrio) === -1) {
+            barriosUnicos.push(e.barrio);
+          }
+        });
+        barriosUnicos.sort();
+
+        selectBarrio.innerHTML = '<option value="todos">Todos los barrios</option>';
+        barriosUnicos.forEach(function (b) {
+          var opt = document.createElement('option');
+          opt.value = b;
+          opt.textContent = b;
+          selectBarrio.appendChild(opt);
+        });
+      }
+
+      function espacioCoincide(e) {
+        if (estadoFiltros.barrio !== "todos" && e.barrio !== estadoFiltros.barrio) return false;
+        if (estadoFiltros.precio !== "todos" && e.precio !== estadoFiltros.precio) return false;
+        if (estadoFiltros.tipologia.size > 0 && !estadoFiltros.tipologia.has(e.tipologia)) return false;
+        if (estadoFiltros.especialidad.size > 0) {
+          var tieneAlguna = e.especialidades.some(function (esp) { return estadoFiltros.especialidad.has(esp); });
+          if (!tieneAlguna) return false;
+        }
+        return true;
+      }
+
+      function renderFichas() {
+        var grid = document.getElementById('fichas-grid');
+        var sinResultados = document.getElementById('sin-resultados');
+        var contador = document.getElementById('contador-resultados');
+        var meta = document.getElementById('resultados-meta');
+
+        grid.innerHTML = "";
+        var visibles = ESPACIOS.filter(espacioCoincide);
+
+        meta.innerHTML = 'Mostrando <span id="contador-resultados">' + visibles.length + '</span> espacios de tu relevamiento';
+        sinResultados.style.display = visibles.length === 0 ? "block" : "none";
+
+        visibles.forEach(function (e) {
+          var card = document.createElement('article');
+          card.className = "ficha";
+          var tagsHtml = e.especialidades.map(function (t) { return '<span class="pill">' + t + '</span>'; }).join("");
+          
+          var enlaceGmaps = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(e.nombre + " " + e.direccion + " Buenos Aires");
+          var linkInsta = (e.instagram && e.instagram !== "#") ? '<a href="' + e.instagram + '" target="_blank" rel="noopener">Instagram</a>' : '';
+
+          card.innerHTML =
+            '<h4>' + e.nombre + '</h4>' +
+            '<p class="meta-line">' + e.tipologia + ' · ' + e.barrio + ' · <span class="precio">' + e.precio + '</span></p>' +
+            (e.direccion ? '<p class="meta-line" style="font-size:12.5px;">📍 ' + e.direccion + '</p>' : '') +
+            (e.horarios ? '<p class="meta-line" style="font-size:12.5px;">🕒 ' + e.horarios + '</p>' : '') +
+            '<p class="desc">' + e.descripcion + '</p>' +
+            '<div class="tags">' + tagsHtml + '</div>' +
+            '<div class="links">' + linkInsta + '<a href="' + enlaceGmaps + '" target="_blank" rel="noopener">Google Maps ↗</a></div>';
+          grid.appendChild(card);
+        });
+
+        Object.keys(marcadores).forEach(function (id) {
+          var visible = visibles.some(function (e) { return String(e.id) === id; });
+          if (visible) {
+            if (!mapa.hasLayer(marcadores[id])) marcadores[id].addTo(mapa);
+          } else {
+            if (mapa.hasLayer(marcadores[id])) mapa.removeLayer(marcadores[id]);
+          }
+        });
+      }
+
+      // Escuchadores de Filtros
+      document.getElementById('filtro-barrio').addEventListener('change', function (ev) {
+        estadoFiltros.barrio = ev.target.value;
+        renderFichas();
+      });
+      document.getElementById('filtro-precio').addEventListener('change', function (ev) {
+        estadoFiltros.precio = ev.target.value;
+        renderFichas();
+      });
+
+      document.querySelectorAll('.tag-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var grupo = btn.getAttribute('data-filter-group');
+          var valor = btn.getAttribute('data-value');
+          var set = estadoFiltros[grupo];
+          var activo = btn.getAttribute('aria-pressed') === "true";
+          if (activo) { set.delete(valor); btn.setAttribute('aria-pressed', 'false'); }
+          else { set.add(valor); btn.setAttribute('aria-pressed', 'true'); }
+          renderFichas();
+        });
+      });
+
+      document.getElementById('limpiar-filtros').addEventListener('click', function () {
+        estadoFiltros = { barrio: "todos", precio: "todos", tipologia: new Set(), especialidad: new Set() };
+        document.getElementById('filtro-barrio').value = "todos";
+        document.getElementById('filtro-precio').value = "todos";
+        document.querySelectorAll('.tag-toggle').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        renderFichas();
+      });
+
+      // Agenda Tabs
+      document.querySelectorAll('.agenda-tab-btn').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          document.querySelectorAll('.agenda-tab-btn').forEach(function (t) { t.setAttribute('aria-selected', 'false'); });
+          document.querySelectorAll('.agenda-panel').forEach(function (p) { p.classList.remove('activo'); });
+          tab.setAttribute('aria-selected', 'true');
+          document.getElementById(tab.getAttribute('data-panel')).classList.add('activo');
+        });
+      });
+
+      /* ============================================================
+         3. ENVÍO DEL FORMULARIO DIRECTO A GOOGLE SHEETS
+         ============================================================ */
+      var formEnviado = false;
+      var formElem = document.getElementById('form-sumar');
+      var statusElem = document.getElementById('form-status');
+      var submitBtn = document.getElementById('btn-submit-form');
+      var iframeElem = document.getElementById('hidden_iframe');
+
+      formElem.addEventListener('submit', function () {
+        formEnviado = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Enviando espacio...";
+      });
+
+      iframeElem.addEventListener('load', function () {
+        if (formEnviado) {
+          statusElem.textContent = "¡Gracias! Tu espacio fue enviado y registrado en la planilla.";
+          statusElem.className = "ok";
+          statusElem.style.display = "block";
+          formElem.reset();
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Enviar espacio";
+          formEnviado = false;
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>
