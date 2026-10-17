@@ -29,54 +29,49 @@ export function initGlossary() {
 
 export function initCare() {
   const fallback = $('#care-fallback'), fan = $('.swatch-fan');
-  fan.removeAttribute('aria-hidden'); fan.setAttribute('role', 'group'); fan.setAttribute('aria-label', 'Abanico de materiales y tejidos');
+  fan.removeAttribute('aria-hidden'); fan.setAttribute('role', 'group'); fan.setAttribute('aria-label', 'Muestrario de materiales y tejidos');
   fan.querySelector('.swatch-ring').setAttribute('aria-hidden', 'true');
   const colors = ['#DCCBA4','#ECC8BE','#C9D2B7','#EBDDAA','#D5C8AF','#A3B4C0','#E9E4D7','#D9C9D2'];
-  CARE.slice(0, 8).forEach((item, i) => {
-    const leaf = el('button', { type: 'button', class: 'fan-leaf', 'aria-label': 'Mostrar cuidado de ' + item.titulo, 'aria-controls': 'fabric-reading', style: `--leaf-color:${colors[i]}` });
-    leaf.append(el('span', { class: 'leaf-label' }, item.titulo)); fan.append(leaf);
-  });
-  const initGroup = (items, buttonRoot, readingRoot, garments = false) => {
+  const initGroup = (items, readingSelector, materials) => {
     let index = 0;
-    const root = $(buttonRoot), reading = $(readingRoot);
-    const leaves = garments ? [] : [...fan.querySelectorAll('.fan-leaf')];
-    const animateFan = () => { fan.classList.remove('flutter'); void fan.offsetWidth; fan.classList.add('flutter'); };
+    const reading = $(readingSelector), buttons = [];
+    const animate = () => { if (materials) { fan.classList.remove('flutter'); void fan.offsetWidth; fan.classList.add('flutter'); } };
     const render = () => {
-      [...root.children].forEach((b, i) => b.setAttribute('aria-pressed', String(index === i)));
-      leaves.forEach((leaf, i) => {
-        const active = i === index;
-        leaf.setAttribute('aria-pressed', String(active)); leaf.tabIndex = active ? 0 : -1;
-        leaf.style.setProperty('--leaf-order', active ? '20' : String(i));
-        leaf.style.setProperty('--leaf-angle', active ? '-4deg' : (-56 + i * 16) + 'deg');
+      buttons.forEach((button, i) => {
+        const active = i === index; button.setAttribute('aria-pressed', String(active));
+        if (materials) {
+          button.tabIndex = active ? 0 : -1;
+          button.style.setProperty('--leaf-order', active ? '20' : String(i));
+          button.style.setProperty('--leaf-angle', active ? '-4deg' : (-56 + i * 16) + 'deg');
+        }
       });
       const item = items[index]; reading.replaceChildren(el('h4', {}, item.titulo), el('p', { class: 'care-full' }, item.texto));
       const controls = el('div', { class: 'care-controls' });
       const prev = el('button', { type: 'button', 'aria-label': 'Cuidado anterior' }, '← Anterior');
       const next = el('button', { type: 'button', 'aria-label': 'Cuidado siguiente' }, 'Siguiente →');
-      const change = delta => { index = (index + delta + items.length) % items.length; render(); if (!garments) animateFan(); reading.querySelector(delta > 0 ? '[aria-label="Cuidado siguiente"]' : '[aria-label="Cuidado anterior"]').focus({ preventScroll: true }); };
+      const change = delta => { index = (index + delta + items.length) % items.length; render(); animate(); reading.querySelector(delta > 0 ? '[aria-label="Cuidado siguiente"]' : '[aria-label="Cuidado anterior"]').focus({ preventScroll: true }); };
       prev.onclick = () => change(-1); next.onclick = () => change(1);
       controls.append(prev, el('span', {}, `${index + 1} / ${items.length}`), next); reading.append(controls);
     };
-    const select = i => { index = i; render(); if (!garments) animateFan(); };
+    const select = i => { index = i; render(); animate(); };
     items.forEach((item, i) => {
-      const b = el('button', { type: 'button', class: garments ? 'garment-button' : 'swatch', 'aria-pressed': String(!i), 'aria-controls': reading.id });
-      b.append(el('span', {}, item.titulo));
-      const path = CONFIG.careImages?.[item.titulo];
-      const image = path ? picture(path, 'Recurso ilustrativo para ' + item.titulo) : null;
-      if (image) { b.append(image); b.classList.add('has-art'); }
-      b.onclick = () => select(i); root.append(b);
-      if (!garments) {
-        const leaf = leaves[i]; leaf.onclick = () => select(i);
-        leaf.onkeydown = e => {
-          const moves = { ArrowRight: (i + 1) % items.length, ArrowLeft: (i - 1 + items.length) % items.length, Home: 0, End: items.length - 1 };
-          if (e.key in moves) { e.preventDefault(); select(moves[e.key]); leaves[index].focus({ preventScroll: true }); }
-        };
+      const button = el('button', { type: 'button', class: materials ? 'fan-leaf' : 'garment-button', 'aria-label': materials ? 'Mostrar cuidado de ' + item.titulo : item.titulo, title: item.titulo, 'aria-controls': reading.id });
+      button.append(el('span', { class: materials ? 'leaf-label' : 'garment-label' }, item.titulo));
+      if (materials) button.style.setProperty('--leaf-color', colors[i]);
+      else {
+        const path = CONFIG.careImages?.[item.titulo], image = path ? picture(path, 'Recurso ilustrativo para ' + item.titulo) : null;
+        if (image) { button.append(image); button.classList.add('has-art'); }
       }
-    });
-    render();
+      button.onclick = () => select(i);
+      if (materials) button.onkeydown = e => {
+        const moves = { ArrowRight: (i + 1) % items.length, ArrowLeft: (i - 1 + items.length) % items.length, Home: 0, End: items.length - 1 };
+        if (e.key in moves) { e.preventDefault(); select(moves[e.key]); buttons[index].focus({ preventScroll: true }); }
+      };
+      buttons.push(button); (materials ? fan : $('#garment-buttons')).append(button);
+    }); render();
   };
-  initGroup(CARE.slice(0, 8), '#fabric-buttons', '#fabric-reading');
-  initGroup(CARE.slice(8), '#garment-buttons', '#garment-reading', true);
+  initGroup(CARE.slice(0, 8), '#fabric-reading', true);
+  initGroup(CARE.slice(8), '#garment-reading', false);
   if (fallback) fallback.hidden = true;
 }
 

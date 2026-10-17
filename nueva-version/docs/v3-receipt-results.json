@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Selector de foto en español actualiza su etiqueta",
+    "Recibo simulado correspondiente limpia foto y etiqueta",
+    "El texto se limpia solo después del recibo correspondiente"
+  ],
+  "errors": []
+}

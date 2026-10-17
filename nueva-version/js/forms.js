@@ -3,7 +3,7 @@ import { safeURL } from './data.js';
 import { DEMO } from './demo.js';
 import { $, el } from './dom.js';
 export function serializeProposal({ source, type, event, text }) {
-  return `[Origen: ${source === 'recomendado' ? 'Recomendación de visitante' : 'Responsable del espacio'}]\n[Destino: ${type === 'Feria colectiva' ? 'Agenda: feria o evento' : 'Revisión editorial: directorio si es local permanente; agenda si es feria'}]${event ? '\n[Fecha, horario y acceso: ' + event + ']' : ''}\n\n${text}`;
+  return `[Origen: ${source === 'evento' ? 'Propuesta desde Agenda' : source === 'recomendado' ? 'Recomendación de visitante' : 'Responsable del espacio'}]\n[Destino: ${type === 'Feria colectiva' ? 'Agenda: feria o evento' : 'Revisión editorial: directorio si es local permanente; agenda si es feria'}]${event ? '\n[Fecha, horario y acceso: ' + event + ']' : ''}\n\n${text}`;
 }
 export function initForms(openDialog) {
   const form = $('#contribution-form'), dialog = $('#contribution-dialog'), submit = $('#proposal-submit'), status = $('#form-status'), iframe = $('#proposal-response');
@@ -18,9 +18,11 @@ export function initForms(openDialog) {
     dialog.querySelector('.dialog-close').disabled = false;
   };
   document.querySelectorAll('[data-contribute]').forEach(button => button.addEventListener('click', () => {
+    if (pending) { openDialog(dialog, button); return; }
     source = button.dataset.contribute;
-    $('#form-title').textContent = source === 'propio' ? 'Tengo un local, feria o evento.' : 'Conozco un lugar.';
-    if (!pending) submit.textContent = DEMO ? 'Envíos desactivados en demostración' : source === 'propio' ? 'Enviar propuesta' : 'Recomendar un lugar';
+    $('#form-title').textContent = source === 'evento' ? 'Proponé una feria o evento.' : source === 'propio' ? 'Tengo un local, feria o evento.' : 'Conozco un lugar.';
+    if (source === 'evento') { form.elements.tipologia.value = 'Feria colectiva'; $('#event-label').hidden = false; }
+    submit.textContent = DEMO ? 'Envíos desactivados en demostración' : source === 'evento' ? 'Proponer feria o evento' : source === 'propio' ? 'Enviar propuesta' : 'Recomendar un lugar';
     openDialog(dialog, button);
   }));
   form.elements.tipologia.addEventListener('change', () => {

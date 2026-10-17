@@ -20,11 +20,11 @@ Si más adelante aprobás publicarla como sitio estático, la carpeta a servir e
 - Cinco entradas de glosario y 13 cuidados íntegros. Muestrario con abanico, controles por teclado y lectura completa.
 - Agenda, notas y muro: renderizado desde CSV, solo registros publicados, estados vacíos, lectura ampliada y plantillas. **Faltan sus tres URLs.**
 - Dos entradas al formulario original. Mantiene endpoint, POST, iframe y los seis nombres de campo. Nunca afirma que se guardó una fila sin poder comprobarlo.
-- Recepción de looks por correo, navegación móvil, foco de diálogos, Escape, pausa de marquesina y movimiento reducido.
+- Formulario integrado de hallazgos con foto y vista previa local; el receptor independiente necesita configuración. Navegación móvil, foco de diálogos, Escape y pausa de movimiento.
 
 ## Qué falta para completar los recursos
 
-El logo elegido y las ocho imágenes más recientes se ven en el chat, pero no se expusieron como archivos descargables en este entorno. No se redibujó ni se simuló el logo. El encabezado muestra el nombre del sitio de forma provisional. El sitio usa fotografías y recortes extraídos del manual; no son las imágenes nuevas del chat.
+El logo elegido y las ocho imágenes más recientes se ven en el chat, pero no se expusieron como archivos descargables en este entorno. No se redibujó ni se simuló el logo. La marca tipográfica alternativa fue retirada; el encabezado muestra únicamente un enlace de navegación Inicio. El sitio usa fotografías y recortes extraídos del manual; no son las imágenes nuevas del chat.
 
 Para terminar el logo: copiar el JPG original a `assets/logo/MAPA-7.jpg`, preparar un recorte fiel sin el margen exterior amplio y poner la ruta final en `logo` de `js/config.js`. El `<img>` del encabezado ya está implementado con proporciones conservadas y alternativa ante error. No inventar el arte ni sustituirlo con otra tipografía.
 
@@ -43,10 +43,14 @@ Los originales heredados de `main` también siguen en la raíz del checkout, fue
 
 ## Pruebas
 
-Con Node disponible, `npm test` ejecuta las 28 pruebas de lógica sin instalar paquetes. No hace envíos ni consultas a producción.
+Con Node disponible, `npm test` ejecuta las 45 pruebas de lógica y del receptor independiente sin instalar paquetes. No hace envíos ni consultas a producción.
 
 Las comprobaciones adicionales de Chromium están documentadas en `docs/VERIFICACION.md`. Su único envío de prueba se interceptó localmente; no llegó al Apps Script.
 
 ## Segunda pasada
 
 La revisión de composición e interacciones se documenta en `docs/SEGUNDA-PASADA.md`. Para evaluar cartelera, collage y notas, abrí `demostracion.html`; está rotulada y mantiene los envíos desactivados. La página normal no muestra ejemplos. Después de editar `index.html`, regenerá la página separada con `node scripts/build-demo.mjs`.
+
+## Revisión de participación
+
+Ver `docs/TERCERA-PASADA.md` y `docs/RECEPCION-DE-HALLAZGOS.md`. El contacto es estático. Comunidad tiene campos integrados y recepción desactivada hasta configurar el servicio separado. No se incorporó el JPG del logo, que no está accesible como archivo.

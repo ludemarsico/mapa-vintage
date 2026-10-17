@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "Toque en siguiente sincroniza muestra y texto",
+    "Agenda abre y cierra por toque conservando posición",
+    "Formulario integrado sin desbordamiento en celular",
+    "Contacto permanece estático en celular"
+  ],
+  "errors": []
+}

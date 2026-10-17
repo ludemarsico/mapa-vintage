@@ -1,0 +1,291 @@
+{
+  "checks": [
+    "Fuente real leída por shell y reproducida como CSV de solo lectura en navegador",
+    "Seis fichas por página",
+    "21 puntos en el mapa",
+    "Paginación cambia la página sin filtrar puntos",
+    "Búsqueda filtra lista y puntos",
+    "Ficha selecciona punto",
+    "Cero coincidencias explícito",
+    "Filtros AND consistentes",
+    "Filtros activos tienen controles para quitarlos",
+    "Recorrido express se genera con dos paradas reales",
+    "Ruta compartible tiene IDs",
+    "Enlace Google Maps con origen y destino",
+    "Quitar parada recalcula total",
+    "URL reconstruye el recorrido",
+    "Tarde completa genera de 3 a 5 paradas caminables",
+    "Glosario abre definición completa",
+    "8 materiales y 5 piezas disponibles",
+    "Muestrario actualiza texto íntegro",
+    "Piezas actualizan cuidado correspondiente",
+    "Agenda, muro y notas vacíos sin contenido inventado",
+    "Formulario no afirma persistencia sin respuesta verificable",
+    "Datos se conservan tras respuesta no verificable",
+    "Contrato conserva exactamente los seis campos",
+    "Origen, destino y fecha viajan dentro de descripcion",
+    "Solo un POST, interceptado localmente",
+    "Escape cierra diálogo y devuelve foco",
+    "Sin desbordamiento horizontal a 360px",
+    "Sin desbordamiento horizontal a 390px",
+    "Mapa significativo en primera pantalla móvil",
+    "Alternancia lista en celular",
+    "Volver al mapa recalcula tamaño",
+    "Hamburguesa tiene nombre y estado",
+    "Escape cierra navegación y devuelve foco",
+    "Sin desbordamiento horizontal a 768px",
+    "Sin desbordamiento horizontal a 1440px",
+    "Ancho de lectura equivalente al zoom 200% sin desbordamiento",
+    "Movimiento reducido desactiva la marquesina",
+    "Marquesina se puede pausar",
+    "Fallo CSV muestra error y reintento sin locales ficticios",
+    "Reintento recupera la lectura",
+    "Sin errores JavaScript"
+  ],
+  "errors": [],
+  "failedRequests": [
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1382/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1383/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1382/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1383/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1382/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1383/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1381/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1384/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1381/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1384/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1382/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1383/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1381/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1384/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1381/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1384/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/14/5533/9871.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/14/5533/9872.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/14/5536/9872.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/14/5534/9873.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/14/5535/9873.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/14/5533/9870.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/14/5536/9870.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/14/5533/9873.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/14/5536/9873.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1382/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1383/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1382/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1383/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1382/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1383/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1381/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1384/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1381/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1384/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1382/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1383/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1381/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1384/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1381/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1384/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1382/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1383/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1382/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1383/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1382/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1383/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1381/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1384/2467.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1381/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1384/2468.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://c.tile.openstreetmap.org/12/1382/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.org/12/1383/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1381/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1384/2466.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1381/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://b.tile.openstreetmap.org/12/1384/2469.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8k2lfSgDs566JtZ3TGN9e1u5Wx7XFV-bIsk4iq4aGhKtbZBEMvW385AdhMRd3nfHyoZC12-ti3rUU/pub?output=csv",
+      "error": "net::ERR_FAILED"
+    }
+  ],
+  "productionPosts": 0,
+  "interceptedPosts": [
+    {
+      "nombre": "Prueba LOCAL INTERCEPTADA",
+      "tipologia": "Feria colectiva",
+      "direccion": "Dirección de prueba en CABA",
+      "instagram": "",
+      "descripcion": "[Origen: Recomendación de visitante]\r\n[Destino: Agenda: feria o evento]\r\n[Fecha, horario y acceso: Fecha ficticia solo para el mock]\r\n\r\nNo enviar a producción",
+      "confirma": "on"
+    }
+  ]
+}

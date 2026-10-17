@@ -7,6 +7,8 @@ export const CONFIG = {
   email: 'mapavintage.ba@gmail.com',
   // Al recibir MAPA (7).jpg: copiar el archivo a assets/logo/ y poner aquí su ruta.
   logo: '',
+  // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
+  hallazgos: { endpoint: '', turnstileSiteKey: '' },
   // Recursos existentes y comprobados. Las otras piezas esperan sus archivos originales.
   careImages: { 'Calzado de cuero': 'assets/cuidados/botas.webp' },
   columns: {

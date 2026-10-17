@@ -27,7 +27,7 @@ Los WebP se extrajeron sin redibujarlos y sin grandes fotografías base64 en el 
 
 Se pudieron inspeccionar visualmente en la conversación, pero no descargar ni integrar fielmente como archivos del proyecto. No se afirma que estén incorporadas.
 
-- Logo elegido: MAPA / VINTAGE / BUENOS AIRES, sobre hueso y con margen amplio. **Pendiente de archivo descargable.** No se recreó con una fuente. El nombre tipográfico del encabezado es provisional, no el logo seleccionado.
+- Logo elegido: MAPA / VINTAGE / BUENOS AIRES, sobre hueso y con margen amplio. **Pendiente de archivo descargable.** No se recreó con una fuente. La marca tipográfica alternativa se retiró en la tercera pasada. El encabezado solo tiene un enlace de navegación Inicio hasta recibir el JPG original.
 - Foto de Corrientes y teatros, con ciclista.
 - Cardigan rojo con flores; material desconocido.
 - Foto de selección de ropa y perchas.

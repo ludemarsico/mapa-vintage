@@ -5,6 +5,7 @@ import { $, el, link } from './dom.js';
 import { createMap } from './map.js';
 import { initCare, initGlossary, initEditorial } from './editorial.js';
 import { initForms } from './forms.js';
+import { initHallazgo } from './hallazgo.js';
 
 // Navegación y diálogos no dependen de Sheets ni del mapa.
 const toggle = $('.menu-toggle'), nav = $('#navigation');
@@ -41,23 +42,13 @@ window.addEventListener('popstate', () => { if (!new URL(location.href).searchPa
 if (CONFIG.logo) {
   [['#brand-logo', '#brand-name'], ['#footer-logo', '#footer-name']].forEach(([imageSelector, nameSelector]) => {
     const logo = $(imageSelector); logo.src = CONFIG.logo; logo.hidden = false; $(nameSelector).hidden = true;
-    logo.onerror = () => { logo.hidden = true; $(nameSelector).hidden = false; };
+    logo.onerror = () => { logo.hidden = true; $(nameSelector).hidden = nameSelector === '#footer-name'; };
   });
 }
 $('#ticker-pause').onclick = e => { const paused = $('#ticker').classList.toggle('paused'); e.currentTarget.textContent = paused ? 'Reanudar' : 'Pausar'; e.currentTarget.setAttribute('aria-label', paused ? 'Reanudar marquesina' : 'Pausar marquesina'); e.currentTarget.setAttribute('aria-pressed', String(paused)); };
-const contactPaper = $('.contact-paper');
-contactPaper.querySelector('summary').addEventListener('click', () => { contactPaper.dataset.userControlled = 'true'; });
-contactPaper.addEventListener('toggle', () => {
-  const summary = contactPaper.querySelector('summary'); summary.setAttribute('aria-expanded', String(contactPaper.open));
-  summary.querySelector('.paper-action').firstChild.textContent = contactPaper.open ? 'Plegar papel ' : 'Desplegar papel ';
-});
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => { entries.forEach(x => { if (x.isIntersecting) { x.target.classList.add('in-view'); if (!x.target.dataset.userControlled) x.target.open = true; observer.unobserve(x.target); } }); }, { threshold: 0.3 });
-  observer.observe(contactPaper);
-}
 function projectHash() { if (location.hash === '#sobre-el-proyecto') $('#sobre-el-proyecto').open = true; }
 window.addEventListener('hashchange', projectHash); projectHash();
-initForms(openDialog); initGlossary(); initCare(); initEditorial(openReader);
+initForms(openDialog); initHallazgo(); initGlossary(); initCare(); initEditorial(openReader);
 
 const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', prenda: '', mode: 'express' }, stops: [] };
 let mapAPI;

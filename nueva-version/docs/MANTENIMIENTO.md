@@ -44,13 +44,9 @@ La fuente publicada es pública: no pongas correos privados, teléfonos de conta
 
 ### Muro de looks y hallazgos
 
-1. La persona toca “Compartí tu look” y te escribe a `mapavintage.ba@gmail.com`, adjuntando foto, alias, texto y red opcional.
-2. Revisá la publicación y acordá el uso de la imagen con quien la envía.
-3. Guardá la foto optimizada en `assets/muro/` (creá la carpeta si hace falta), conservando el original aparte.
-4. Añadí su ruta —por ejemplo `assets/muro/nombre-del-archivo.webp`— a `imagen`. Completá `nombre_alias`, `texto`, `alt`, `orden` y, si la persona quiere, `red_url`.
-5. Marcá `estado=publicado` después de revisarlo. Las imágenes de esta carpeta deben acompañar la próxima versión de archivos del sitio.
+La sección ahora ofrece “Compartí tu hallazgo” con foto, texto, alias y red opcional. La vista previa funciona en el navegador. La recepción real necesita su propio servicio y continúa desactivada; no utiliza el Apps Script de locales.
 
-No hay carga directa de fotos, cuentas de usuario ni publicación automática. Es un circuito manual por mail y Sheets.
+Seguí `RECEPCION-DE-HALLAZGOS.md` para configurar el receptor independiente. Las fotos se guardan en privado y los textos en una cola pendiente. Luego de revisar un aporte, descargá la foto, guardá su copia web en `assets/muro/` y añadí alias, texto, ruta, alt y red opcional a la pestaña Muro. Marcá `estado=publicado` solo después de aprobarlo. El receptor no publica automáticamente ni escribe en Sheets.
 
 ## Formulario de espacios
 

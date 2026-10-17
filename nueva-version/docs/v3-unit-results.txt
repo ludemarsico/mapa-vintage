@@ -1,0 +1,65 @@
+
+> mapa-vintage-revision@1.0.0 test
+> node tests/core.test.js && node tests/hallazgos.test.js
+
+✔ CSV conserva comas, comillas, BOM, CRLF y párrafos (2.40817ms)
+✔ CSV rechaza texto entrecomillado roto y columnas desalineadas (0.353031ms)
+✔ CSV rechaza encabezados duplicados (0.209065ms)
+✔ normalización soporta tildes y espacios (0.737446ms)
+✔ solo prendas concretas; no convierte cuero ni estilos en prendas (3.149405ms)
+✔ Instagram recupera solo arrobas explícitas y URLs seguras (0.582495ms)
+✔ precio ausente no se convierte a $ (0.908939ms)
+✔ excluye showrooms, solo online y cita previa (1.259449ms)
+✔ feria ambigua requiere revisión; local explícito conserva evidencia (0.71402ms)
+✔ feria colectiva con local a la calle explícito puede entrar; otros no (0.667667ms)
+✔ rechaza coordenadas inválidas, en blanco, no CABA y duplicados (0.64698ms)
+✔ coordenadas decimales con coma son compatibles (0.596372ms)
+✔ IDs fallback son estables al reordenar filas (1.048429ms)
+✔ filtros combinan AND entre dimensiones y OR entre prendas (0.225424ms)
+✔ enlaces rechazan javascript, data, credenciales y rutas inseguras (0.580686ms)
+✔ express genera como máximo dos paradas sin repetición (0.661071ms)
+✔ tarde respeta preferencias y distancia; no agrega extremo lejano (0.390836ms)
+✔ cambiar prendas y barrio cambia el resultado, sin ampliar silenciosamente (0.152204ms)
+✔ quitar parada recalcula visitas y caminata (0.137504ms)
+✔ reemplazos excluyen usados y respeta preferencias (0.227173ms)
+✔ URL conserva paradas ordenadas y preferencias; elimina parámetros ajenos (0.535908ms)
+✔ URL invalida repetidas, retiradas y largas sin fabricar reemplazos (0.11432ms)
+✔ Buenos Aires respeta el cambio de fecha frente a UTC (15.408888ms)
+✔ fechas inexistentes son inválidas (0.444089ms)
+✔ agenda oculta vencidos y respeta intervalo inclusivo (0.47382ms)
+✔ recurrencias semanales y mensuales requieren reglas válidas (21.349827ms)
+✔ contrato: origen y evento se agregan dentro de descripcion (0.288452ms)
+✔ los 13 cuidados y las cinco definiciones coinciden íntegros con el megaprompt (0.631526ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 64.933105
+✔ receptor confirma solo después de guardar foto privada y registro pendiente (44.802461ms)
+✔ reintento idéntico devuelve el mismo recibo sin duplicar la imagen (10.86131ms)
+✔ ID reutilizado con otro contenido se rechaza sin sobrescribir (6.883305ms)
+✔ fallo al guardar imagen no confirma recepción y retira la reserva (2.245383ms)
+✔ no acepta orígenes ajenos (0.562349ms)
+✔ preflight conserva el origen exacto permitido (0.615555ms)
+✔ firma de archivo incompatible se rechaza antes del almacenamiento (1.540679ms)
+✔ Turnstile debe validar acción y hostname (5.569948ms)
+✔ sin claves o bindings el receptor queda inhabilitado (0.578436ms)
+✔ no expone imágenes ni registros por GET (0.571918ms)
+✔ enlaces inseguros no se guardan (2.752541ms)
+✔ límite total del cuerpo se aplica antes de parsear ni almacenar (9.532496ms)
+✔ el cliente rechaza Apps Script como receptor de fotos (0.926573ms)
+✔ solo un recibo estructurado y correspondiente confirma el envío (0.269817ms)
+✔ foto local exige formato admitido y tamaño válido (0.194512ms)
+✔ Agenda conserva tipo compatible y contexto dentro de descripcion (0.337219ms)
+✔ un reintento no confirma un objeto que ya no existe (10.848134ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108.963091

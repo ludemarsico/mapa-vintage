@@ -1,0 +1,18 @@
+name = "mapa-vintage-hallazgos"
+main = "worker.mjs"
+compatibility_date = "2026-10-17"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://mapa-vintage-revision-lucia.ivorybead3.chatgpt.site"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mapa-vintage-hallazgos"
+database_id = "REEMPLAZAR_CON_ID_DEVUELTO_POR_WRANGLER"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "mapa-vintage-hallazgos"
+
+# TURNSTILE_SECRET_KEY se configura con wrangler secret put. Nunca escribirla aquí.
