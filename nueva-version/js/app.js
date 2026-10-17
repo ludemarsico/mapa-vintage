@@ -45,7 +45,6 @@ if (CONFIG.logo) {
     logo.onerror = () => { logo.hidden = true; $(nameSelector).hidden = nameSelector === '#footer-name'; };
   });
 }
-$('#ticker-pause').onclick = e => { const paused = $('#ticker').classList.toggle('paused'); e.currentTarget.textContent = paused ? 'Reanudar' : 'Pausar'; e.currentTarget.setAttribute('aria-label', paused ? 'Reanudar marquesina' : 'Pausar marquesina'); e.currentTarget.setAttribute('aria-pressed', String(paused)); };
 function projectHash() { if (location.hash === '#sobre-el-proyecto') $('#sobre-el-proyecto').open = true; }
 window.addEventListener('hashchange', projectHash); projectHash();
 initForms(openDialog); initHallazgo(); initGlossary(); initCare(); initEditorial(openReader);
