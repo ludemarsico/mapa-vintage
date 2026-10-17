@@ -13,7 +13,7 @@ function closeMenu(focus = false) { nav.classList.remove('open'); toggle.setAttr
 toggle.onclick = () => { const open = toggle.getAttribute('aria-expanded') !== 'true'; nav.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Cerrar navegación' : 'Abrir navegación'); };
 nav.addEventListener('click', e => { if (e.target.closest('a')) closeMenu(); });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if (nav.classList.contains('open')) { closeMenu(true); e.preventDefault(); } $('.guides').open = false; }
+  if (e.key === 'Escape') { if (nav.classList.contains('open')) { closeMenu(true); e.preventDefault(); } }
   if (e.key === 'Tab' && nav.classList.contains('open') && matchMedia('(max-width:900px)').matches) {
     const focusables = [toggle, ...nav.querySelectorAll('a,summary')].filter(n => n.getClientRects().length);
     const first = focusables[0], last = focusables.at(-1);
