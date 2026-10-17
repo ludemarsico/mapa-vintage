@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Punto accesible por teclado selecciona ficha y página",
+    "Cambiar parada actualiza IDs sin repetir",
+    "WhatsApp contiene enlace reconstruible",
+    "Texto completo en interfaz: Seda",
+    "Texto completo en interfaz: Satén o raso",
+    "Texto completo en interfaz: Lana",
+    "Texto completo en interfaz: Cashmere",
+    "Texto completo en interfaz: Lino",
+    "Texto completo en interfaz: Denim / jean",
+    "Texto completo en interfaz: Algodón",
+    "Texto completo en interfaz: Microtul",
+    "Texto completo en interfaz: Prendas plisadas",
+    "Texto completo en interfaz: Tapados de lana",
+    "Texto completo en interfaz: Ropa interior",
+    "Texto completo en interfaz: Trajes de baño",
+    "Texto completo en interfaz: Calzado de cuero",
+    "Sin JS siguen legibles 13 cuidados y cinco definiciones",
+    "Sin desbordamiento tras incorporar abanico",
+    "Sin errores en revisión final"
+  ],
+  "errors": []
+}

@@ -1,0 +1,47 @@
+import { $, el, link } from './dom.js';
+export function createMap(onSelect) {
+  const L = window.L;
+  const error = $('#map-error');
+  if (!L) {
+    $('#map').replaceChildren(el('p', { class: 'map-loading' }, 'No pudimos cargar la biblioteca del mapa. Podés consultar los locales en la lista.'));
+    $('#map-interact').disabled = true; $('#map-fit').disabled = true;
+    return { update() {}, select() {}, resize() {}, fit() {} };
+  }
+  $('#map').replaceChildren();
+  const map = L.map('map', { scrollWheelZoom: false, dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: true }).setView([-34.6037, -58.415], 12);
+  const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+  let errors = 0; tiles.on('tileerror', () => { if (++errors >= 3) error.textContent = 'El fondo cartográfico no pudo cargarse por completo. La lista sigue disponible.'; });
+  const layer = L.layerGroup().addTo(map), markers = new Map();
+  let visible = [];
+  const icon = selected => L.divIcon({ className: '', html: '<div class="map-marker' + (selected ? ' selected' : '') + '"></div>', iconSize: [28, 34], iconAnchor: [14, 28] });
+  const fit = () => { if (visible.length) map.fitBounds(visible.map(s => [s.lat, s.lng]), { padding: [35, 35], maxZoom: 14 }); };
+  const api = {
+    update(stores, selected) {
+      visible = stores; layer.clearLayers(); markers.clear();
+      stores.forEach(s => {
+        const popup = el('div'); popup.append(el('h3', {}, s.nombre), el('p', {}, s.direccion));
+        const button = el('button', { type: 'button' }, 'Ver ficha'); button.onclick = () => onSelect(s.id, true); popup.append(button);
+        const marker = L.marker([s.lat, s.lng], { icon: icon(s.id === selected), title: s.nombre, alt: s.nombre, keyboard: true }).addTo(layer).bindPopup(popup, { maxWidth: 270 });
+        const markerElement = marker.getElement();
+        markerElement.setAttribute('role', 'button'); markerElement.setAttribute('aria-label', s.nombre + ', ver ficha');
+        markerElement.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); onSelect(s.id, false); }
+        });
+        marker.on('click', () => onSelect(s.id, false)); markers.set(s.id, marker);
+      });
+      fit();
+    },
+    select(id, pan = true) {
+      markers.forEach((m, key) => m.setIcon(icon(key === id)));
+      const m = markers.get(id); if (m) { if (pan) map.panTo(m.getLatLng(), { animate: !matchMedia('(prefers-reduced-motion: reduce)').matches }); m.openPopup(); }
+    }, resize() { map.invalidateSize(false); }, fit
+  };
+  $('#map-fit').onclick = () => { map.invalidateSize(false); fit(); };
+  $('#map-interact').onclick = event => {
+    const button = event.currentTarget, active = button.getAttribute('aria-pressed') !== 'true';
+    button.setAttribute('aria-pressed', String(active));
+    button.textContent = active ? 'Desactivar desplazamiento' : 'Activar desplazamiento';
+    if (active) { map.dragging.enable(); map.touchZoom.enable(); } else { map.dragging.disable(); map.touchZoom.disable(); }
+  };
+  return api;
+}
