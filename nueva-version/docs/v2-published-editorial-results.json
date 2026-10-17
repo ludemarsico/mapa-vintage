@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Agenda publica solo aprobados y no vencidos",
+    "Enlaces inseguros de Agenda se omiten",
+    "Muro publica solo aprobados",
+    "Texto remoto se renderiza seguro",
+    "Muro abre foto en diálogo",
+    "Red insegura no se publica",
+    "Cerrar muro devuelve foco",
+    "Notas filtra borradores",
+    "Nota tiene URL compartible",
+    "Nota conserva párrafos CSV",
+    "Atrás cierra la lectura",
+    "Enlace directo abre nota publicada",
+    "Cerrar enlace directo conserva acceso al proyecto",
+    "Notas tiene alternativa en lista",
+    "Ocho muestras comparten un punto de giro",
+    "Selección activa abanico sin ocultar lectura",
+    "Abanico respeta movimiento reducido",
+    "Menú puede recorrerse por teclado sin escapar",
+    "Tab desde el último enlace vuelve al control de cierre",
+    "Sin errores JS en estructuras editoriales"
+  ],
+  "errors": []
+}

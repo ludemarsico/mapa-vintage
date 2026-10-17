@@ -7,6 +7,8 @@ export const CONFIG = {
   email: 'mapavintage.ba@gmail.com',
   // Al recibir MAPA (7).jpg: copiar el archivo a assets/logo/ y poner aquí su ruta.
   logo: '',
+  // Recursos existentes y comprobados. Las otras piezas esperan sus archivos originales.
+  careImages: { 'Calzado de cuero': 'assets/cuidados/botas.webp' },
   columns: {
     id: ['ID', 'id'], nombre: ['Nombre'], barrio: ['Barrio'], direccion: ['Dirección', 'Direccion'],
     lat: ['Latitud'], lng: ['Longitud'], tipo: ['Tipología', 'Tipologia'], precio: ['Rango Precio'],

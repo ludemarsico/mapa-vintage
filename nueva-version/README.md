@@ -1,6 +1,6 @@
 # Mapa Vintage · versión para revisar
 
-Reconstrucción estática, sin publicación. El sitio anterior se conserva en la raíz del repositorio; esta versión vive en `nueva-version/`, en la rama local `reconstruccion-mapa-vintage`, creada desde `origin/main` (`bf88776e1badb362f0538c9290d7e1262df7c16b`). No se hizo push, merge ni despliegue.
+Versión estática para revisión, con una copia privada alojada en Sites. El sitio anterior se conserva en la raíz del repositorio; esta versión vive en `nueva-version/`, en la rama local `reconstruccion-mapa-vintage`, creada desde `origin/main` (`bf88776e1badb362f0538c9290d7e1262df7c16b`). No se hizo push ni merge en el repositorio original, ni despliegue en Netlify. La copia de Sites usa su propio repositorio privado y conserva el mismo acceso de revisión.
 
 ## Abrir la versión
 
@@ -46,3 +46,7 @@ Los originales heredados de `main` también siguen en la raíz del checkout, fue
 Con Node disponible, `npm test` ejecuta las 28 pruebas de lógica sin instalar paquetes. No hace envíos ni consultas a producción.
 
 Las comprobaciones adicionales de Chromium están documentadas en `docs/VERIFICACION.md`. Su único envío de prueba se interceptó localmente; no llegó al Apps Script.
+
+## Segunda pasada
+
+La revisión de composición e interacciones se documenta en `docs/SEGUNDA-PASADA.md`. Para evaluar cartelera, collage y notas, abrí `demostracion.html`; está rotulada y mantiene los envíos desactivados. La página normal no muestra ejemplos. Después de editar `index.html`, regenerá la página separada con `node scripts/build-demo.mjs`.

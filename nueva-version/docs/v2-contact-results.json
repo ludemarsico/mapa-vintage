@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "Contacto se despliega al entrar en pantalla",
+    "Al plegar el papel cambia su transformación",
+    "Papel plegado respeta movimiento reducido"
+  ],
+  "errors": []
+}

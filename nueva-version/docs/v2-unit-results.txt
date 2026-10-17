@@ -1,0 +1,40 @@
+
+> mapa-vintage-revision@1.0.0 test
+> node tests/core.test.js
+
+✔ CSV conserva comas, comillas, BOM, CRLF y párrafos (2.509186ms)
+✔ CSV rechaza texto entrecomillado roto y columnas desalineadas (0.665682ms)
+✔ CSV rechaza encabezados duplicados (0.190972ms)
+✔ normalización soporta tildes y espacios (0.28464ms)
+✔ solo prendas concretas; no convierte cuero ni estilos en prendas (3.097794ms)
+✔ Instagram recupera solo arrobas explícitas y URLs seguras (0.301149ms)
+✔ precio ausente no se convierte a $ (0.484985ms)
+✔ excluye showrooms, solo online y cita previa (0.547829ms)
+✔ feria ambigua requiere revisión; local explícito conserva evidencia (0.784436ms)
+✔ feria colectiva con local a la calle explícito puede entrar; otros no (0.689772ms)
+✔ rechaza coordenadas inválidas, en blanco, no CABA y duplicados (0.761952ms)
+✔ coordenadas decimales con coma son compatibles (0.375946ms)
+✔ IDs fallback son estables al reordenar filas (0.632115ms)
+✔ filtros combinan AND entre dimensiones y OR entre prendas (0.202969ms)
+✔ enlaces rechazan javascript, data, credenciales y rutas inseguras (0.540185ms)
+✔ express genera como máximo dos paradas sin repetición (0.565382ms)
+✔ tarde respeta preferencias y distancia; no agrega extremo lejano (0.375542ms)
+✔ cambiar prendas y barrio cambia el resultado, sin ampliar silenciosamente (0.152885ms)
+✔ quitar parada recalcula visitas y caminata (0.081588ms)
+✔ reemplazos excluyen usados y respeta preferencias (0.189363ms)
+✔ URL conserva paradas ordenadas y preferencias; elimina parámetros ajenos (1.201508ms)
+✔ URL invalida repetidas, retiradas y largas sin fabricar reemplazos (0.285915ms)
+✔ Buenos Aires respeta el cambio de fecha frente a UTC (23.970302ms)
+✔ fechas inexistentes son inválidas (0.465766ms)
+✔ agenda oculta vencidos y respeta intervalo inclusivo (0.801678ms)
+✔ recurrencias semanales y mensuales requieren reglas válidas (27.292337ms)
+✔ contrato: origen y evento se agregan dentro de descripcion (0.657765ms)
+✔ los 13 cuidados y las cinco definiciones coinciden íntegros con el megaprompt (0.953466ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82.02748

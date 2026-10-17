@@ -69,3 +69,9 @@ No uses la planilla de producción para pruebas. Si necesitás probar el guardad
 - `js/config.js`: URLs, nombres de columnas, tamaño de página y cálculo de caminata. Cambiar `visitMinutes` cambia todas las estimaciones.
 
 Después de editar, probá la página en computadora y celular y revisá consola, filtros y enlaces. La entrega es para revisar; todavía no se publicó.
+
+## Demostración de composiciones
+
+`demostracion.html` permite revisar afiches, collage y papeles antes de cargar contenido real. Está separada de `index.html`, con etiquetas neutras y envíos desactivados. Los ejemplos viven en `js/demo.js` y no se copian a Sheets. No actives ejemplos dentro de la página normal ni los marques como publicaciones reales. Al editar el HTML principal, ejecutá `node scripts/build-demo.mjs` para sincronizar la estructura de la demostración.
+
+El logo se configura una sola vez en `CONFIG.logo`: el recurso se usa tanto en encabezado como en footer. Para recursos de cuidados ya comprobados, agregá la ruta con el nombre exacto de la entrada dentro de `CONFIG.careImages`. No asignes materiales o tipos de prendas por parecido visual.
