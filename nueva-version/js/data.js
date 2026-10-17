@@ -72,7 +72,7 @@ export function normalizeStores(rows) {
     const prendas = [...new Set(rawTags.map(t => GARMENTS[fold(t)]).filter(Boolean))];
     const precio = get(row, 'precio').replace(/\s/g, '');
     stores.push({ id, nombre, direccion, barrio: get(row, 'barrio') || 'Barrio sin informar', lat, lng, tipo,
-      precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', prendas, especialidades: rawTags,
+      precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', prendas, especialidades: rawTags, categoria: get(row, 'especialidad'),
       horarios: get(row, 'horarios'), web: socialURL(get(row, 'web')), descripcion: get(row, 'descripcion') });
   }
   return { stores, review };
@@ -81,7 +81,7 @@ export function matches(store, filters) {
   return (!filters.query || fold(store.nombre).includes(fold(filters.query))) &&
     (!filters.barrio || fold(store.barrio) === fold(filters.barrio)) &&
     (!filters.precio || store.precio === filters.precio) &&
-    (!filters.prendas?.length || filters.prendas.some(p => store.prendas.includes(p)));
+    (!filters.prendas?.length || filters.prendas.some(p => store.prendas.includes(p) || (store.categoria && fold(store.categoria) === fold(p))));
 }
 export async function fetchRows(url) {
   if (!url) return { connected: false, rows: [] };

@@ -111,7 +111,7 @@ async function loadStores() {
     const { rows } = await fetchRows(CONFIG.sources.locales); const { stores, review } = normalizeStores(rows); state.stores = stores; state.loaded = true;
     const barrios = [...new Set(stores.map(s => s.barrio))].sort((a, b) => a.localeCompare(b, 'es'));
     const prendas = [...new Set(stores.flatMap(s => s.prendas))].sort((a, b) => a.localeCompare(b, 'es'));
-    setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios); setOptions('#filter-prenda', prendas); setOptions('#route-prenda', prendas);
+    setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios); setOptions('#filter-prenda', ['Sastrería & Archivo', 'Denim & Streetwear 90s', 'Sin género / Oversized', 'Carteras, Calzado & Accesorios', 'Cuero & Tapados']); setOptions('#route-prenda', prendas);
     setOptions('#filter-precio', ['$', '$$', '$$$'].filter(p => stores.some(s => s.precio === p)), priceLabels);
     $('#data-quality').textContent = `${stores.length} locales en el directorio. ${review.length} registros reservados para revisión editorial: ferias, showrooms o datos que necesitan confirmarse. Las categorías generales de la fuente no se convierten automáticamente en prendas.`;
     $('#route-submit').disabled = !stores.length;
