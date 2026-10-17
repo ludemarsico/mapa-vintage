@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { fetchRows, normalizeStores, matches } from './data.js';
-import { generateRoute, alternatives, totals, encodeRoute, restoreRoute, googleRoute } from './routes.js';
+import { generateRoute, alternatives, encodeRoute, restoreRoute, googleRoute } from './routes.js';
 import { $, el, link } from './dom.js';
 import { createMap } from './map.js';
 import { initCare, initGlossary, initEditorial } from './editorial.js';
@@ -130,16 +130,15 @@ $('#route-form').addEventListener('submit', e => {
 });
 function updateRouteURL(replace = true) { const url = encodeRoute(location.href, state.prefs, state.stops); history[replace ? 'replaceState' : 'pushState']({ route: true }, '', url); }
 function renderRoute(extra = '') {
-  $('#route-placeholder').hidden = true; $('#route-result').hidden = false; const stops = state.stops, t = totals(stops);
+  $('#route-placeholder').hidden = true; $('#route-result').hidden = false; const stops = state.stops;
   const minimum = state.prefs.mode === 'full' ? 3 : 2;
   $('#route-status').textContent = [extra, stops.length < minimum ? 'Con estas preferencias no pudimos armar un recorrido completo. Podés ampliar la búsqueda o visitar los locales que sí encontramos.' : ''].filter(Boolean).join(' ');
-  $('#route-total').textContent = stops.length ? `${stops.length} paradas · ≈ ${t.km.toFixed(1).replace('.', ',')} km · ${t.walk} min caminando + ${t.visits} min de visitas · ≈ ${t.minutes} min en total` : 'Sin paradas con estas preferencias.';
   const root = $('#route-stops'); root.replaceChildren();
   stops.forEach((s, i) => {
     const li = el('li'); li.append(el('h4', {}, s.nombre), el('p', {}, `${s.direccion} · ${s.barrio}`));
     const actions = el('div', { class: 'actions' });
     const remove = el('button', { type: 'button', 'aria-label': 'Sacar del recorrido: ' + s.nombre }, 'Sacar del recorrido');
-    remove.onclick = () => { state.stops.splice(i, 1); renderRoute(); updateRouteURL(); $('#route-result').querySelector('h3').setAttribute('tabindex', '-1'); $('#route-result').querySelector('h3').focus({ preventScroll: true }); };
+    remove.onclick = () => { state.stops.splice(i, 1); renderRoute(); updateRouteURL(); $('#route-stops').focus({ preventScroll: true }); };
     const options = alternatives(state.stores, stops, i, state.prefs);
     if (options.length) {
       const replace = el('button', { type: 'button', 'aria-label': 'Cambiar este local: ' + s.nombre }, 'Cambiar este local');
