@@ -14,7 +14,7 @@ toggle.onclick = () => { const open = toggle.getAttribute('aria-expanded') !== '
 nav.addEventListener('click', e => { if (e.target.closest('a')) closeMenu(); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (nav.classList.contains('open')) { closeMenu(true); e.preventDefault(); } }
-  if (e.key === 'Tab' && nav.classList.contains('open') && matchMedia('(max-width:900px)').matches) {
+  if (e.key === 'Tab' && nav.classList.contains('open')) {
     const focusables = [toggle, ...nav.querySelectorAll('a,summary')].filter(n => n.getClientRects().length);
     const first = focusables[0], last = focusables.at(-1);
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }

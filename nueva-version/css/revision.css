@@ -16,3 +16,15 @@
 @media(prefers-reduced-motion:reduce){.fan-leaf,.note-paper,.contact-paper,.contact-reveal{animation:none!important;transition:none!important}.contact-paper{transform:none}.notes.stack .note-paper[data-active=true]{transform:none}.fan-leaf{transform:rotate(var(--leaf-angle))}}
 .contact-paper.in-view:not([open]){transform:perspective(800px) rotateX(12deg) rotate(-1deg)}
 @media(prefers-reduced-motion:reduce){.contact-paper.in-view:not([open]){transform:none}}
+
+/* El menú de escritorio usa el mismo acceso hamburguesa que el móvil. */
+@media(min-width:901px){
+  .menu-toggle{display:flex;flex-direction:column;justify-content:center;gap:6px;width:46px;height:44px;padding:10px;border:1px solid var(--ink);z-index:3}
+  .menu-toggle span{height:1px;width:24px;background:var(--ink);transition:transform .15s}
+  .menu-toggle[aria-expanded=true] span:first-child{transform:translateY(3.5px) rotate(45deg)}
+  .menu-toggle[aria-expanded=true] span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
+  .header nav{display:none;position:absolute;top:100%;left:0;right:0;padding:18px 48px 24px;border-bottom:1px solid var(--ink);background:var(--bone);max-height:calc(100dvh - 72px);overflow:auto;font-size:17px;align-items:stretch;gap:0}
+  .header nav.open{display:flex;flex-direction:column}
+  .header nav>a{padding:12px 0;border-bottom:1px solid var(--line)}
+  .header nav .nav-cta{padding:12px;margin-top:18px;border:1px solid var(--ink);text-align:center}
+}
