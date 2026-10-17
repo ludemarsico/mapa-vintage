@@ -136,14 +136,13 @@ function renderRoute(extra = '') {
   $('#route-total').textContent = stops.length ? `${stops.length} paradas · ≈ ${t.km.toFixed(1).replace('.', ',')} km · ${t.walk} min caminando + ${t.visits} min de visitas · ≈ ${t.minutes} min en total` : 'Sin paradas con estas preferencias.';
   const root = $('#route-stops'); root.replaceChildren();
   stops.forEach((s, i) => {
-    const li = el('li'); li.append(el('h4', {}, s.nombre), el('p', {}, `${s.barrio} · ${s.direccion}`), el('p', { class: 'small' }, state.prefs.prenda ? `Coincide con ${state.prefs.prenda}.` : 'Selección para explorar locales cercanos.'));
-    if (i) { const leg = totals([stops[i - 1], s]); li.append(el('p', { class: 'small' }, `≈ ${leg.walk} min a pie desde la parada anterior.`)); }
+    const li = el('li'); li.append(el('h4', {}, s.nombre), el('p', {}, `${s.direccion} · ${s.barrio}`));
     const actions = el('div', { class: 'actions' });
-    const remove = el('button', { type: 'button', 'aria-label': 'Quitar parada: ' + s.nombre }, 'Quitar parada');
+    const remove = el('button', { type: 'button', 'aria-label': 'Sacar del recorrido: ' + s.nombre }, 'Sacar del recorrido');
     remove.onclick = () => { state.stops.splice(i, 1); renderRoute(); updateRouteURL(); $('#route-result').querySelector('h3').setAttribute('tabindex', '-1'); $('#route-result').querySelector('h3').focus({ preventScroll: true }); };
     const options = alternatives(state.stores, stops, i, state.prefs);
     if (options.length) {
-      const replace = el('button', { type: 'button', 'aria-label': 'Cambiar esta parada: ' + s.nombre }, 'Cambiar esta parada');
+      const replace = el('button', { type: 'button', 'aria-label': 'Cambiar este local: ' + s.nombre }, 'Cambiar este local');
       replace.onclick = () => { state.stops[i] = options[0]; renderRoute(); updateRouteURL(); $('#route-stops').children[i]?.querySelector('button')?.focus({ preventScroll: true }); }; actions.append(replace);
     }
     actions.append(remove); li.append(actions); root.append(li);
