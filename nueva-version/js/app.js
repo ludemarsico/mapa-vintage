@@ -113,7 +113,6 @@ async function loadStores() {
     const prendas = [...new Set(stores.flatMap(s => s.prendas))].sort((a, b) => a.localeCompare(b, 'es'));
     setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios); setOptions('#filter-prenda', ['Sastrería & Archivo', 'Denim & Streetwear 90s', 'Sin género / Oversized', 'Carteras, Calzado & Accesorios', 'Cuero & Tapados']); setOptions('#route-prenda', prendas);
     setOptions('#filter-precio', ['$', '$$', '$$$'].filter(p => stores.some(s => s.precio === p)), priceLabels);
-    $('#data-quality').textContent = `${stores.length} locales en el directorio. ${review.length} registros reservados para revisión editorial: ferias, showrooms o datos que necesitan confirmarse. Las categorías generales de la fuente no se convierten automáticamente en prendas.`;
     $('#route-submit').disabled = !stores.length;
     applyFilters();
     if (!stores.length) { $('#store-list').replaceChildren(el('p', { class: 'empty' }, 'No hay locales con datos suficientes para publicar en el directorio. Las fichas necesitan revisión editorial.')); $('#results-count').textContent = 'Sin locales publicables por ahora.'; }
