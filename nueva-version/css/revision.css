@@ -70,3 +70,17 @@ body {
 
 /* El clip original sujeta la esquina del papel para armar el recorrido. */
 .route-paper::before{content:"";position:absolute;width:80px;height:24px;right:-3px;left:auto;top:-5px;border:0;border-radius:0;background:url("../assets/stickers/emoji_clip.png") center/contain no-repeat;transform:rotate(103deg);pointer-events:none}
+
+/* Recortes estáticos de collage: sujetos a fotos, telas y papel, sin bloquear controles. */
+.hallazgo-photo-field .photo-stage::before{content:"";position:absolute;z-index:1;top:-18px;right:12px;width:98px;height:72px;background:url("../assets/stickers/emoji_digicam.png") center/contain no-repeat;transform:rotate(10deg);pointer-events:none}
+.care-section .swatch-fan .swatch-ring{width:70px;height:40px;top:104px;left:calc(50% - 35px);border:0;border-radius:0;background:url("../assets/stickers/emoji_alfilerdegancho.png") center/contain no-repeat;box-shadow:none;transform:rotate(-12deg);pointer-events:none}
+.project-photo{position:relative}
+.project-photo::after{content:"";position:absolute;top:-18px;right:-12px;width:68px;height:68px;background:url("../assets/stickers/emoji_stars.png") center/contain no-repeat;transform:rotate(12deg);pointer-events:none}
+.contact-paper.contact-static{position:relative}
+.contact-paper.contact-static::after{content:"";position:absolute;top:-24px;right:18px;width:76px;height:84px;background:url("../assets/stickers/emoji_flor1.png") center/contain no-repeat;transform:rotate(14deg);pointer-events:none}
+@media(max-width:640px){
+  .hallazgo-photo-field .photo-stage::before{top:-16px;right:8px;width:78px;height:58px}
+  .care-section .swatch-fan .swatch-ring{top:84px;left:calc(50% - 50px)}
+  .project-photo::after{top:-14px;right:-8px;width:52px;height:52px}
+  .contact-paper.contact-static::after{top:-22px;right:10px;width:52px;height:58px}
+}
