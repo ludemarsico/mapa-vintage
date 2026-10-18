@@ -28,3 +28,9 @@
   .header nav>a{padding:12px 0;border-bottom:1px solid var(--line)}
   .header nav .nav-cta{padding:12px;margin-top:18px;border:1px solid var(--ink);text-align:center}
 }
+
+/* Logo original centrado; el encuadre omite sólo su margen transparente. */
+.header-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:132px;height:64px;overflow:hidden}
+.header-logo img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:240px;max-width:none;height:135px}
+
+@media(max-width:900px){.header-logo{width:108px;height:52px}.header-logo img{width:192px;height:108px}}
