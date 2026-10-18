@@ -68,7 +68,5 @@ body {
 #glossary-tab-3,.filing-cabinet .folder-panel[data-color="3"]{background-image:url("../assets/papeles/papel_4.jpg")}
 #glossary-tab-4,.filing-cabinet .folder-panel[data-color="4"]{background-image:url("../assets/papeles/papel_5.jpg")}
 
-/* Prueba de un único recorte decorativo en la ficha del Glosario. */
-.filing-cabinet .folder-panel{position:relative}
-.filing-cabinet .folder-panel::after{content:"";position:absolute;top:18px;right:14px;width:104px;height:31px;background:url("../assets/stickers/emoji_clip.png") center/contain no-repeat;transform:rotate(-20deg);pointer-events:none}
-@media(max-width:640px){.filing-cabinet .folder-panel::after{top:16px;right:10px;width:76px;height:24px}}
+/* El clip original sujeta la esquina del papel para armar el recorrido. */
+.route-paper::before{content:"";position:absolute;width:80px;height:24px;right:-3px;left:auto;top:-5px;border:0;border-radius:0;background:url("../assets/stickers/emoji_clip.png") center/contain no-repeat;transform:rotate(103deg);pointer-events:none}
