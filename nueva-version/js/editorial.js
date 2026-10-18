@@ -33,27 +33,70 @@ export function initCare() {
   fan.querySelector('.swatch-ring').setAttribute('aria-hidden', 'true');
   const colors = ['#DCCBA4','#ECC8BE','#C9D2B7','#EBDDAA','#D5C8AF','#A3B4C0','#E9E4D7','#D9C9D2'];
   const initGroup = (items, readingSelector, materials) => {
-    let index = 0;
+    let index = 0, turning = false;
     const reading = $(readingSelector), buttons = [];
-    const animate = () => { if (materials) { fan.classList.remove('flutter'); void fan.offsetWidth; fan.classList.add('flutter'); } };
+    const restingAngles = [-48, -32, -16, 0, 16, 32, 48, 58];
+    const focusControl = target => {
+      if (target === 'fan') buttons[index].focus({ preventScroll: true });
+      else if (target) reading.querySelector(target === 'next' ? '[aria-label="Cuidado siguiente"]' : '[aria-label="Cuidado anterior"]').focus({ preventScroll: true });
+    };
     const render = () => {
       buttons.forEach((button, i) => {
         const active = i === index; button.setAttribute('aria-pressed', String(active));
         if (materials) {
           button.tabIndex = active ? 0 : -1;
-          button.style.setProperty('--leaf-order', active ? '20' : String(i));
-          button.style.setProperty('--leaf-angle', active ? '-4deg' : (-56 + i * 16) + 'deg');
+          const depth = (i - index + items.length) % items.length;
+          button.style.setProperty('--leaf-order', active ? '20' : String(items.length - depth));
+          button.style.setProperty('--leaf-angle', active ? '-4deg' : restingAngles[i] + 'deg');
+          button.disabled = !active;
+          button.setAttribute('aria-hidden', String(!active));
+          button.setAttribute('aria-label', itemLabel(i));
         }
       });
       const item = items[index]; reading.replaceChildren(el('h4', {}, item.titulo), el('p', { class: 'care-full' }, item.texto));
       const controls = el('div', { class: 'care-controls' });
       const prev = el('button', { type: 'button', 'aria-label': 'Cuidado anterior' }, '← Anterior');
       const next = el('button', { type: 'button', 'aria-label': 'Cuidado siguiente' }, 'Siguiente →');
-      const change = delta => { index = (index + delta + items.length) % items.length; render(); animate(); reading.querySelector(delta > 0 ? '[aria-label="Cuidado siguiente"]' : '[aria-label="Cuidado anterior"]').focus({ preventScroll: true }); };
+      const change = delta => select(index + delta, delta, delta > 0 ? 'next' : 'prev');
       prev.onclick = () => change(-1); next.onclick = () => change(1);
+      prev.disabled = next.disabled = turning;
       controls.append(prev, el('span', {}, `${index + 1} / ${items.length}`), next); reading.append(controls);
     };
-    const select = i => { index = i; render(); animate(); };
+    const itemLabel = i => `${items[i].titulo}. Siguiente tela: ${items[(i + 1) % items.length].titulo}`;
+    const rotate = async (button, from, to, duration) => {
+      const motion = button.animate([{ transform: `rotate(${from}deg)` }, { transform: `rotate(${to}deg)` }], { duration, easing: 'cubic-bezier(.35,0,.2,1)', fill: 'forwards' });
+      try { await motion.finished; } finally { motion.cancel(); }
+    };
+    const select = async (i, direction = 1, focus = '') => {
+      if (turning) return;
+      const nextIndex = (i + items.length) % items.length;
+      if (nextIndex === index) return;
+      const sequential = nextIndex === (index + direction + items.length) % items.length;
+      if (!materials || !sequential || matchMedia('(prefers-reduced-motion: reduce)').matches || !buttons[index].animate) {
+        index = nextIndex; render(); focusControl(focus); return;
+      }
+      turning = true; fan.setAttribute('aria-busy', 'true');
+      reading.querySelectorAll('.care-controls button').forEach(button => { button.disabled = true; });
+      const outgoing = index, moving = buttons[direction > 0 ? index : nextIndex];
+      moving.dataset.turning = 'true';
+      moving.style.setProperty('--turn-order', direction > 0 ? '40' : '0');
+      let committed = false;
+      const commit = () => { index = nextIndex; committed = true; render(); focusControl(focus); };
+      try {
+        await rotate(moving, direction > 0 ? -4 : restingAngles[nextIndex], -108, 280);
+        moving.style.setProperty('--turn-order', direction > 0 ? '0' : '40');
+        commit();
+        await rotate(moving, -108, direction > 0 ? restingAngles[outgoing] : -4, 240);
+      } catch {
+        // Una interrupción del navegador conserva la selección y los controles.
+        if (!committed) commit();
+      } finally {
+        delete moving.dataset.turning; moving.style.removeProperty('--turn-order');
+        turning = false; fan.setAttribute('aria-busy', 'false');
+        reading.querySelectorAll('.care-controls button').forEach(button => { button.disabled = false; });
+        focusControl(focus);
+      }
+    };
     items.forEach((item, i) => {
       const button = el('button', { type: 'button', class: materials ? 'fan-leaf' : 'garment-button', 'aria-label': materials ? 'Mostrar cuidado de ' + item.titulo : item.titulo, title: item.titulo, 'aria-controls': reading.id });
       button.append(el('span', { class: materials ? 'leaf-label' : 'garment-label' }, item.titulo));
@@ -69,10 +112,10 @@ export function initCare() {
         const path = CONFIG.careImages?.[item.titulo], image = path ? picture(path, 'Recurso ilustrativo para ' + item.titulo) : null;
         if (image) { button.append(image); button.classList.add('has-art'); }
       }
-      button.onclick = () => select(i);
+      button.onclick = () => materials ? select(index + 1, 1, 'fan') : select(i);
       if (materials) button.onkeydown = e => {
         const moves = { ArrowRight: (i + 1) % items.length, ArrowLeft: (i - 1 + items.length) % items.length, Home: 0, End: items.length - 1 };
-        if (e.key in moves) { e.preventDefault(); select(moves[e.key]); buttons[index].focus({ preventScroll: true }); }
+        if (e.key in moves) { e.preventDefault(); select(moves[e.key], e.key === 'ArrowLeft' || e.key === 'Home' ? -1 : 1, 'fan'); }
       };
       buttons.push(button); (materials ? fan : $('#garment-buttons')).append(button);
     }); render();
