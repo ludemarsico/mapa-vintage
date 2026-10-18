@@ -1,0 +1,34 @@
+/* Syne para títulos y frases protagonistas; Jost para lectura y controles. */
+:root{--display:Syne,'Trebuchet MS',sans-serif;--serif:var(--display)}
+h1,h2,h3,h4{font-family:var(--display);font-weight:700;font-style:normal;font-synthesis:none;line-height:1.12;letter-spacing:-.035em}
+:is(h1,h2,h3,h4) em{font:inherit;white-space:normal}
+.intro h1{font-size:clamp(28px,2.7vw,40px);line-height:1.08}
+.intro h1 em{white-space:normal}
+:is(.route-section,.care-section,.contributions-section)>.section-heading h2,
+.project-intro h2{font-size:clamp(36px,4vw,56px);line-height:1.08}
+.glossary-section h2{font-size:clamp(34px,3.7vw,46px)}
+.hallazgo-invitation h3{font-size:clamp(32px,3.5vw,46px);line-height:1.08}
+.community-section.is-empty h2{font-size:clamp(32px,3.5vw,44px)}
+.agenda-section h2{font-size:clamp(34px,3.7vw,46px)}
+.agenda-section.is-empty h2{font-size:clamp(30px,3.2vw,40px)}
+.store-card h3{font-size:23px;line-height:1.2}
+.leaflet-popup-content h3{font-size:21px;line-height:1.2}
+.route-output li h4{font-size:24px;font-weight:700;line-height:1.2}
+.folder-panel h3{font-size:clamp(28px,3vw,36px)}
+.care-reading h4{font-family:var(--display);font-size:clamp(26px,3vw,36px);font-weight:700;line-height:1.15}
+.notes-section h3,.notes-section.is-empty h3{font-size:clamp(28px,3vw,36px)}
+.notes.stack .note-paper h4,.note-paper h4{font-size:clamp(25px,2.8vw,34px);font-weight:700;line-height:1.2}
+.agenda-poster h3{font-size:clamp(28px,3vw,36px)}
+.route-placeholder p{font-weight:700;font-size:clamp(26px,2.5vw,34px);line-height:1.18}
+.route-placeholder p em{font:inherit}
+.wall-empty p{font-weight:700;font-size:clamp(22px,2.4vw,32px);line-height:1.2}
+.entry>span:first-child{font-weight:700;font-size:clamp(27px,3vw,38px);line-height:1.12}
+.contact-static a{font-weight:700;font-size:clamp(32px,6vw,70px);line-height:1.12;letter-spacing:-.035em}
+.photo-stage>#hallazgo-photo-prompt{font:500 23px/1.3 var(--sans)}
+.category-label{font-family:var(--sans);font-weight:600}
+.garment-button{font-family:var(--sans);font-weight:600;font-size:21px;line-height:1.25}
+.project-about summary,.care-fallback-item summary,.folder summary{font-family:var(--sans);font-weight:500;font-size:21px;line-height:1.35}
+.button,button.button,.folder-tab,.text-link{font-weight:500}
+@media(max-width:640px){
+  .dialog-heading h2{font-size:30px;line-height:1.15}
+}
