@@ -9,12 +9,13 @@ export function createMap(onSelect) {
   }
   $('#map').replaceChildren();
   const map = L.map('map', { scrollWheelZoom: false, dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: true }).setView([-34.6037, -58.415], 12);
+  map.attributionControl.setPrefix(false);
   const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
   let errors = 0; tiles.on('tileerror', () => { if (++errors >= 3) error.textContent = 'El fondo cartográfico no pudo cargarse por completo. La lista sigue disponible.'; });
   const layer = L.layerGroup().addTo(map), markers = new Map();
   let visible = [];
   const icon = selected => L.divIcon({ className: '', html: '<div class="map-marker' + (selected ? ' selected' : '') + '"></div>', iconSize: [28, 34], iconAnchor: [14, 28] });
-  const fit = () => { if (visible.length) map.fitBounds(visible.map(s => [s.lat, s.lng]), { padding: [35, 35], maxZoom: 14 }); };
+  const fit = () => { map.invalidateSize(false); if (visible.length) map.fitBounds(visible.map(s => [s.lat, s.lng]), { padding: [35, 35], maxZoom: 14 }); };
   const api = {
     update(stores, selected) {
       visible = stores; layer.clearLayers(); markers.clear();

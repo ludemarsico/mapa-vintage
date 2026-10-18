@@ -34,3 +34,12 @@
 .header-logo img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:240px;max-width:none;height:135px}
 
 @media(max-width:900px){.header-logo{width:108px;height:52px}.header-logo img{width:192px;height:108px}}
+
+/* Más superficie de mapa y controles compactos debajo. */
+.map-column{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto auto;align-items:center}
+.map-column #map{grid-column:1/-1;align-self:stretch;height:100%;min-height:clamp(440px,57vh,620px)}
+.map-column .map-controls{padding:8px;align-items:center;flex-wrap:wrap}
+.map-column .map-help{margin:0;max-width:none;padding:8px 12px 8px 0}
+.map-column #map-error{grid-column:1/-1;margin:0;padding:0 12px 8px}
+.map-column #map-error:empty{display:none}
+@media(max-width:640px){.map-column{grid-template-columns:minmax(0,1fr)}.map-column #map{min-height:clamp(355px,53svh,470px)}.map-column .map-help{padding:0 8px 8px}}
