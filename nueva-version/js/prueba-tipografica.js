@@ -5,7 +5,8 @@ const status = document.querySelector('#comparison-status');
 const options = {
   actual: { label: 'Actual · Instrument Serif', font: null },
   fraunces: { label: 'Fraunces', font: '600 48px "Fraunces Preview"' },
-  syne: { label: 'Syne', font: '700 48px "Syne Preview"' }
+  syne: { label: 'Syne', font: '700 48px "Syne Preview"' },
+  'space-grotesk': { label: 'Space Grotesk', font: '700 48px "Space Grotesk Preview"' }
 };
 const params = new URLSearchParams(location.search);
 let selected = Object.hasOwn(options, params.get('fuente')) ? params.get('fuente') : 'fraunces';
