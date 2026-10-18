@@ -43,3 +43,10 @@
 .map-column #map-error{grid-column:1/-1;margin:0;padding:0 12px 8px}
 .map-column #map-error:empty{display:none}
 @media(max-width:640px){.map-column{grid-template-columns:minmax(0,1fr)}.map-column #map{min-height:clamp(355px,53svh,470px)}.map-column .map-help{padding:0 8px 8px}}
+
+/* Fondo calles del manual: capa de fondo, siempre detrás del contenido. */
+body {
+      background-image:
+        repeating-linear-gradient(32deg, transparent 0 46px, rgb(26 26 26 / 0.045) 46px 62px),
+        repeating-linear-gradient(-58deg, transparent 0 90px, rgb(26 26 26 / 0.035) 90px 102px);
+    }
