@@ -123,9 +123,10 @@ export async function initEditorial(openReader) {
       posts.forEach(r => {
         const b = el('button', { type: 'button', class: 'wall-item', 'aria-label': r.demo ? 'Abrir ' + r.nombre_alias : 'Abrir hallazgo de ' + r.nombre_alias });
         if (r.demo) b.append(stamp());
-        b.append(picture(r.imagen, r.alt || 'Hallazgo compartido por ' + r.nombre_alias), el('span', {}, r.texto), el('strong', {}, r.nombre_alias));
+        const img = picture(r.imagen, r.alt || 'Hallazgo compartido por ' + r.nombre_alias); if (img) b.append(img);
+        b.append(el('span', {}, r.texto), el('strong', {}, r.nombre_alias));
         if (r.demo) b.append(el('small', {}, 'Recurso del manual; no es una publicación.'));
-        b.onclick = () => openReader(r.nombre_alias, container => { if (r.demo) container.append(stamp()); container.append(picture(r.imagen, r.alt || 'Hallazgo de ' + r.nombre_alias)); paragraphs(r.texto, container); if (safeURL(r.red_url)) container.append(link('Web o red social ↗', r.red_url, 'text-link')); }, b);
+        b.onclick = () => openReader(r.nombre_alias, container => { if (r.demo) container.append(stamp()); const img = picture(r.imagen, r.alt || 'Hallazgo de ' + r.nombre_alias); if (img) container.append(img); paragraphs(r.texto, container); if (safeURL(r.red_url)) container.append(link('Web o red social ↗', r.red_url, 'text-link')); }, b);
         wall.append(b);
       });
     } catch { $('#wall').hidden = true; errorState('#wall-status', () => { $('#wall').hidden = false; loadWall(); }); }

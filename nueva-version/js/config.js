@@ -10,7 +10,7 @@ export const CONFIG = {
   // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
   hallazgos: { endpoint: '', turnstileSiteKey: '' },
   // Recursos existentes y comprobados. Las otras piezas esperan sus archivos originales.
-  careImages: { 'Calzado de cuero': 'assets/cuidados/botas.webp' },
+  careImages: {},
   columns: {
     id: ['ID', 'id'], nombre: ['Nombre'], barrio: ['Barrio'], direccion: ['Dirección', 'Direccion'],
     lat: ['Latitud'], lng: ['Longitud'], tipo: ['Tipología', 'Tipologia'], precio: ['Rango Precio'],
