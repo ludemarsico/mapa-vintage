@@ -1,4 +1,4 @@
-/* Un único punto perforado y una argolla fija; se pasa una muestra por vez. */
+/* Un único punto perforado; se pasa una muestra por vez, sin argolla visible. */
 .swatch-fan{--hinge-y:184px;height:420px;min-height:420px;overflow:visible;margin:0;isolation:isolate}
 .swatch-fan .fan-leaf{top:calc(var(--hinge-y) - 24px);left:calc(50% - 24px);width:130px;height:205px;transform-origin:24px 24px;border:1px solid #7778;transition:transform .24s ease,box-shadow .2s;animation:none}
 .swatch-fan .fan-leaf[aria-pressed=true]{border:1px solid #7778;cursor:pointer;box-shadow:3px 5px 8px #0003}
@@ -6,11 +6,10 @@
 .swatch-fan .fan-leaf::before{box-sizing:border-box;top:18px;left:18px;width:10px;height:10px;border:1px solid #777;background:var(--bone);box-shadow:inset 0 1px 2px #0005;z-index:2}
 .swatch-fan .fan-leaf[data-turning]{z-index:var(--turn-order);transition:none}
 .swatch-fan .fan-leaf:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
-.care-section .swatch-fan .swatch-ring{box-sizing:border-box;position:absolute;left:calc(50% - 18px);top:calc(var(--hinge-y) - 35px);width:36px;height:47px;z-index:50;border:5px solid transparent;border-radius:50%;background:linear-gradient(125deg,#777 0%,#fff 22%,#92989b 43%,#e5e9eb 62%,#676d70 84%,#eee 100%) border-box;mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);mask-composite:exclude;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;box-shadow:none;filter:drop-shadow(1px 2px 1px #0005);transform:rotate(-18deg);pointer-events:none}
+.care-section .swatch-fan .swatch-ring{display:none}
 @media(max-width:640px){
   .swatch-fan{--hinge-y:148px;height:330px;min-height:330px}
   .swatch-fan .fan-leaf{width:104px;height:158px;padding:113px 9px 10px}
-  .care-section .swatch-fan .swatch-ring{left:calc(50% - 16px);top:calc(var(--hinge-y) - 31px);width:32px;height:43px;border-width:4px}
 }
 @media(max-width:360px){.swatch-fan .fan-leaf{width:96px;height:148px;padding-top:103px}}
 @media(prefers-reduced-motion:reduce){.swatch-fan .fan-leaf{transition:none!important;animation:none!important}}
