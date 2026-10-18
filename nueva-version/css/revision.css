@@ -50,3 +50,6 @@ body {
         repeating-linear-gradient(32deg, transparent 0 46px, rgb(26 26 26 / 0.045) 46px 62px),
         repeating-linear-gradient(-58deg, transparent 0 90px, rgb(26 26 26 / 0.035) 90px 102px);
     }
+
+/* Más aire entre el encabezado y el primer título. */
+#mapa-seccion{padding-top:38px}
