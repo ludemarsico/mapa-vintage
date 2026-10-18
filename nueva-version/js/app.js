@@ -41,7 +41,7 @@ function openReader(title, build, opener, share = false) {
 window.addEventListener('popstate', () => { if (!new URL(location.href).searchParams.has('nota') && $('#reader-dialog').open) $('#reader-dialog').close(); });
 if (CONFIG.logo) {
   [['#brand-logo', '#brand-name'], ['#footer-logo', '#footer-name']].forEach(([imageSelector, nameSelector]) => {
-    const logo = $(imageSelector); logo.src = CONFIG.logo; logo.hidden = false; $(nameSelector).hidden = true;
+    const logo = $(imageSelector); if (!logo) return; logo.src = CONFIG.logo; logo.hidden = false; $(nameSelector).hidden = true;
     logo.onerror = () => { logo.hidden = true; $(nameSelector).hidden = nameSelector === '#footer-name'; };
   });
 }
