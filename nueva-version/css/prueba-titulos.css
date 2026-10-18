@@ -1,0 +1,24 @@
+/* Esta hoja se inserta sólo dentro de la vista de comparación. */
+@font-face{font-family:'Fraunces Preview';src:url('../assets/fonts/prueba/fraunces-600.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Syne Preview';src:url('../assets/fonts/prueba/syne-700.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+html[data-font-preview=fraunces]{--preview-title-font:'Fraunces Preview',Georgia,serif;--preview-title-weight:600}
+html[data-font-preview=syne]{--preview-title-font:'Syne Preview',Arial,sans-serif;--preview-title-weight:700}
+html[data-font-preview]:is([data-font-preview=fraunces],[data-font-preview=syne]) :is(.intro h1,.section-heading h2,.hallazgo-invitation h3,.project-intro h2,.notes-section>div:first-child>h3){font-family:var(--preview-title-font);font-weight:var(--preview-title-weight);font-style:normal;font-synthesis:none;letter-spacing:-.035em;line-height:1.08;overflow-wrap:normal}
+html[data-font-preview]:is([data-font-preview=fraunces],[data-font-preview=syne]) :is(.intro h1,.section-heading h2,.hallazgo-invitation h3,.project-intro h2) em{font:inherit;white-space:normal}
+/* Se conserva la escala de la página, con una medida propia para cada dibujo. */
+html[data-font-preview=fraunces] .intro h1{font-size:clamp(29px,2.8vw,42px)}
+html[data-font-preview=syne] .intro h1{font-size:clamp(28px,2.7vw,40px)}
+html[data-font-preview=fraunces] :is(.route-section,.care-section,.contributions-section)>.section-heading h2,
+html[data-font-preview=fraunces] .project-intro h2{font-size:clamp(38px,4.3vw,60px)}
+html[data-font-preview=syne] :is(.route-section,.care-section,.contributions-section)>.section-heading h2,
+html[data-font-preview=syne] .project-intro h2{font-size:clamp(36px,4vw,56px)}
+html[data-font-preview=fraunces] .glossary-section h2{font-size:clamp(36px,4vw,52px)}
+html[data-font-preview=syne] .glossary-section h2{font-size:clamp(34px,3.7vw,46px)}
+html[data-font-preview=fraunces] .hallazgo-invitation h3{font-size:clamp(34px,3.8vw,50px)}
+html[data-font-preview=syne] .hallazgo-invitation h3{font-size:clamp(32px,3.5vw,46px)}
+html[data-font-preview=fraunces] .community-section.is-empty h2{font-size:clamp(34px,3.7vw,46px)}
+html[data-font-preview=syne] .community-section.is-empty h2{font-size:clamp(32px,3.5vw,44px)}
+@media(max-width:640px){
+  html[data-font-preview]:is([data-font-preview=fraunces],[data-font-preview=syne]) .route-section>.section-heading{margin-left:0}
+  html[data-font-preview]:is([data-font-preview=fraunces],[data-font-preview=syne]) .notes-section.is-empty h3{font-size:28px}
+}
