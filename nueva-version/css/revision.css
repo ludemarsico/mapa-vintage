@@ -53,3 +53,9 @@ body {
 
 /* Más aire entre el encabezado y el primer título. */
 #mapa-seccion{padding-top:38px}
+
+/* Texturas reales aportadas para las ocho muestras de materiales. */
+.fan-leaf.has-texture{overflow:hidden}
+.fan-leaf .leaf-texture{position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center;border-radius:inherit;pointer-events:none}
+.fan-leaf.has-texture::before{z-index:2}
+.fan-leaf.has-texture .leaf-label{position:absolute;z-index:1;left:8px;right:8px;bottom:10px;padding:5px 6px;background:rgba(249,248,246,.96);color:var(--ink)}

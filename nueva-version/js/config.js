@@ -11,6 +11,12 @@ export const CONFIG = {
   hallazgos: { endpoint: '', turnstileSiteKey: '' },
   // Recursos existentes y comprobados. Las otras piezas esperan sus archivos originales.
   careImages: {},
+  fabricImages: {
+    'Seda': 'assets/telas/seda.jpg', 'Satén o raso': 'assets/telas/saten.jpg',
+    'Lana': 'assets/telas/lana.jpg', 'Cashmere': 'assets/telas/cashmere.jpg',
+    'Lino': 'assets/telas/lino.jpg', 'Denim / jean': 'assets/telas/denim.jpg',
+    'Algodón': 'assets/telas/algodon.jpg', 'Microtul': 'assets/telas/microtul.jpg'
+  },
   columns: {
     id: ['ID', 'id'], nombre: ['Nombre'], barrio: ['Barrio'], direccion: ['Dirección', 'Direccion'],
     lat: ['Latitud'], lng: ['Longitud'], tipo: ['Tipología', 'Tipologia'], precio: ['Rango Precio'],

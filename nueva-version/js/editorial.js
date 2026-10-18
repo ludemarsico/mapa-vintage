@@ -57,7 +57,14 @@ export function initCare() {
     items.forEach((item, i) => {
       const button = el('button', { type: 'button', class: materials ? 'fan-leaf' : 'garment-button', 'aria-label': materials ? 'Mostrar cuidado de ' + item.titulo : item.titulo, title: item.titulo, 'aria-controls': reading.id });
       button.append(el('span', { class: materials ? 'leaf-label' : 'garment-label' }, item.titulo));
-      if (materials) button.style.setProperty('--leaf-color', colors[i]);
+      if (materials) {
+        button.style.setProperty('--leaf-color', colors[i]);
+        const path = safeImage(CONFIG.fabricImages?.[item.titulo]);
+        if (path) {
+          button.append(el('img', { class: 'leaf-texture', src: path, alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async', draggable: 'false' }));
+          button.classList.add('has-texture');
+        }
+      }
       else {
         const path = CONFIG.careImages?.[item.titulo], image = path ? picture(path, 'Recurso ilustrativo para ' + item.titulo) : null;
         if (image) { button.append(image); button.classList.add('has-art'); }
