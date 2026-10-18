@@ -59,3 +59,11 @@ body {
 .fan-leaf .leaf-texture{position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;object-position:center;border-radius:inherit;pointer-events:none}
 .fan-leaf.has-texture::before{z-index:2}
 .fan-leaf.has-texture .leaf-label{position:absolute;z-index:1;left:8px;right:8px;bottom:10px;padding:5px 6px;background:rgba(249,248,246,.96);color:var(--ink)}
+
+/* Papeles aportados: misma textura para cada pestaña y su ficha. */
+.filing-cabinet .folder-tab,.filing-cabinet .folder-panel{background-size:cover;background-position:center;background-repeat:no-repeat}
+#glossary-tab-0,.filing-cabinet .folder-panel[data-color="0"]{background-image:url("../assets/papel_1.jpg")}
+#glossary-tab-1,.filing-cabinet .folder-panel[data-color="1"]{background-image:url("../assets/papel_2.jpg")}
+#glossary-tab-2,.filing-cabinet .folder-panel[data-color="2"]{background-image:url("../assets/papel_3.jpg")}
+#glossary-tab-3,.filing-cabinet .folder-panel[data-color="3"]{background-image:url("../assets/papel_4.jpg")}
+#glossary-tab-4,.filing-cabinet .folder-panel[data-color="4"]{background-image:url("../assets/papel_5.jpg")}
