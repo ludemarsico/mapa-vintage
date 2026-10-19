@@ -54,6 +54,7 @@ export function initCare() {
         }
       });
       const item = items[index]; reading.replaceChildren(el('h4', {}, item.titulo), el('p', { class: 'care-full' }, item.texto));
+      if (!materials) return;
       const controls = el('div', { class: 'care-controls' });
       const prev = el('button', { type: 'button', 'aria-label': 'Cuidado anterior' }, '← Anterior');
       const next = el('button', { type: 'button', 'aria-label': 'Cuidado siguiente' }, 'Siguiente →');

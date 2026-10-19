@@ -29,5 +29,8 @@ sus nombres de archivo en `assets/cuidados/`. La hoja `css/prendas.css` afecta
 sólo esta subsección: lectura a la izquierda y lámina de recortables a la derecha.
 En pantallas angostas se muestran primero las figuras y después el texto.
 Cada figura mantiene su nombre visible y es un botón de selección; el subrayado
-y el fondo amarillo identifican la activa. Anterior/siguiente, el contador y los
-textos completos siguen usando la lógica de cuidados existente.
+y el fondo amarillo identifican la activa. En esta subsección se elige cada
+prenda desde su figurín, sin anterior/siguiente ni contador debajo del texto.
+Los controles de anterior/siguiente y el contador del muestrario de telas se
+conservan. El recordatorio inferior mantiene su texto y lo acompaña el recorte
+original `assets/stickers/emoji_descubrir.png`.

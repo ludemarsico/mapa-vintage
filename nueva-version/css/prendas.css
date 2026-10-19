@@ -4,7 +4,6 @@
 .garment-layout #garment-reading{grid-column:1;grid-row:1;padding:14px 0 0;min-width:0}
 .garment-layout #garment-reading h4{font-size:clamp(28px,2.65vw,38px);line-height:1.12;max-width:17ch;margin-bottom:24px}
 .garment-layout #garment-reading .care-full{max-width:54ch;font-size:16px;line-height:1.85}
-.garment-layout #garment-reading .care-controls{flex-wrap:wrap;gap:12px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 .garment-layout .garment-buttons{grid-column:2;grid-row:1;display:grid;grid-template-columns:1fr 1.5fr 1fr;grid-template-rows:1fr 1fr;gap:12px 8px;height:clamp(420px,37vw,540px);min-width:0;padding:0 0 0 24px;border-left:1px solid var(--line);counter-reset:garment}
 .garment-layout .garment-button.has-art{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;grid-column:auto;grid-row:auto;min-width:0;min-height:0;margin:0;padding:5px 0;background:transparent;border:0;border-radius:0;box-shadow:none;transform:none;transition:none;counter-increment:garment}
 #garment-buttons .garment-button:nth-child(1){grid-column:1;grid-row:1;--figure-angle:-5deg}
@@ -19,6 +18,8 @@
 .garment-layout .garment-button[aria-pressed=true] .garment-label{font-weight:600;background:var(--butter);border-bottom-color:var(--ink)}
 .garment-layout .garment-button:focus-visible{outline:none}
 .garment-layout .garment-button:focus-visible .garment-label{outline:2px solid var(--ink);outline-offset:4px}
+.care-section>.care-reminder{display:flex;align-items:center;gap:20px}
+.care-section>.care-reminder::before{content:"";display:block;flex:0 0 62px;width:62px;height:84px;background:url("../assets/stickers/emoji_descubrir.png") center/contain no-repeat;transform:rotate(-5deg);pointer-events:none}
 @media(hover:hover){.garment-layout .garment-button:hover .garment-label{text-decoration:underline;text-underline-offset:3px}}
 @media(max-width:900px){
   .garment-layout{grid-template-columns:1fr;gap:25px;padding:24px}
@@ -36,5 +37,6 @@
   #garment-buttons .garment-button:nth-child(2) img{height:245px}
   .garment-layout .garment-button .garment-label{font-size:12px;padding-inline:1px}
   .garment-layout #garment-reading .care-full{font-size:15px}
-  .garment-layout #garment-reading .care-controls{gap:10px}
+  .care-section>.care-reminder{gap:14px}
+  .care-section>.care-reminder::before{flex-basis:50px;width:50px;height:68px}
 }
