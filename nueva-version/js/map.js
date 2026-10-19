@@ -10,30 +10,8 @@ export function createMap(onSelect) {
   $('#map').replaceChildren();
   const map = L.map('map', { scrollWheelZoom: false, dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: true }).setView([-34.6037, -58.415], 12);
   map.attributionControl.setPrefix(false);
-  const mapElement = $('#map');
-  const useToner = new URL(location.href).searchParams.get('mapa') === 'toner';
-  const addOriginalTiles = () => {
-    mapElement.dataset.mapStyle = 'openstreetmap';
-    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' });
-    let errors = 0;
-    tiles.on('tileerror', () => { if (++errors >= 3) error.textContent = 'El fondo cartográfico no pudo cargarse por completo. La lista sigue disponible.'; });
-    tiles.addTo(map);
-  };
-  if (useToner) {
-    // Prueba por enlace: requiere autorizar el dominio en Stadia Maps.
-    // El mapa habitual no cambia al entrar sin ?mapa=toner.
-    const tiles = L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png', {
-      maxZoom: 20,
-      attribution: '© <a href="https://stadiamaps.com/attribution/">Stadia Maps</a> © <a href="https://stamen.com/">Stamen Design</a> © <a href="https://openmaptiles.org/">OpenMapTiles</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
-    mapElement.dataset.mapStyle = 'stamen-toner';
-    tiles.once('tileerror', () => requestAnimationFrame(() => {
-      map.removeLayer(tiles);
-      error.textContent = 'No pudimos cargar Stamen Toner. Mostramos el mapa habitual.';
-      addOriginalTiles();
-    }));
-    tiles.addTo(map);
-  } else addOriginalTiles();
+  const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+  let errors = 0; tiles.on('tileerror', () => { if (++errors >= 3) error.textContent = 'El fondo cartográfico no pudo cargarse por completo. La lista sigue disponible.'; });
   const layer = L.layerGroup().addTo(map), markers = new Map();
   let visible = [];
   const icon = selected => L.divIcon({ className: '', html: '<div class="map-marker' + (selected ? ' selected' : '') + '"></div>', iconSize: [28, 34], iconAnchor: [14, 28] });
