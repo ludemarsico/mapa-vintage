@@ -21,3 +21,13 @@ explican la acción sin agregar instrucciones visibles a la sección.
 
 Los recursos de tela se configuran en `CONFIG.fabricImages`. Los 13 textos
 siguen en `js/content.js` y en el contenido alternativo del HTML.
+
+## Prendas y piezas
+
+Los cinco figurines originales se vinculan en `CONFIG.careImages`, conservando
+sus nombres de archivo en `assets/cuidados/`. La hoja `css/prendas.css` afecta
+sólo esta subsección: lectura a la izquierda y lámina de recortables a la derecha.
+En pantallas angostas se muestran primero las figuras y después el texto.
+Cada figura mantiene su nombre visible y es un botón de selección; el subrayado
+y el fondo amarillo identifican la activa. Anterior/siguiente, el contador y los
+textos completos siguen usando la lógica de cuidados existente.

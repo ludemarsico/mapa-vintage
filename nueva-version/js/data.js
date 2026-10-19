@@ -36,7 +36,7 @@ export function socialURL(value) {
 }
 export function safeImage(value) {
   const s = String(value || '').trim();
-  if (/^assets\/[a-zA-Z0-9_./ -]+\.(?:webp|jpg|jpeg|png|avif)$/i.test(s) && !s.split('/').includes('..')) return s;
+  if (/^assets\/[\p{L}\p{M}\p{N}_./ -]+\.(?:webp|jpg|jpeg|png|avif)$/iu.test(s) && !s.split('/').includes('..')) return s;
   const url = safeURL(s); return url.startsWith('https:') ? url : '';
 }
 const hash = text => { let h = 2166136261; for (const c of text) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };

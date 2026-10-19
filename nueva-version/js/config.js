@@ -9,8 +9,14 @@ export const CONFIG = {
   logo: '',
   // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
   hallazgos: { endpoint: '', turnstileSiteKey: '' },
-  // Recursos existentes y comprobados. Las otras piezas esperan sus archivos originales.
-  careImages: {},
+  // Figurines originales aportados para los cinco tipos de prendas.
+  careImages: {
+    'Prendas plisadas': 'assets/cuidados/Falda dorada plisada para muñeca de papel.png',
+    'Tapados de lana': 'assets/cuidados/Abrigo recortable de cuadros turquesa.png',
+    'Ropa interior': 'assets/cuidados/Recortable vintage de lencería azul.png',
+    'Trajes de baño': 'assets/cuidados/Bikini vintage con pestañas de papel.png',
+    'Calzado de cuero': 'assets/cuidados/Botines verde oliva con pestañas de papel.png'
+  },
   fabricImages: {
     'Seda': 'assets/telas/seda.jpg', 'Satén o raso': 'assets/telas/saten.jpg',
     'Lana': 'assets/telas/lana.jpg', 'Cashmere': 'assets/telas/cashmere.jpg',
