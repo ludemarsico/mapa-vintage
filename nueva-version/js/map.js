@@ -14,7 +14,11 @@ export function createMap(onSelect) {
   let errors = 0; tiles.on('tileerror', () => { if (++errors >= 3) error.textContent = 'El fondo cartográfico no pudo cargarse por completo. La lista sigue disponible.'; });
   const layer = L.layerGroup().addTo(map), markers = new Map();
   let visible = [];
-  const icon = selected => L.divIcon({ className: '', html: '<div class="map-marker' + (selected ? ' selected' : '') + '"></div>', iconSize: [28, 34], iconAnchor: [14, 28] });
+  const icon = selected => L.divIcon({
+    className: 'map-pin',
+    html: '<div class="map-marker' + (selected ? ' selected' : '') + '"><img src="assets/miscelaneas/etiqueta.svg" width="32" height="32" alt="" aria-hidden="true" draggable="false"></div>',
+    iconSize: [44, 44], iconAnchor: [22, 32], popupAnchor: [0, -30]
+  });
   const fit = () => { map.invalidateSize(false); if (visible.length) map.fitBounds(visible.map(s => [s.lat, s.lng]), { padding: [35, 35], maxZoom: 14 }); };
   const api = {
     update(stores, selected) {
