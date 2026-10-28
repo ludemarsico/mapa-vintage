@@ -7,7 +7,7 @@ Este registro actualiza el estado documentado al 18/10 y deja constancia de qué
 ## Dónde continuar
 
 - Repositorio: https://github.com/ludemarsico/mapa-vintage
-- Rama: **`reconstruccion-mapa-vintage`**. Carpeta del sitio: **`nueva-version/`**.
+- Rama de trabajo: **`modificaciones-tommy`**, creada localmente desde `reconstruccion-mapa-vintage` (`d283fc8`). Esa rama base no se modificó. Carpeta del sitio: **`nueva-version/`**.
 - Último commit antes de esta sesión: `d283fc8` (documentación del 18/10). Último cambio funcional previo: `ababeb2`.
 - Se trabajó en un checkout local (`C:\CodigoMaris\mapa-vintage`). En esta sesión no se hizo push, merge, publicación en Netlify ni actualización de la revisión privada de Sites.
 
@@ -70,7 +70,7 @@ Los 15 MB de `assets/stickers/` en el repositorio no se descargan en una visita:
 
 ## Segunda parte: lineamientos del 27/10
 
-Se recibieron los lineamientos generales (`LineamientosMapaVintage.pdf`) y se aplicaron en la misma rama, en commits locales. **No se hizo push, merge ni publicación.**
+Se recibieron los lineamientos generales (`LineamientosMapaVintage.pdf`) y se aplicaron en `modificaciones-tommy`, en commits locales. **No se hizo push, merge ni publicación.**
 
 ### Decisiones consultadas
 
