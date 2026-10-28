@@ -7,25 +7,28 @@ export function serializeProposal({ source, type, event, text }) {
 }
 export function initForms(openDialog) {
   const form = $('#contribution-form'), dialog = $('#contribution-dialog'), submit = $('#proposal-submit'), status = $('#form-status'), iframe = $('#proposal-response');
-  let source = 'propio', pending = false, timer = null;
+  let source = 'propio', pending = false, timer = null, presetEvent = false;
   form.action = DEMO ? 'about:blank' : CONFIG.formEndpoint;
   if (DEMO) { submit.disabled = true; status.textContent = 'Contenido de demostración. Los envíos están desactivados.'; }
   form.elements.instagram.addEventListener('input', () => form.elements.instagram.setCustomValidity(''));
   const uncertain = () => {
     if (!pending) return;
     clearTimeout(timer); pending = false; submit.disabled = false; submit.textContent = 'Intentar de nuevo';
-    status.textContent = 'No pudimos confirmar la recepción. Si querés comprobar si llegó, escribinos a mapavintage.ba@gmail.com. Tus datos siguen acá. Revisá antes de reenviar para evitar duplicados.';
+    status.textContent = 'No pudimos confirmar la recepción. Si querés comprobar si llegó, escribinos a ' + CONFIG.email + '. Tus datos siguen acá. Revisá antes de reenviar para evitar duplicados.';
     dialog.querySelector('.dialog-close').disabled = false;
   };
   document.querySelectorAll('[data-contribute]').forEach(button => button.addEventListener('click', () => {
     if (pending) { openDialog(dialog, button); return; }
     source = button.dataset.contribute;
     $('#form-title').textContent = source === 'evento' ? 'Proponé una feria o evento.' : source === 'propio' ? 'Tengo un local, feria o evento.' : 'Conozco un lugar.';
-    if (source === 'evento') { form.elements.tipologia.value = 'Feria colectiva'; $('#event-label').hidden = false; }
+    if (source === 'evento') { form.elements.tipologia.value = 'Feria colectiva'; $('#event-label').hidden = false; presetEvent = true; }
+    // Si la tipología vino precargada desde Agenda, no se arrastra a las otras entradas.
+    else if (presetEvent) { form.elements.tipologia.value = ''; $('#event-label').hidden = true; $('#event-info').value = ''; presetEvent = false; }
     submit.textContent = DEMO ? 'Envíos desactivados en demostración' : source === 'evento' ? 'Proponer feria o evento' : source === 'propio' ? 'Enviar propuesta' : 'Recomendar un lugar';
     openDialog(dialog, button);
   }));
   form.elements.tipologia.addEventListener('change', () => {
+    presetEvent = false;
     const event = ['Feria colectiva', 'Feria americana'].includes(form.elements.tipologia.value);
     $('#event-label').hidden = !event;
     if (!event) $('#event-info').value = '';

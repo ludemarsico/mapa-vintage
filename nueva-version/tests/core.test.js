@@ -37,7 +37,7 @@ test('agenda oculta vencidos y respeta intervalo inclusivo', () => { assert.equa
 test('recurrencias semanales y mensuales requieren reglas válidas', () => { assert.equal(nextEventDate({ fecha_inicio: '2026-10-01', recurrencia: 'semanal:7' }, '2026-10-17'), '2026-10-18'); assert.equal(nextEventDate({ fecha_inicio: '2026-10-01', recurrencia: 'mensual:20' }, '2026-10-17'), '2026-10-20'); assert.equal(nextEventDate({ fecha_inicio: '2026-10-01', recurrencia: 'cada tanto' }, '2026-10-17'), ''); });
 test('contrato: origen y evento se agregan dentro de descripcion', () => { const text = serializeProposal({ source: 'recomendado', type: 'Feria colectiva', event: 'fecha de prueba', text: 'Descripción original' }); assert.match(text, /Recomendación de visitante/); assert.match(text, /Agenda/); assert.ok(text.endsWith('Descripción original')); });
 test('los 13 cuidados y las cinco definiciones coinciden íntegros con el megaprompt', () => {
-  const doc = readFileSync(new URL('../assets/originales/Mapa-Vintage-megaprompt-Codex.md', import.meta.url), 'utf8');
+  const doc = readFileSync(new URL('../assets/originales/Mapa-Vintage-megaprompt-Codex.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   assert.equal(CARE.length, 13); assert.equal(GLOSSARY.length, 5);
   [...CARE, ...GLOSSARY].forEach(item => assert.ok(doc.includes('### ' + item.titulo + '\n\n' + item.texto), item.titulo));
 });

@@ -39,17 +39,16 @@ function openReader(title, build, opener, share = false) {
   openDialog($('#reader-dialog'), opener);
 }
 window.addEventListener('popstate', () => { if (!new URL(location.href).searchParams.has('nota') && $('#reader-dialog').open) $('#reader-dialog').close(); });
+// El logo del encabezado está fijo en index.html; CONFIG.logo solo controla el footer.
 if (CONFIG.logo) {
-  [['#brand-logo', '#brand-name'], ['#footer-logo', '#footer-name']].forEach(([imageSelector, nameSelector]) => {
-    const logo = $(imageSelector); if (!logo) return; logo.src = CONFIG.logo; logo.hidden = false; $(nameSelector).hidden = true;
-    logo.onerror = () => { logo.hidden = true; $(nameSelector).hidden = nameSelector === '#footer-name'; };
-  });
+  const logo = $('#footer-logo');
+  if (logo) { logo.src = CONFIG.logo; logo.hidden = false; $('#footer-name').hidden = true; logo.onerror = () => { logo.hidden = true; $('#footer-name').hidden = false; }; }
 }
 function projectHash() { if (location.hash === '#sobre-el-proyecto') $('#sobre-el-proyecto').open = true; }
 window.addEventListener('hashchange', projectHash); projectHash();
 initForms(openDialog); initHallazgo(); initGlossary(); initCare(); initEditorial(openReader);
 
-const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', prenda: '', mode: 'express' }, stops: [] };
+const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', prenda: '', mode: 'express' }, stops: [], skipped: new Set() };
 let mapAPI;
 const filterState = () => ({ query: $('#search').value, barrio: $('#filter-barrio').value, prendas: $('#filter-prenda').value ? [$('#filter-prenda').value] : [], precio: $('#filter-precio').value });
 const priceLabels = { '$': '$ · Más accesible', '$$': '$$ · Intermedio', '$$$': '$$$ · Más alto' };
@@ -82,7 +81,7 @@ function renderList() {
     article.append(el('p', {}, s.direccion), el('p', { class: 'specialties' }, s.horarios || 'Horarios sin informar'));
     const actions = el('div', { class: 'actions' });
     const button = el('button', { type: 'button' }, 'Ver en el mapa');
-    button.onclick = () => { selectStore(s.id); switchView('map'); mapAPI.resize(); mapAPI.select(s.id); $('#map-column').scrollIntoView({ block: 'nearest', behavior: 'auto' }); };
+    button.onclick = () => { switchView('map'); mapAPI.resize(); selectStore(s.id); $('#map-column').scrollIntoView({ block: 'nearest', behavior: 'auto' }); };
     const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${s.nombre}, ${s.direccion}, CABA`);
     actions.append(button, link('Cómo llegar ↗', maps)); if (s.web) actions.append(link('Web o red social ↗', s.web)); article.append(actions); root.append(article);
   });
@@ -126,7 +125,7 @@ async function loadStores() {
 function prefsFromForm() { return { barrio: $('#route-barrio').value, prenda: $('#route-prenda').value, mode: $('#route-form').elements.mode.value }; }
 $('#route-form').addEventListener('submit', e => {
   e.preventDefault(); if (!state.loaded) return;
-  state.prefs = prefsFromForm(); state.stops = generateRoute(state.stores, state.prefs); renderRoute(); updateRouteURL(false);
+  state.prefs = prefsFromForm(); state.stops = generateRoute(state.stores, state.prefs); state.skipped.clear(); renderRoute(); updateRouteURL(false);
 });
 function updateRouteURL(replace = true) { const url = encodeRoute(location.href, state.prefs, state.stops); history[replace ? 'replaceState' : 'pushState']({ route: true }, '', url); }
 function renderRoute(extra = '') {
@@ -142,7 +141,11 @@ function renderRoute(extra = '') {
     const options = alternatives(state.stores, stops, i, state.prefs);
     if (options.length) {
       const replace = el('button', { type: 'button', 'aria-label': 'Cambiar este local: ' + s.nombre }, 'Cambiar este local');
-      replace.onclick = () => { state.stops[i] = options[0]; renderRoute(); updateRouteURL(); $('#route-stops').children[i]?.querySelector('button')?.focus({ preventScroll: true }); }; actions.append(replace);
+      // Se saltean los locales ya descartados hasta agotar las alternativas, para no alternar siempre entre los mismos dos.
+      replace.onclick = () => {
+        state.skipped.add(s.id);
+        const fresh = options.filter(o => !state.skipped.has(o.id)); if (!fresh.length) { state.skipped.clear(); state.skipped.add(s.id); }
+        state.stops[i] = (fresh.length ? fresh : options)[0]; renderRoute(); updateRouteURL(); $('#route-stops').children[i]?.querySelector('button')?.focus({ preventScroll: true }); }; actions.append(replace);
     }
     actions.append(remove); li.append(actions); root.append(li);
   });
@@ -161,10 +164,11 @@ function restoreSharedRoute() {
   if (!state.loaded) return;
   const restored = restoreRoute(location.href, state.stores);
   if (!restored) { state.stops = []; $('#route-result').hidden = true; $('#route-placeholder').hidden = false; return; }
-  state.stops = restored.stops; state.prefs = restored.prefs;
+  state.stops = restored.stops; state.prefs = restored.prefs; state.skipped.clear();
   $('#route-barrio').value = state.prefs.barrio; $('#route-prenda').value = state.prefs.prenda; $('#route-form').elements.mode.value = state.prefs.mode;
   renderRoute([restored.missing ? 'El enlace incluye paradas retiradas, repetidas o preferencias que cambiaron. Revisá el recorrido actual.' : '', restored.discontinuous ? 'Las paradas compartidas están demasiado separadas para nuestro criterio de paseo. Volvé a generar la propuesta.' : ''].filter(Boolean).join(' '));
 }
 window.addEventListener('popstate', restoreSharedRoute);
-window.addEventListener('resize', () => mapAPI.resize());
+let resizeFrame = 0;
+window.addEventListener('resize', () => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(() => mapAPI.resize()); });
 loadStores();

@@ -5,7 +5,7 @@ export const CONFIG = {
   },
   formEndpoint: 'https://script.google.com/macros/s/AKfycbyAOwtD6FOe6xkByXj2hK89gkCdFfydW9FqIH7WDYIdkurvwpYdUD7T9seNHL-CrcjS_Q/exec',
   email: 'mapavintage.ba@gmail.com',
-  // Al recibir MAPA (7).jpg: copiar el archivo a assets/logo/ y poner aquí su ruta.
+  // Solo para el footer: el encabezado ya muestra assets/MAPA (7) (1).png desde index.html.
   logo: '',
   // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
   hallazgos: { endpoint: '', turnstileSiteKey: '' },
