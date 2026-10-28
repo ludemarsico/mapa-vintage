@@ -170,7 +170,7 @@ export async function initEditorial(openReader) {
         posts = published(rows).filter(r => r.id && r.nombre_alias && safeImage(r.imagen)).sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
       }
       if (!posts.length) return;
-      $('#comunidad').classList.remove('is-empty'); const wall = $('#wall'); wall.replaceChildren();
+      $('#muro').classList.remove('is-empty'); const wall = $('#wall'); wall.replaceChildren();
       posts.forEach(r => {
         const b = el('button', { type: 'button', class: 'wall-item', 'aria-label': r.demo ? 'Abrir ' + r.nombre_alias : 'Abrir hallazgo de ' + r.nombre_alias });
         if (r.demo) b.append(stamp());

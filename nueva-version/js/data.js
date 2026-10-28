@@ -40,11 +40,33 @@ export function safeImage(value) {
   const url = safeURL(s); return url.startsWith('https:') ? url : '';
 }
 const hash = text => { let h = 2166136261; for (const c of text) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
-const get = (row, key) => {
-  const names = CONFIG.columns[key] || [key];
-  const found = Object.keys(row).find(h => names.some(n => fold(n) === fold(h)));
-  return found ? String(row[found]).trim() : '';
+// Encabezados resueltos una vez por estructura de fila: con miles de filas evita repetir la búsqueda por campo.
+const columnCache = new Map();
+const columnsFor = row => {
+  const headers = Object.keys(row), signature = headers.join('\u0000');
+  if (!columnCache.has(signature)) columnCache.set(signature, Object.fromEntries(Object.entries(CONFIG.columns).map(([key, names]) => [key, headers.find(h => names.some(n => fold(n) === fold(h)))])));
+  return columnCache.get(signature);
 };
+const get = (row, key) => { const header = columnsFor(row)[key]; return header ? String(row[header] ?? '').trim() : ''; };
+// Sin tildes y en minúsculas, conservando la longitud del texto NFC para ubicar coincidencias.
+const plain = text => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const categoryPatterns = CONFIG.categories.map(name => [name, new RegExp(plain(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s*([/&,])\s*/g, '\\s*$1\\s*').replace(/ +/g, '\\s+'))]);
+// Categorías conocidas primero (pueden contener comas); el resto, separado por coma, punto y coma o barra, queda como etiqueta.
+export function storeTags(value) {
+  let text = String(value || '').normalize('NFC'); const categorias = [];
+  for (const [name, pattern] of categoryPatterns) {
+    const found = pattern.exec(plain(text));
+    if (found) { categorias.push(name); text = text.slice(0, found.index) + ';' + text.slice(found.index + found[0].length); }
+  }
+  const extras = text.split(/[,;|]/).map(t => t.trim()).filter(Boolean);
+  return { categorias, etiquetas: [...new Set([...categorias, ...extras])] };
+}
+export function classify(value, tipo) {
+  const v = fold(value);
+  if (!v) return CONFIG.classificationByType[fold(tipo)] || '';
+  const vintage = /\bvintage\b/.test(v), segunda = /segunda mano|second hand|thrift/.test(v);
+  return vintage && segunda ? 'Vintage y segunda mano' : vintage ? 'Vintage' : segunda ? 'Segunda mano' : '';
+}
 export function normalizeStores(rows) {
   if (rows.length && (!Object.keys(rows[0]).some(h => fold(h) === 'nombre') || !Object.keys(rows[0]).some(h => fold(h) === 'tipologia'))) throw new Error('La fuente no tiene los encabezados esperados: Nombre y Tipología.');
   const stores = [], review = []; const ids = new Set();
@@ -71,18 +93,24 @@ export function normalizeStores(rows) {
     const rawTags = source.split(/[,;|&]/).map(t => t.trim()).filter(Boolean);
     const prendas = [...new Set(rawTags.map(t => GARMENTS[fold(t)]).filter(Boolean))];
     const precio = get(row, 'precio').replace(/\s/g, '');
-    stores.push({ id, nombre, direccion, barrio: get(row, 'barrio') || 'Barrio sin informar', lat, lng, tipo,
-      precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', prendas, especialidades: rawTags, categoria: get(row, 'especialidad'),
-      horarios: get(row, 'horarios'), web: socialURL(get(row, 'web')), descripcion: get(row, 'descripcion') });
+    const barrio = get(row, 'barrio') || 'Barrio sin informar', { categorias, etiquetas } = storeTags(get(row, 'especialidad'));
+    stores.push({ id, nombre, direccion, barrio, lat, lng, tipo,
+      precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', prendas, especialidades: etiquetas, categoria: get(row, 'especialidad'), categorias,
+      clasificacion: classify(get(row, 'clasificacion'), tipo),
+      horarios: get(row, 'horarios'), web: socialURL(get(row, 'web')), descripcion: get(row, 'descripcion'),
+      busqueda: { nombre: fold(nombre), barrio: fold(barrio), categorias: categorias.map(fold) } });
   }
   return { stores, review };
 }
-export function matches(store, filters) {
-  return (!filters.query || fold(store.nombre).includes(fold(filters.query))) &&
-    (!filters.barrio || fold(store.barrio) === fold(filters.barrio)) &&
-    (!filters.precio || store.precio === filters.precio) &&
-    (!filters.prendas?.length || filters.prendas.some(p => store.prendas.includes(p) || (store.categoria && fold(store.categoria) === fold(p))));
+// Los filtros se normalizan una vez y cada local usa sus claves ya calculadas al cargar.
+const compileFilters = f => ({ query: fold(f.query), barrio: fold(f.barrio), precio: f.precio || '', prendas: (f.prendas || []).filter(Boolean).map(p => [p, fold(p)]) });
+function passes(store, c) {
+  const k = store.busqueda || { nombre: fold(store.nombre), barrio: fold(store.barrio), categorias: (store.categorias || [store.categoria]).filter(Boolean).map(fold) };
+  return (!c.query || k.nombre.includes(c.query)) && (!c.barrio || k.barrio === c.barrio) && (!c.precio || store.precio === c.precio) &&
+    (!c.prendas.length || c.prendas.some(([p, folded]) => store.prendas.includes(p) || k.categorias.includes(folded)));
 }
+export const matches = (store, filters) => passes(store, compileFilters(filters));
+export const filterStores = (stores, filters) => { const c = compileFilters(filters); return stores.filter(s => passes(s, c)); };
 export async function fetchRows(url) {
   if (!url) return { connected: false, rows: [] };
   if (!safeURL(url)) throw new Error('URL CSV inválida');

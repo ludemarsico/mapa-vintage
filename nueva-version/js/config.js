@@ -28,8 +28,13 @@ export const CONFIG = {
     lat: ['Latitud'], lng: ['Longitud'], tipo: ['Tipología', 'Tipologia'], precio: ['Rango Precio'],
     prendas: ['Prendas predominantes', 'Prendas'], especialidad: ['Especialidad'], horarios: ['Horarios'],
     web: ['Instagram', 'Web'], descripcion: ['Descripción breve', 'Descripcion breve'],
-    presencial: ['Local a la calle'], ciudad: ['Ciudad'], estado: ['Estado']
+    presencial: ['Local a la calle'], ciudad: ['Ciudad'], estado: ['Estado'],
+    clasificacion: ['Clasificación', 'Clasificacion']
   },
+  // Categorías de prendas del filtro y del recorrido, en este orden. Se reconocen dentro de Especialidad.
+  categories: ['Sastrería & Archivo', 'Denim & Streetwear 90s', 'Sin género / Oversized', 'Carteras, Calzado & Accesorios', 'Cuero & Tapados'],
+  // Respaldo mientras la columna Clasificación esté vacía. Otras tipologías quedan sin clasificar.
+  classificationByType: { 'boutique vintage': 'Vintage', 'feria americana': 'Segunda mano', 'cadena de reventa': 'Segunda mano' },
   // Solo valores originales del formulario. "Evento" se distingue dentro de descripcion.
   formTypes: ['Boutique Vintage', 'Feria americana', 'Feria colectiva', 'Cadena de reventa'],
   pageSize: 6,
