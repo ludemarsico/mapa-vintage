@@ -2,6 +2,7 @@ import { CONFIG } from './config.js';
 import { DEMO } from './demo.js';
 import { safeURL } from './data.js';
 import { $ } from './dom.js';
+import { loadTurnstile } from './turnstile.js';
 export const PHOTO_LIMIT = 5 * 1024 * 1024;
 export function photoError(file) {
   if (!file) return 'Elegí una foto para compartir.';
@@ -41,8 +42,7 @@ export function initHallazgo() {
     const render = () => {
       widgetId = window.turnstile.render('#hallazgo-verification', { sitekey: siteKey, action: 'hallazgo', callback: value => { token = value; if (status.textContent.includes('verificación')) status.textContent = ''; syncButton(); }, 'expired-callback': () => { token = ''; syncButton(); }, 'error-callback': () => { token = ''; syncButton(); status.textContent = 'No pudimos completar la verificación. Recargá la página para intentar de nuevo.'; } });
     };
-    if (window.turnstile) render();
-    else { const script = document.createElement('script'); script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; script.async = true; script.onload = render; script.onerror = () => { status.textContent = 'La verificación no está disponible. Nada se envió; podés intentar más tarde.'; }; document.head.append(script); }
+    loadTurnstile().then(render, () => { status.textContent = 'La verificación no está disponible. Nada se envió; podés intentar más tarde.'; });
   }
   syncButton();
   form.addEventListener('submit', async event => {

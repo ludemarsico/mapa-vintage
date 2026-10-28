@@ -9,6 +9,9 @@ export const CONFIG = {
   logo: '',
   // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
   hallazgos: { endpoint: '', turnstileSiteKey: '' },
+  // Receptor nuevo de propuestas (integraciones/propuestas/Code.gs): escribe en "Agenda a verificar" y "Espacios a verificar".
+  // Mientras esté vacío se usa formEndpoint, el formulario original.
+  propuestas: { endpoint: '', turnstileSiteKey: '' },
   // Figurines originales aportados para los cinco tipos de prendas.
   careImages: {
     'Prendas plisadas': 'assets/cuidados/Falda dorada plisada para muñeca de papel.png',

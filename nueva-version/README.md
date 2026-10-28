@@ -32,6 +32,8 @@ Ver [inventario de recursos](docs/ASSETS.md) para las imágenes disponibles y pe
 
 ## Mantenimiento y revisión
 
+- [Estado vigente al 27/10/2026](docs/SESSION-LOG-2026-10-27.md): cuatro vistas, escala, formularios y seguridad.
+- [Activar la recepción verificada de propuestas](docs/RECEPCION-DE-PROPUESTAS.md).
 - [Guía sencilla de mantenimiento](docs/MANTENIMIENTO.md).
 - [Contrato de datos e integraciones](docs/DATOS.md).
 - [Qué se probó y límites de la revisión](docs/VERIFICACION.md).

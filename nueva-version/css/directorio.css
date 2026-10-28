@@ -14,3 +14,8 @@
 .route-proposals button{min-height:36px;padding:5px 14px;border:1px solid var(--ink);background:var(--bone);font-size:13px}
 .route-proposals button[aria-pressed=true]{background:var(--ink);color:var(--bone)}
 .route-proposals[hidden]{display:none}
+
+/* Sumá tu espacio: los campos aparecen según el tipo elegido. */
+.proposal-fields,.proposal-group{display:grid;gap:19px;min-width:0;margin:0;padding:0;border:0}
+.proposal-fields[hidden],.proposal-group[hidden]{display:none}
+.form-trap{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}

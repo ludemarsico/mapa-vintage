@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/core.test.js && node tests/hallazgos.test.js",
+    "test": "node tests/core.test.js && node tests/hallazgos.test.js && node tests/propuestas.test.js",
     "dev": "python3 -m http.server 4173 --bind 0.0.0.0",
     "test:hallazgos": "node tests/hallazgos.test.js"
   }

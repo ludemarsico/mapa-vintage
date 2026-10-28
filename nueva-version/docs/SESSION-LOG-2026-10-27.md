@@ -68,6 +68,96 @@ Los 15 MB de `assets/stickers/` en el repositorio no se descargan en una visita:
 - Logo en el footer: solo si se pide, completando `CONFIG.logo`.
 - Netlify: publicar manualmente y de forma agrupada, según el calendario del 18/10 (próxima fecha sugerida: jueves 29/10).
 
+## Segunda parte: lineamientos del 27/10
+
+Se recibieron los lineamientos generales (`LineamientosMapaVintage.pdf`) y se aplicaron en la misma rama, en commits locales. **No se hizo push, merge ni publicación.**
+
+### Decisiones consultadas
+
+| Tema | Decisión |
+|---|---|
+| Estructura | **Cuatro vistas separadas** en el mismo `index.html`, una sección padre por vez. |
+| Receptor de propuestas | **Apps Script nuevo** con Turnstile, “Agenda a verificar” y “Espacios a verificar”. |
+| Vintage / Segunda mano | **Columna nueva `Clasificación`**. Mientras esté vacía se deduce de Tipología. |
+| Recorridos | Parten de **los locales filtrados en el mapa**, con hasta tres propuestas para elegir. |
+| “Detrás del mapa” | **El denim reemplaza al oliva**, con un velo oscuro para leer el texto claro. Esto deja sin efecto la decisión del 18/10 sobre el fondo oliva. |
+
+### Qué cambió
+
+- **Menú y vistas:** el menú tiene solo las cuatro secciones padre (MAPA, INFORMACIÓN, COMUNIDAD, SOBRE MAPA VINTAGE). Cada vista tiene una subnavegación con sus subsecciones, salvo Mapa, que ya enlaza a Armá tu recorrido desde la presentación.
+  - Mapa: Mapa y Armá tu recorrido.
+  - Información: Glosario y Guía de cuidados.
+  - Comunidad: Agenda, Muro (“Lo que encontramos”) y Sumá tu espacio.
+  - Sobre Mapa Vintage: Detrás del mapa y Notas al margen.
+
+  Los bloques se movieron sin alterar sus textos. Se comprobó por script que el contenido es idéntico. Las anclas existentes siguen funcionando y abren la vista que corresponde: `#recorridos`, `#agenda`, `#glosario`, `#proyecto`, `#sobre-el-proyecto` y `?nota=…`. `#comunidad` ahora es la vista padre; el muro pasó a `#muro`. Sin JavaScript se ven todas las secciones en una sola página, como antes. Se quitó del menú el acceso “SUMÁ TU ESPACIO”, que ahora está dentro de Comunidad.
+- **Fondos:** Mapa usa Seda, Información usa Lana, Comunidad usa Lino y Sobre Mapa Vintage usa Denim. Son las fotos de `assets/telas/`, con un velo claro. Se reemplaza la trama del manual solo cuando las vistas están activas. Para ajustar la intensidad, cambiar la opacidad del velo en `css/vistas.css`.
+- **Transiciones:** fundido breve al cambiar de vista y aparición suave de cada subsección al scrollear. Ambas se desactivan con movimiento reducido. El bloque del mapa no se anima, para que el producto aparezca de inmediato.
+- **Fichas:** muestran la clasificación (Vintage / Segunda mano) y las categorías como etiquetas. “Prendas que predominan” aparece solo si hay prendas detectadas; se quitó el texto “Sin detalle de prendas”.
+- **Recorridos:** hasta tres propuestas distintas, priorizando las que no comparten locales. Si hay filtros activos en el mapa, el sitio avisa cuántos locales usa. Cambiar y sacar paradas, Google Maps, WhatsApp y copiar enlace siguen igual.
+- **Sumá tu espacio:**
+  - Los campos aparecen al elegir el tipo de espacio.
+  - Siempre: dirección y barrio, ahora separados, más web.
+  - Locales: horarios, prendas y rango de precios, todos opcionales.
+  - Feria colectiva o evento: fecha y horario. La feria americana se trata como local.
+  - La entrada “Conozco un lugar” ahora dice “Conozco un lugar, feria o evento”.
+  - Se agregó un campo trampa invisible contra programas automáticos.
+  - Con el receptor original se conservan los seis nombres de campo; barrio y detalles viajan dentro de `direccion` y `descripcion`.
+- **Receptor nuevo:** `integraciones/propuestas/Code.gs`, listo para desplegar. Ver `RECEPCION-DE-PROPUESTAS.md`.
+- **Pie:** “Escribime” abre un menú para elegir Gmail, Outlook u otra app de correo, o copiar la dirección. Sin JavaScript sigue siendo un `mailto:`. “Volver arriba” sube dentro de la vista actual.
+
+### Escala: hasta 10.000 locales
+
+- **Mapa:** Leaflet.markercluster 1.5.3, copia local en `vendor/` con licencia MIT, agrupa los pines cercanos. Los marcadores se crean una vez y se reutilizan al filtrar, y las viñetas se arman recién al abrirse. Cambiar la selección modifica dos íconos, no todos.
+- **Datos:** los encabezados se resuelven una vez y los textos de búsqueda se calculan al cargar. La búsqueda por nombre espera una pausa breve al escribir.
+- **Recorridos:** usan un índice espacial por celdas, así que cada tramo busca solo entre vecinos cercanos.
+
+| Medición con 10.000 locales sintéticos | Resultado |
+|---|---:|
+| Normalización (Node) | ~0,4 s |
+| Filtros | ~1 ms |
+| Tres propuestas de “Tarde completa” (Node) | ~140 ms |
+| Carga completa en Edge hasta mostrar la lista | ~0,6 s |
+| Filtro de barrio en Edge | ~70 ms |
+
+En el mapa quedaron unos 47 grupos en lugar de 10.000 pines.
+
+El límite práctico pasa a ser la planilla: un CSV de 10.000 filas pesa cerca de 1,5 MB y se descarga en cada visita.
+
+### Seguridad
+
+- **Cabeceras en `netlify.toml`:**
+  - Content-Security-Policy estricta: sin scripts ni estilos en línea, y solo los orígenes necesarios (Sheets, Apps Script, Turnstile, teselas e imágenes https).
+  - HSTS, X-Frame-Options, Permissions-Policy y Cross-Origin-Opener-Policy.
+  - No se sirven `docs/`, `tests/`, `integraciones/`, `scripts/` ni `package.json`.
+- **`js/dom.js`** aplica estilos por CSSOM, que la CSP permite. Si no, la CSP habría bloqueado el apilado de las notas.
+- **Sin cambios, ya correcto:** el contenido de las planillas se inserta como texto, y los enlaces e imágenes se validan.
+- **Receptor de propuestas:** ver `RECEPCION-DE-PROPUESTAS.md`. Incluye Turnstile en el servidor, listas cerradas, límite de largo, neutralización de fórmulas, idempotencia y límite por minuto.
+
+### Verificación
+
+- `npm test`: **54 de 54** (28 de datos y recorridos, 17 del receptor de fotos, 9 del receptor de propuestas).
+- En Edge, a 1440 y 390 px, **63 comprobaciones de vistas**:
+  - Fondos de cada vista y menú.
+  - Anclas compartidas, sin desborde horizontal.
+  - Filtros, propuestas de recorrido, “Cambiar este local”, Agenda, “Volver arriba” y pie.
+  - Sin JavaScript y con movimiento reducido.
+  - Escala con 10.000 locales.
+- En Edge, **12 comprobaciones de formularios** en los dos modos:
+  - Original: un único POST con los seis campos de siempre.
+  - Nuevo: receptor y Turnstile simulados.
+- Las dos baterías se ejecutaron también con las cabeceras de `netlify.toml` aplicadas, sin bloqueos de la CSP. Esa prueba detectó que faltaba `frame-src 'self'` para la página de comparación tipográfica; ya está corregido.
+- También se probaron `demostracion.html`, regenerada con `scripts/build-demo.mjs`, y `prueba-tipografica.html`.
+- **Ningún envío salió a la red:** los pedidos a Apps Script y Cloudflare se bloquearon o simularon. La lectura de locales usó la planilla real, solo lectura.
+
+### Pendiente o a confirmar
+
+- **Desplegar el receptor de propuestas** (`RECEPCION-DE-PROPUESTAS.md`). Hasta entonces no se puede comprobar la recepción del formulario original sin un envío real, y no se hizo ninguno a producción.
+- **Planilla del directorio:** agregar la columna `Clasificación` (`Vintage` o `Segunda mano`). Para varias categorías por local, escribirlas en `Especialidad` separadas por coma: “Carteras, Calzado & Accesorios” se reconoce entera aunque tenga una coma.
+- **Agenda:** crear el documento curado y conectarlo en `sources.agenda`. No conectarlo nunca a “Agenda a verificar”.
+- **Gmail en celulares:** el enlace abre Gmail en el navegador, o en la app si el sistema la asocia. “Otra app de correo” deja elegir la app del teléfono.
+- **Revisar en un celular real** la intensidad de las telas de fondo.
+
 ## Próximo paso
 
-Se espera una consigna para analizar y rearmar varias cuestiones de la página. Hasta recibirla no se hacen más cambios.
+Revisión de estos cambios por parte de la autora. Nada se publicó.
