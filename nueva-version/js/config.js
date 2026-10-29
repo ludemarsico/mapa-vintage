@@ -1,9 +1,13 @@
 export const CONFIG = {
   sources: {
     locales: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8k2lfSgDs566JtZ3TGN9e1u5Wx7XFV-bIsk4iq4aGhKtbZBEMvW385AdhMRd3nfHyoZC12-ti3rUU/pub?output=csv',
-    agenda: '', notas: '', muro: ''
+    // Hoja "Agenda" publicada como CSV. Sin filas, la Agenda muestra su mensaje inicial.
+    agenda: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbU4KQpjNNFSobTo2kBLCCTzIOc_0VV5CvJTdnRWTY0KwGFcWtd2PlgoHFOC52Z0xtbPNoJIVaLhNV/pub?gid=0&single=true&output=csv',
+    notas: '', muro: ''
   },
   formEndpoint: 'https://script.google.com/macros/s/AKfycbyAOwtD6FOe6xkByXj2hK89gkCdFfydW9FqIH7WDYIdkurvwpYdUD7T9seNHL-CrcjS_Q/exec',
+  // Apps Script de la Agenda: las ferias y eventos propuestos llegan a su hoja "Aportes", con los mismos seis campos.
+  agendaFormEndpoint: 'https://script.google.com/macros/s/AKfycby7Zul6GiGu0DGleZchoKiRiVeoXXSv5ipnd7HMe0rkiwPpSUuKNEniTe_r6v5pkheOuQ/exec',
   email: 'mapavintage.ba@gmail.com',
   // Solo para el footer: el encabezado ya muestra assets/MAPA (7) (1).png desde index.html.
   logo: '',
@@ -31,16 +35,27 @@ export const CONFIG = {
     lat: ['Latitud'], lng: ['Longitud'], tipo: ['Tipología', 'Tipologia'], precio: ['Rango Precio'],
     prendas: ['Prendas predominantes', 'Prendas'], especialidad: ['Especialidad'], horarios: ['Horarios'],
     web: ['Instagram', 'Web'], descripcion: ['Descripción breve', 'Descripcion breve'],
-    presencial: ['Local a la calle'], ciudad: ['Ciudad'], estado: ['Estado'],
+    presencial: ['Local a la calle'], ciudad: ['Ciudad'],
     clasificacion: ['Clasificación', 'Clasificacion']
   },
+  // Columnas de la hoja "Agenda" (mismas que el Directorio, más Días). Fecha es opcional: si se agrega, se ocultan las fechas pasadas.
+  // Se aceptan también los nombres del formato anterior (titulo, fecha_inicio…).
+  agendaColumns: {
+    id: ['ID', 'id'], nombre: ['Nombre', 'Título', 'Titulo', 'titulo', 'Evento'], tipo: ['Tipo', 'Tipología', 'Tipologia'],
+    dias: ['Días', 'Dias'], fecha: ['Fecha', 'Fecha inicio', 'fecha_inicio'], fechaFin: ['Fecha fin', 'fecha_fin'], recurrencia: ['Recurrencia', 'recurrencia'],
+    horario: ['Horarios', 'Horario', 'horario'], precio: ['Rango Precio'], especialidad: ['Especialidad'], barrio: ['Barrio', 'barrio'], direccion: ['Dirección', 'Direccion', 'Lugar', 'direccion'],
+    descripcion: ['Descripción', 'Descripcion', 'Descripción breve', 'descripcion'], acceso: ['Acceso', 'Entrada', 'acceso'],
+    enlace: ['Instagram', 'Enlace', 'Web', 'enlace'], imagen: ['Imagen', 'imagen']
+  },
+  // Los 48 barrios oficiales de CABA, para los formularios.
+  barrios: ['Agronomía', 'Almagro', 'Balvanera', 'Barracas', 'Belgrano', 'Boedo', 'Caballito', 'Chacarita', 'Coghlan', 'Colegiales', 'Constitución', 'Flores', 'Floresta', 'La Boca', 'La Paternal', 'Liniers', 'Mataderos', 'Monte Castro', 'Montserrat', 'Nueva Pompeya', 'Núñez', 'Palermo', 'Parque Avellaneda', 'Parque Chacabuco', 'Parque Chas', 'Parque Patricios', 'Puerto Madero', 'Recoleta', 'Retiro', 'Saavedra', 'San Cristóbal', 'San Nicolás', 'San Telmo', 'Vélez Sarsfield', 'Versalles', 'Villa Crespo', 'Villa del Parque', 'Villa Devoto', 'Villa General Mitre', 'Villa Lugano', 'Villa Luro', 'Villa Ortúzar', 'Villa Pueyrredón', 'Villa Real', 'Villa Riachuelo', 'Villa Santa Rita', 'Villa Soldati', 'Villa Urquiza'],
   // Categorías de prendas del filtro y del recorrido, en este orden. Se reconocen dentro de Especialidad.
   categories: ['Sastrería & Archivo', 'Denim & Streetwear 90s', 'Sin género / Oversized', 'Carteras, Calzado & Accesorios', 'Cuero & Tapados'],
   // Respaldo mientras la columna Clasificación esté vacía. Otras tipologías quedan sin clasificar.
   classificationByType: { 'boutique vintage': 'Vintage', 'feria americana': 'Segunda mano', 'cadena de reventa': 'Segunda mano' },
   // Solo valores originales del formulario. "Evento" se distingue dentro de descripcion.
   formTypes: ['Boutique Vintage', 'Feria americana', 'Feria colectiva', 'Cadena de reventa'],
-  pageSize: 6,
+  pageSize: 10,
   route: { visitMinutes: 25, walkingKmh: 4, distanceFactor: 1.3, maxLegKm: 1.8, expressMinutes: 120, fullMinutes: 240 },
   timezone: 'America/Argentina/Buenos_Aires'
 };

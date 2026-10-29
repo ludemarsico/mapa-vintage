@@ -4,11 +4,11 @@ export function createMap(onSelect) {
   const error = $('#map-error');
   if (!L) {
     $('#map').replaceChildren(el('p', { class: 'map-loading' }, 'No pudimos cargar la biblioteca del mapa. Podés consultar los locales en la lista.'));
-    $('#map-interact').disabled = true; $('#map-fit').disabled = true;
     return { update() {}, select() {}, resize() {}, fit() {} };
   }
   $('#map').replaceChildren();
-  const map = L.map('map', { scrollWheelZoom: false, dragging: false, touchZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: true }).setView([-34.6037, -58.415], 12);
+  // El mapa siempre se puede arrastrar y pellizcar. La rueda del mouse sigue bajando la página; para acercar están + y −.
+  const map = L.map('map', { scrollWheelZoom: false, dragging: true, touchZoom: true, doubleClickZoom: true, boxZoom: false, keyboard: true }).setView([-34.6037, -58.415], 12);
   map.attributionControl.setPrefix(false);
   const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
   let errors = 0; tiles.on('tileerror', () => { if (++errors >= 3) error.textContent = 'El fondo cartográfico no pudo cargarse por completo. La lista sigue disponible.'; });
@@ -78,12 +78,13 @@ export function createMap(onSelect) {
     resize() { map.invalidateSize(false); if (pendingFit && hasSize()) fit(); },
     fit
   };
-  $('#map-fit').onclick = () => { map.invalidateSize(false); fit(); };
-  $('#map-interact').onclick = event => {
-    const button = event.currentTarget, active = button.getAttribute('aria-pressed') !== 'true';
-    button.setAttribute('aria-pressed', String(active));
-    button.textContent = active ? 'Desactivar desplazamiento' : 'Activar desplazamiento';
-    if (active) { map.dragging.enable(); map.touchZoom.enable(); } else { map.dragging.disable(); map.touchZoom.disable(); }
-  };
+  // "Ver todos los resultados" vive dentro del mapa, en la esquina opuesta a + y −.
+  const FitControl = L.Control.extend({ options: { position: 'topright' }, onAdd() {
+    const button = L.DomUtil.create('button', 'map-fit-control');
+    button.type = 'button'; button.textContent = 'Ver todos los resultados';
+    L.DomEvent.disableClickPropagation(button); L.DomEvent.on(button, 'click', () => { map.invalidateSize(false); fit(); });
+    return button;
+  } });
+  map.addControl(new FitControl());
   return api;
 }

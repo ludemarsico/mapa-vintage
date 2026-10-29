@@ -7,8 +7,9 @@ export const DEMO_AGENDA = ['A', 'B', 'C'].map((letter, i) => ({
 }));
 export const DEMO_WALL = [
   { id: 'demo-collage-a', nombre_alias: 'Composición A', texto: 'Espacio para foto y texto.' },
-  { id: 'demo-collage-b', nombre_alias: 'Composición B', texto: 'Otra escala, otro recorte.', imagen: 'assets/ciudad/perchero.webp', alt: 'Perchero del manual de marca' },
-  { id: 'demo-collage-c', nombre_alias: 'Composición C', texto: 'Lugar para un hallazgo y su descripción.' }
+  { id: 'demo-collage-b', nombre_alias: 'Composición B', texto: 'Otra escala, otro recorte. Este texto de muestra es más largo que el espacio de la Polaroid para probar el botón Seguir leyendo: al tocarlo, la foto gira y muestra la descripción completa y el nombre. Al final, Ver imagen la vuelve a girar.', imagen: 'assets/ciudad/perchero.webp', alt: 'Perchero del manual de marca' },
+  { id: 'demo-collage-c', nombre_alias: 'Composición C', texto: 'Lugar para un hallazgo y su descripción.' },
+  { id: 'demo-collage-d', nombre_alias: 'Composición D', texto: 'Cuarta muestra, para probar las flechas del muro.', imagen: 'assets/ciudad/calle.webp', alt: 'Calle del manual de marca' }
 ].map(r => ({ ...r, demo: true, red_url: '' }));
 export const DEMO_NOTES = ['A', 'B', 'C'].map((letter, i) => ({
   id: 'demo-papel-' + i, titulo: 'Papel ' + letter, bajada: 'Área para título y texto. Esta muestra permite revisar las capas, el tamaño y la lectura.',

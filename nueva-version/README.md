@@ -33,6 +33,7 @@ Ver [inventario de recursos](docs/ASSETS.md) para las imágenes disponibles y pe
 ## Mantenimiento y revisión
 
 - [Estado vigente al 27/10/2026](docs/SESSION-LOG-2026-10-27.md): cuatro vistas, escala, formularios y seguridad.
+- [Cambios del 29/10/2026](docs/SESSION-LOG-2026-10-29.md): lista, mapa, Agenda en lista, Muro de Polaroids y curaduría desde la hoja.
 - [Activar la recepción verificada de propuestas](docs/RECEPCION-DE-PROPUESTAS.md).
 - [Guía sencilla de mantenimiento](docs/MANTENIMIENTO.md).
 - [Contrato de datos e integraciones](docs/DATOS.md).

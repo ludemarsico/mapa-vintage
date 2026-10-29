@@ -1,0 +1,46 @@
+/* Muro: Polaroids. 3 en escritorio, 2 en tablet y 1 en el teléfono, con flechas a los costados. */
+.wall-carousel{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:8px}
+.community-section.is-empty .wall-carousel{display:block}
+.wall-arrow{width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.wall-arrow[hidden]{display:block;visibility:hidden}
+.community-section.is-empty .wall-arrow{display:none}
+.wall-arrow:hover:not(:disabled),.wall-arrow:focus-visible{background:var(--stone)}
+.wall-arrow:disabled{opacity:.3;cursor:default}
+.wall-count{margin:4px 0 0;text-align:center;font-size:13px;letter-spacing:.06em}
+.wall-count[hidden]{display:none}
+#wall.wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;align-items:start;padding:28px 6px 36px;touch-action:pan-y}
+#wall.wall[data-per-page="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+#wall.wall[data-per-page="1"]{grid-template-columns:minmax(0,340px);justify-content:center}
+.community-section.is-empty #wall.wall{display:block;padding:0}
+
+.polaroid{--tilt:-1.6deg;position:relative;perspective:1400px;transform:rotate(var(--tilt));transform-origin:50% 100%}
+.polaroid:nth-child(3n+2){--tilt:1.3deg}
+.polaroid:nth-child(3n){--tilt:-.7deg}
+.polaroid-inner{position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.polaroid.is-flipped .polaroid-inner{transform:rotateY(180deg)}
+.polaroid-face{display:flex;flex-direction:column;background:#fff;color:var(--ink);padding:14px 14px 18px;box-shadow:2px 5px 12px #0002,0 0 0 1px #0000000d;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.polaroid-back{position:absolute;inset:0;overflow:auto;transform:rotateY(180deg);padding:22px 20px}
+.polaroid-photo{aspect-ratio:1/1;overflow:hidden;background:#E9E4D7}
+.polaroid-photo img{display:block;width:100%;height:100%;object-fit:cover}
+.polaroid-photo.is-empty{background:repeating-linear-gradient(45deg,#E9E4D7 0 12px,#E2DCCD 12px 24px)}
+.polaroid-caption{min-height:150px;padding:14px 4px 0}
+.polaroid-caption>p,.polaroid-text p{margin:0 0 8px;font-size:15px;line-height:1.55}
+.polaroid-author{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:6px 0 0;font-size:13px}
+.polaroid-author strong{font-weight:600}
+.polaroid-author a{text-decoration:underline;text-underline-offset:3px}
+.polaroid-turn{align-self:flex-start;min-height:36px;margin-top:8px;padding:4px 0;border:0;border-bottom:1px solid currentColor;border-radius:0;background:none;color:inherit;font:500 13px/1.3 var(--sans);cursor:pointer}
+.polaroid-turn:hover{background:none}
+.polaroid .demo-stamp{position:absolute;z-index:2;top:20px;left:20px}
+
+/* Al pasar el mouse, un vaivén suave como el de una mecedora. */
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  .polaroid:not(.is-flipped):hover{animation:polaroid-rock 2.6s ease-in-out infinite}
+}
+@keyframes polaroid-rock{0%,100%{transform:rotate(var(--tilt))}25%{transform:rotate(calc(var(--tilt) + 2.4deg))}75%{transform:rotate(calc(var(--tilt) - 2.4deg))}}
+@media(prefers-reduced-motion:reduce){.polaroid-inner{transition:none}.polaroid{animation:none!important}}
+@media(max-width:640px){
+  .wall-carousel{grid-template-columns:36px minmax(0,1fr) 36px;gap:4px}
+  .wall-arrow{width:36px}
+  #wall.wall{padding:20px 0 28px}
+  .polaroid-caption{min-height:120px}
+}

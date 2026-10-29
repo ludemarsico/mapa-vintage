@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { safeURL } from './data.js';
 import { DEMO } from './demo.js';
-import { $ } from './dom.js';
+import { $, el } from './dom.js';
 import { loadTurnstile } from './turnstile.js';
 import { confirmedReceipt } from './hallazgo.js';
 export const EVENT_TYPE = 'Feria colectiva';
@@ -25,7 +25,12 @@ export function initForms(openDialog) {
   const endpoint = DEMO ? '' : proposalEndpoint(CONFIG.propuestas?.endpoint), siteKey = CONFIG.propuestas?.turnstileSiteKey || '';
   const verified = !!endpoint && !!siteKey;
   let source = 'propio', pending = false, timer = null, presetEvent = false, token = '', widgetId, submissionId = crypto.randomUUID();
-  form.action = DEMO ? 'about:blank' : CONFIG.formEndpoint;
+  // Formulario original: los locales van al Apps Script del Directorio y las ferias o eventos, al de la Agenda (hoja "Aportes").
+  const agendaEndpoint = proposalEndpoint(CONFIG.agendaFormEndpoint) || CONFIG.formEndpoint;
+  const legacyAction = type => DEMO ? 'about:blank' : destinationFor(source, type) === 'agenda' ? agendaEndpoint : CONFIG.formEndpoint;
+  form.action = legacyAction('');
+  // Todos los barrios de CABA, no solo los que ya tienen locales.
+  $('#proposal-barrio').append(...CONFIG.barrios.map(b => el('option', { value: b }, b)));
   if (DEMO) { submit.disabled = true; status.textContent = 'Contenido de demostración. Los envíos están desactivados.'; }
   form.elements.instagram.addEventListener('input', () => form.elements.instagram.setCustomValidity(''));
   const value = name => form.querySelector(`[data-field="${name}"]`)?.value.trim() || '';
@@ -80,6 +85,7 @@ export function initForms(openDialog) {
     const type = form.elements.tipologia.value;
     if (verified) { event.preventDefault(); await sendVerified(type, data); return; }
     // Formulario original: mismos seis nombres de campo; barrio y detalles viajan dentro de dirección y descripción.
+    form.action = legacyAction(type);
     $('#serialized-address').value = [data.direccion, data.barrio].filter(Boolean).join(', ');
     $('#serialized-description').value = serializeProposal({ source, type, event: [data.fecha, data.horario].filter(Boolean).join(' · '), text: data.descripcion,
       details: { Barrio: data.barrio, Horarios: data.horarios, Especialidad: data.especialidad, 'Rango de precios': data.precio } });

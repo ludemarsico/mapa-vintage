@@ -41,7 +41,7 @@ export function initViews(onChange) {
 // Las subsecciones aparecen con un fundido breve al entrar en pantalla. Sin soporte o con movimiento reducido, se ven de inmediato.
 function initReveal() {
   if (!('IntersectionObserver' in window) || reduced()) return;
-  const items = document.querySelectorAll('.view > section:not(#mapa-seccion), .view > .ticker-wrap, .care-section > .fabric-layout, .care-section > .garment-layout, .notes-section, .hallazgo-surface, .contribution-entries');
+  const items = document.querySelectorAll('.view > section:not(#mapa-seccion), .care-section > .fabric-layout, .care-section > .garment-layout, .notes-section, .hallazgo-surface, .contribution-entries');
   const observer = new IntersectionObserver(entries => entries.forEach(entry => {
     if (entry.isIntersecting) { entry.target.classList.add('is-revealed'); observer.unobserve(entry.target); }
   }), { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });

@@ -49,11 +49,9 @@ if (CONFIG.logo) {
   const logo = $('#footer-logo');
   if (logo) { logo.src = CONFIG.logo; logo.hidden = false; $('#footer-name').hidden = true; logo.onerror = () => { logo.hidden = true; $('#footer-name').hidden = false; }; }
 }
-function projectHash() { if (location.hash === '#sobre-el-proyecto') $('#sobre-el-proyecto').open = true; }
-window.addEventListener('hashchange', projectHash); projectHash();
 initForms(openDialog); initHallazgo(); initContact(); initGlossary(); initCare(); initEditorial(openReader);
 
-const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', prenda: '', mode: 'express' }, stops: [], skipped: new Set(), proposals: [], proposal: 0 };
+const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', prenda: '', mode: 'express' }, stops: [], skipped: new Set(), proposals: [], proposal: 0, expanded: new Set() };
 const filterState = () => ({ query: $('#search').value, barrio: $('#filter-barrio').value, prendas: $('#filter-prenda').value ? [$('#filter-prenda').value] : [], precio: $('#filter-precio').value });
 const priceLabels = { '$': '$ · Más accesible', '$$': '$$ · Intermedio', '$$$': '$$$ · Más alto' };
 function switchView(view) {
@@ -79,18 +77,28 @@ function renderList() {
   if (!state.filtered.length) { root.append(el('p', { class: 'empty' }, 'No encontramos locales con esa combinación. Probá cambiar algún filtro.')); return; }
   state.filtered.slice((state.page - 1) * CONFIG.pageSize, state.page * CONFIG.pageSize).forEach(s => {
     const article = el('article', { class: 'store-card' + (s.id === state.selected ? ' selected' : ''), 'data-id': s.id, tabindex: '-1', 'aria-label': s.nombre });
-    const meta = el('div', { class: 'meta' }); if (s.clasificacion) meta.append(el('span', { class: 'store-kind' }, s.clasificacion));
-    meta.append(el('span', {}, s.barrio), el('span', {}, priceLabels[s.precio] || 'Precio sin informar'));
-    article.append(meta, el('h3', {}, s.nombre));
-    // Prendas y especialidades informadas como etiquetas.
-    if (s.especialidades.length) { const tags = el('ul', { class: 'store-tags', 'aria-label': 'Prendas y especialidades' }); s.especialidades.forEach(t => tags.append(el('li', {}, t))); article.append(tags); }
-    if (s.prendas.length) article.append(el('p', { class: 'specialties' }, 'Prendas que predominan: ' + s.prendas.join(', ')));
-    article.append(el('p', {}, s.direccion), el('p', { class: 'specialties' }, s.horarios || 'Horarios sin informar'));
+    // A la vista: barrio, precio en signos y clasificación. El resto aparece con "Ver más".
+    const meta = el('div', { class: 'meta' }); meta.append(el('span', {}, s.barrio));
+    if (s.precio) meta.append(el('span', { class: 'store-price', 'aria-label': priceLabels[s.precio] }, s.precio));
+    if (s.clasificacion) meta.append(el('span', { class: 'store-kind' }, s.clasificacion));
+    // El nombre lleva al local en el mapa.
+    const name = el('button', { type: 'button', class: 'store-name', 'aria-label': s.nombre + ', ver en el mapa' }, s.nombre);
+    name.onclick = () => { switchView('map'); mapAPI.resize(); selectStore(s.id); $('#map-column').scrollIntoView({ block: 'nearest', behavior: 'auto' }); };
+    const open = state.expanded.has(s.id), detailsId = 'store-details-' + s.id.replace(/[^\w-]/g, '_');
+    const more = el('button', { type: 'button', class: 'store-more', 'aria-expanded': String(open), 'aria-controls': detailsId }, open ? 'Ver menos' : 'Ver más');
+    const details = el('div', { class: 'store-details', id: detailsId }); details.hidden = !open;
+    if (s.direccion) details.append(el('p', {}, s.direccion));
+    details.append(el('p', { class: 'specialties' }, s.horarios || 'Horarios sin informar'));
+    if (s.descripcion) details.append(el('p', { class: 'store-description' }, s.descripcion));
     const actions = el('div', { class: 'actions' });
-    const button = el('button', { type: 'button' }, 'Ver en el mapa');
-    button.onclick = () => { switchView('map'); mapAPI.resize(); selectStore(s.id); $('#map-column').scrollIntoView({ block: 'nearest', behavior: 'auto' }); };
     const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${s.nombre}, ${s.direccion}, CABA`);
-    actions.append(button, link('Cómo llegar ↗', maps)); if (s.web) actions.append(link('Web o red social ↗', s.web)); article.append(actions); root.append(article);
+    actions.append(link('Cómo llegar ↗', maps)); if (s.web) actions.append(link('Instagram ↗', s.web)); details.append(actions);
+    more.onclick = () => {
+      const show = details.hidden; details.hidden = !show; more.setAttribute('aria-expanded', String(show)); more.textContent = show ? 'Ver menos' : 'Ver más';
+      if (show) state.expanded.add(s.id); else state.expanded.delete(s.id);
+    };
+    const title = el('h3'); title.append(name);
+    article.append(meta, title, more, details); root.append(article);
   });
 }
 function applyFilters() {
@@ -118,7 +126,7 @@ async function loadStores() {
     const { rows } = await fetchRows(CONFIG.sources.locales); const { stores, review } = normalizeStores(rows); state.stores = stores; state.loaded = true;
     const barrios = [...new Set(stores.map(s => s.barrio))].sort((a, b) => a.localeCompare(b, 'es'));
     const prendas = CONFIG.categories;
-    setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios); $('#barrio-options').replaceChildren(...barrios.map(b => el('option', { value: b }))); setOptions('#filter-prenda', prendas); setOptions('#route-prenda', prendas);
+    setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios); setOptions('#filter-prenda', prendas); setOptions('#route-prenda', prendas);
     setOptions('#filter-precio', ['$', '$$', '$$$'].filter(p => stores.some(s => s.precio === p)), priceLabels);
     $('#route-submit').disabled = !stores.length;
     applyFilters();

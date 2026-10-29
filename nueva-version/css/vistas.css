@@ -4,10 +4,10 @@
 /* El fondo vive en una capa fija del body: no depende de transformaciones de las vistas. */
 body[data-view]{background-image:none}
 body[data-view]::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-position:center;background-size:cover;background-repeat:no-repeat}
-body[data-view=mapa]::before{background-image:linear-gradient(rgb(249 248 246 / .8),rgb(249 248 246 / .8)),url("../assets/telas/seda.jpg")}
-body[data-view=informacion]::before{background-image:linear-gradient(rgb(249 248 246 / .82),rgb(249 248 246 / .82)),url("../assets/telas/lana.jpg")}
-body[data-view=comunidad]::before{background-image:linear-gradient(rgb(249 248 246 / .8),rgb(249 248 246 / .8)),url("../assets/telas/lino.jpg")}
-body[data-view=sobre]::before{background-image:linear-gradient(rgb(249 248 246 / .78),rgb(249 248 246 / .78)),url("../assets/telas/denim.jpg")}
+body[data-view=mapa]::before{background-image:linear-gradient(rgb(249 248 246 / .55),rgb(249 248 246 / .55)),url("../assets/telas/seda.jpg")}
+body[data-view=informacion]::before{background-image:linear-gradient(rgb(249 248 246 / .58),rgb(249 248 246 / .58)),url("../assets/telas/lana.jpg")}
+body[data-view=comunidad]::before{background-image:linear-gradient(rgb(249 248 246 / .55),rgb(249 248 246 / .55)),url("../assets/telas/lino.jpg")}
+body[data-view=sobre]::before{background-image:linear-gradient(rgb(249 248 246 / .52),rgb(249 248 246 / .52)),url("../assets/telas/denim.jpg")}
 /* "Detrás del mapa": el denim reemplaza al oliva; un velo oscuro mantiene legible el texto claro. */
 body[data-view] .project-section{background-color:rgb(20 24 31 / .66);background-image:none}
 
@@ -33,3 +33,21 @@ body[data-view] .project-section{background-color:rgb(20 24 31 / .66);background
 .contact-paper .mail-options a:hover,.contact-paper .mail-options button:hover,.contact-paper .mail-options a:focus-visible,.contact-paper .mail-options button:focus-visible{background:var(--butter)}
 .contact-paper .mail-options p{margin:0;padding:0 18px;font-size:12px}
 .contact-paper .mail-options p:empty{display:none}
+
+/* Encabezado: el menú hamburguesa queda en la esquina izquierda en cualquier ancho de pantalla. */
+.header{padding-left:clamp(16px,2.2vw,32px)}
+.header nav{padding-left:clamp(16px,2.2vw,32px)}
+
+/* Debajo de "Armá tu recorrido", el acceso a "Sumá tu espacio". */
+.intro-links{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.intro-links .intro-route{display:inline-flex;margin-bottom:0}
+@media(max-width:1100px){.intro-links{flex-direction:row;flex-wrap:wrap;align-items:center;gap:0 24px;margin-top:10px}}
+
+/* Pie: "Volver arriba" a la misma altura, sobre el margen derecho. */
+.footer-bottom>div:last-child{justify-self:end;text-align:right}
+
+/* Recordatorio de cuidados destacado sobre la tela de fondo. */
+.care-section>.care-reminder{font-weight:600;background:rgb(249 248 246 / .92);padding:14px 18px;border-top:0}
+
+/* "Sobre el proyecto": título y texto fijos, sin desplegable. */
+.project-about>h3{font-family:var(--sans);font-weight:500;font-size:21px;line-height:1.35;padding:18px 0 0;margin:0}

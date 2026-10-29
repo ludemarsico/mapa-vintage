@@ -42,12 +42,14 @@ export function safeImage(value) {
 const hash = text => { let h = 2166136261; for (const c of text) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
 // Encabezados resueltos una vez por estructura de fila: con miles de filas evita repetir la búsqueda por campo.
 const columnCache = new Map();
-const columnsFor = row => {
+const columnsFor = (row, columns) => {
   const headers = Object.keys(row), signature = headers.join('\u0000');
-  if (!columnCache.has(signature)) columnCache.set(signature, Object.fromEntries(Object.entries(CONFIG.columns).map(([key, names]) => [key, headers.find(h => names.some(n => fold(n) === fold(h)))])));
-  return columnCache.get(signature);
+  if (!columnCache.has(columns)) columnCache.set(columns, new Map());
+  const cache = columnCache.get(columns);
+  if (!cache.has(signature)) cache.set(signature, Object.fromEntries(Object.entries(columns).map(([key, names]) => [key, headers.find(h => names.some(n => fold(n) === fold(h)))])));
+  return cache.get(signature);
 };
-const get = (row, key) => { const header = columnsFor(row)[key]; return header ? String(row[header] ?? '').trim() : ''; };
+const get = (row, key, columns = CONFIG.columns) => { const header = columnsFor(row, columns)[key]; return header ? String(row[header] ?? '').trim() : ''; };
 // Sin tildes y en minúsculas, conservando la longitud del texto NFC para ubicar coincidencias.
 const plain = text => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const categoryPatterns = CONFIG.categories.map(name => [name, new RegExp(plain(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s*([/&,])\s*/g, '\\s*$1\\s*').replace(/ +/g, '\\s+'))]);
@@ -67,27 +69,21 @@ export function classify(value, tipo) {
   const vintage = /\bvintage\b/.test(v), segunda = /segunda mano|second hand|thrift/.test(v);
   return vintage && segunda ? 'Vintage y segunda mano' : vintage ? 'Vintage' : segunda ? 'Segunda mano' : '';
 }
+// La curaduría se hace en la hoja Directorio: todo local incluido ahí se publica.
+// Solo quedan afuera las filas que no se pueden mostrar: sin nombre o sin coordenadas para ubicarlas en el mapa.
 export function normalizeStores(rows) {
-  if (rows.length && (!Object.keys(rows[0]).some(h => fold(h) === 'nombre') || !Object.keys(rows[0]).some(h => fold(h) === 'tipologia'))) throw new Error('La fuente no tiene los encabezados esperados: Nombre y Tipología.');
+  if (rows.length && !Object.keys(rows[0]).some(h => fold(h) === 'nombre')) throw new Error('La fuente no tiene el encabezado esperado: Nombre.');
   const stores = [], review = []; const ids = new Set();
   for (const row of rows) {
     const nombre = get(row, 'nombre'), tipo = fold(get(row, 'tipo')), direccion = get(row, 'direccion');
-    const raw = [tipo, get(row, 'descripcion'), direccion, get(row, 'horarios')].map(fold).join(' ');
     const lat = Number(get(row, 'lat').replace(',', '.')), lng = Number(get(row, 'lng').replace(',', '.'));
-    const ciudad = fold(get(row, 'ciudad'));
     let reason = '';
-    if (!nombre || !direccion) reason = 'Falta nombre o dirección';
-    else if (/showroom|cita previa|con cita|solo online|exclusivamente online|tienda online|unicamente online/.test(raw)) reason = 'Showroom, cita previa u online';
-    else if (/feria colectiva|evento|pop.?up|puesto de feria/.test(tipo) && !/\blocal a la calle\b/.test(fold(get(row, 'descripcion')))) reason = 'Corresponde revisar para agenda';
-    else if (ciudad && !['caba', 'buenos aires', 'capital federal', 'ciudad autonoma de buenos aires'].includes(ciudad)) reason = 'Fuera de CABA';
-    else if (!get(row, 'lat') || !get(row, 'lng') || !Number.isFinite(lat) || !Number.isFinite(lng) || lat < -34.71 || lat > -34.52 || lng < -58.54 || lng > -58.32) reason = 'Coordenadas incompletas o fuera del área CABA; revisar';
-    const presencial = fold(get(row, 'presencial'));
-    const declared = ['si', 'true', '1'].includes(presencial) || ['boutique vintage', 'cadena de reventa', 'local a la calle'].includes(tipo) || /\blocal (?:a la calle|de reventa)\b|\btienda de segunda mano\b/.test(fold(get(row, 'descripcion')));
-    if (!reason && (['no', 'false', '0'].includes(presencial) || !declared)) reason = 'Confirmar que es un local a la calle';
-    if (!reason && get(row, 'estado') && !['publicado', 'activo'].includes(fold(get(row, 'estado')))) reason = 'Sin publicación aprobada';
-    const id = get(row, 'id') || 'mv-' + hash(fold(nombre + '|' + direccion));
-    if (!reason && ids.has(id)) reason = 'ID duplicado';
+    if (!nombre) reason = 'Falta el nombre';
+    else if (!get(row, 'lat') || !get(row, 'lng') || !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) reason = 'Faltan coordenadas o no son válidas';
+    let id = get(row, 'id') || 'mv-' + hash(fold(nombre + '|' + direccion));
     if (reason) { review.push({ id, nombre, reason }); continue; }
+    // Un ID repetido por error en la hoja no saca al local: se distingue con un sufijo.
+    if (ids.has(id)) { let n = 2; while (ids.has(id + '-' + n)) n++; id += '-' + n; }
     ids.add(id);
     const source = get(row, 'prendas') || get(row, 'especialidad');
     const rawTags = source.split(/[,;|&]/).map(t => t.trim()).filter(Boolean);
@@ -145,4 +141,33 @@ export function nextEventDate(row, today = buenosAiresDate()) {
     if (/^mensual:(?:[1-9]|[12]\d|3[01])$/.test(rule) && Number(rule.split(':')[1]) === d.getUTCDate()) return date;
   }
   return '';
+}
+// Fechas de la hoja: 2026-11-08 o 8/11/2026 (día/mes/año, como las escribe Sheets en es-AR).
+export function sheetDate(value) {
+  const s = String(value || '').trim();
+  if (validDate(s)) return s;
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (!m) return '';
+  const iso = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return validDate(iso) ? iso : '';
+}
+// Hoja "Agenda": todo lo que está en la hoja se publica. Si hay columna Fecha, se ocultan las fechas que ya pasaron;
+// las filas sin fecha (con Días y Horarios) se muestran al final, en el orden de la hoja.
+export function normalizeEvents(rows, today = buenosAiresDate()) {
+  const C = CONFIG.agendaColumns, dated = [], undated = [], ids = new Set();
+  for (const row of rows) {
+    const g = key => get(row, key, C), nombre = g('nombre');
+    if (!nombre) continue;
+    const fecha = sheetDate(g('fecha')), fin = sheetDate(g('fechaFin'));
+    let next = '';
+    if (fecha && g('recurrencia')) { next = nextEventDate({ fecha_inicio: fecha, fecha_fin: fin, recurrencia: g('recurrencia') }, today); if (!next) continue; }
+    else if (fecha) { if ((fin || fecha) < today) continue; next = fecha < today ? today : fecha; }
+    let id = g('id') || 'ev-' + hash(fold(nombre + '|' + g('fecha') + '|' + g('direccion')));
+    if (ids.has(id)) { let n = 2; while (ids.has(id + '-' + n)) n++; id += '-' + n; }
+    ids.add(id);
+    const precio = g('precio').replace(/\s/g, '');
+    const event = { id, nombre, next, fechaTexto: fecha ? '' : g('fecha'), dias: g('dias'), tipo: g('tipo'), horario: g('horario'), precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', especialidad: g('especialidad'), barrio: g('barrio'), direccion: g('direccion'),
+      descripcion: g('descripcion'), acceso: g('acceso'), enlace: socialURL(g('enlace')), imagen: safeImage(g('imagen')) };
+    (next ? dated : undated).push(event);
+  }
+  return [...dated.sort((a, b) => a.next.localeCompare(b.next)), ...undated];
 }

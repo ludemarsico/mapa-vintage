@@ -15,6 +15,12 @@ export function hallazgoEndpoint(value) {
   const host = new URL(url).hostname;
   return /(^|\.)script\.google(?:usercontent)?\.com$/i.test(host) ? '' : url;
 }
+// La red social se escribe como @usuario (Instagram); también se acepta un enlace completo. Vacío es válido.
+export function socialHandle(value) {
+  const s = String(value || '').trim(); if (!s) return '';
+  const handle = s.match(/^@?([A-Za-z0-9_.]{1,30})$/); if (handle) return 'https://www.instagram.com/' + handle[1] + '/';
+  return safeURL(s);
+}
 export function confirmedReceipt(response, body, expectedId) {
   return [200, 202].includes(response.status) && body?.received === true && (!expectedId || body.id === expectedId) && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id || '');
 }
@@ -49,9 +55,9 @@ export function initHallazgo() {
     event.preventDefault();
     if (!connected || !token || pending) { if (!connected) status.textContent = DEMO ? 'Contenido de demostración. Los envíos están desactivados.' : 'La recepción de fotos todavía no está habilitada. Tu aporte no se enviará.'; return; }
     fileInput.setCustomValidity(photoError(fileInput.files[0]));
-    const social = $('#hallazgo-social'); social.setCustomValidity(social.value.trim() && !safeURL(social.value) ? 'Usá un enlace http:// o https://.' : '');
+    const social = $('#hallazgo-social'); social.setCustomValidity(social.value.trim() && !socialHandle(social.value) ? 'Escribí tu usuario con @ (por ejemplo @mapavintage) o un enlace https://.' : '');
     if (!form.reportValidity()) return;
-    const body = new FormData(form); body.set('submission_id', draftId); body.set('cf-turnstile-response', token);
+    const body = new FormData(form); body.set('social_url', socialHandle(social.value)); body.set('submission_id', draftId); body.set('cf-turnstile-response', token);
     pending = true; syncButton(); status.textContent = 'Enviando tu hallazgo…';
     // Se congelan los campos, pero el FormData ya conserva el archivo y el texto.
     const controls = [...form.querySelectorAll('input,textarea')]; controls.forEach(n => { n.disabled = true; });
