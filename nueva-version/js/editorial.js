@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { CARE, GLOSSARY } from './content.js';
-import { fetchRows, published, nextEventDate, safeImage, safeURL, validDate } from './data.js';
+import { fetchRows, published, normalizeEvents, safeImage, safeURL, validDate } from './data.js';
 import { $, el, link, picture, paragraphs } from './dom.js';
 import { DEMO, DEMO_AGENDA, DEMO_WALL, DEMO_NOTES, demoStamp } from './demo.js';
 
@@ -12,7 +12,7 @@ export function initGlossary() {
   const activate = (index, focus = false) => {
     [...tabs.children].forEach((b, i) => { b.setAttribute('aria-selected', String(i === index)); b.tabIndex = i === index ? 0 : -1; });
     panel.setAttribute('aria-labelledby', 'glossary-tab-' + index); panel.dataset.color = String(index);
-    panel.replaceChildren(el('span', { class: 'folder-caption' }, 'Archivo de términos'), el('h3', {}, GLOSSARY[index].titulo), el('p', {}, GLOSSARY[index].texto));
+    panel.replaceChildren(el('h3', {}, GLOSSARY[index].titulo), el('p', {}, GLOSSARY[index].texto));
     if (focus) tabs.children[index].focus({ preventScroll: true });
   };
   GLOSSARY.forEach((item, index) => {
@@ -27,18 +27,37 @@ export function initGlossary() {
   root.append(fallback, tabs, panel); activate(0); fallback.hidden = true;
 }
 
+// Deslizar horizontalmente en pantallas táctiles cambia de elemento; un toque sin desplazamiento sigue siendo un clic.
+export function onSwipe(target, change) {
+  let start = null, swiped = false;
+  target.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') start = { x: e.clientX, y: e.clientY }; swiped = false; });
+  target.addEventListener('pointerup', e => {
+    if (!start) return; const dx = e.clientX - start.x, dy = e.clientY - start.y; start = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) { swiped = true; change(dx < 0 ? 1 : -1); }
+  });
+  target.addEventListener('pointercancel', () => { start = null; });
+  target.addEventListener('click', e => { if (swiped) { e.stopPropagation(); e.preventDefault(); swiped = false; } }, true);
+}
+
 export function initCare() {
   const fallback = $('#care-fallback'), fan = $('.swatch-fan');
   fan.removeAttribute('aria-hidden'); fan.setAttribute('role', 'group'); fan.setAttribute('aria-label', 'Muestrario de materiales y tejidos');
   fan.querySelector('.swatch-ring').setAttribute('aria-hidden', 'true');
   const colors = ['#DCCBA4','#ECC8BE','#C9D2B7','#EBDDAA','#D5C8AF','#A3B4C0','#E9E4D7','#D9C9D2'];
+  // Materiales: abanico de telas; cualquier tela visible se puede elegir. Prendas: una prenda por página con su figurín.
+  // En ambos, flechas a los costados y deslizamiento en pantallas táctiles.
   const initGroup = (items, readingSelector, materials) => {
     let index = 0, turning = false;
     const reading = $(readingSelector), buttons = [];
+    const stage = materials ? fan : $('#garment-buttons'), frame = materials ? $('.swatch-catalog') : stage;
     const restingAngles = [-48, -32, -16, 0, 16, 32, 48, 58];
+    const noun = materials ? 'Tela' : 'Prenda';
+    const prev = el('button', { type: 'button', class: 'care-arrow care-arrow-prev', 'aria-label': noun + ' anterior', 'aria-controls': reading.id }, '←');
+    const next = el('button', { type: 'button', class: 'care-arrow care-arrow-next', 'aria-label': noun + ' siguiente', 'aria-controls': reading.id }, '→');
+    const count = el('p', { class: 'care-count', 'aria-hidden': 'true' });
     const focusControl = target => {
       if (target === 'fan') buttons[index].focus({ preventScroll: true });
-      else if (target) reading.querySelector(target === 'next' ? '[aria-label="Cuidado siguiente"]' : '[aria-label="Cuidado anterior"]').focus({ preventScroll: true });
+      else if (target) (target === 'next' ? next : prev).focus({ preventScroll: true });
     };
     const render = () => {
       buttons.forEach((button, i) => {
@@ -48,22 +67,12 @@ export function initCare() {
           const depth = (i - index + items.length) % items.length;
           button.style.setProperty('--leaf-order', active ? '20' : String(items.length - depth));
           button.style.setProperty('--leaf-angle', active ? '-4deg' : restingAngles[i] + 'deg');
-          button.disabled = !active;
-          button.setAttribute('aria-hidden', String(!active));
-          button.setAttribute('aria-label', itemLabel(i));
-        }
+        } else button.hidden = !active;
       });
       const item = items[index]; reading.replaceChildren(el('h4', {}, item.titulo), el('p', { class: 'care-full' }, item.texto));
-      if (!materials) return;
-      const controls = el('div', { class: 'care-controls' });
-      const prev = el('button', { type: 'button', 'aria-label': 'Cuidado anterior' }, '← Anterior');
-      const next = el('button', { type: 'button', 'aria-label': 'Cuidado siguiente' }, 'Siguiente →');
-      const change = delta => select(index + delta, delta, delta > 0 ? 'next' : 'prev');
-      prev.onclick = () => change(-1); next.onclick = () => change(1);
+      count.textContent = `${index + 1} / ${items.length}`;
       prev.disabled = next.disabled = turning;
-      controls.append(prev, el('span', {}, `${index + 1} / ${items.length}`), next); reading.append(controls);
     };
-    const itemLabel = i => `${items[i].titulo}. Siguiente tela: ${items[(i + 1) % items.length].titulo}`;
     const rotate = async (button, from, to, duration) => {
       const motion = button.animate([{ transform: `rotate(${from}deg)` }, { transform: `rotate(${to}deg)` }], { duration, easing: 'cubic-bezier(.35,0,.2,1)', fill: 'forwards' });
       try { await motion.finished; } finally { motion.cancel(); }
@@ -76,13 +85,12 @@ export function initCare() {
       if (!materials || !sequential || matchMedia('(prefers-reduced-motion: reduce)').matches || !buttons[index].animate) {
         index = nextIndex; render(); focusControl(focus); return;
       }
-      turning = true; fan.setAttribute('aria-busy', 'true');
-      reading.querySelectorAll('.care-controls button').forEach(button => { button.disabled = true; });
+      turning = true; fan.setAttribute('aria-busy', 'true'); prev.disabled = next.disabled = true;
       const outgoing = index, moving = buttons[direction > 0 ? index : nextIndex];
       moving.dataset.turning = 'true';
       moving.style.setProperty('--turn-order', direction > 0 ? '40' : '0');
       let committed = false;
-      const commit = () => { index = nextIndex; committed = true; render(); focusControl(focus); };
+      const commit = () => { index = nextIndex; committed = true; render(); };
       try {
         await rotate(moving, direction > 0 ? -4 : restingAngles[nextIndex], -108, 280);
         moving.style.setProperty('--turn-order', direction > 0 ? '0' : '40');
@@ -93,13 +101,14 @@ export function initCare() {
         if (!committed) commit();
       } finally {
         delete moving.dataset.turning; moving.style.removeProperty('--turn-order');
-        turning = false; fan.setAttribute('aria-busy', 'false');
-        reading.querySelectorAll('.care-controls button').forEach(button => { button.disabled = false; });
+        turning = false; fan.setAttribute('aria-busy', 'false'); prev.disabled = next.disabled = false;
         focusControl(focus);
       }
     };
+    const change = delta => select(index + delta, delta, delta > 0 ? 'next' : 'prev');
+    prev.onclick = () => change(-1); next.onclick = () => change(1);
     items.forEach((item, i) => {
-      const button = el('button', { type: 'button', class: materials ? 'fan-leaf' : 'garment-button', 'aria-label': materials ? 'Mostrar cuidado de ' + item.titulo : item.titulo, title: item.titulo, 'aria-controls': reading.id });
+      const button = el('button', { type: 'button', class: materials ? 'fan-leaf' : 'garment-button', 'aria-label': materials ? 'Mostrar cuidado de ' + item.titulo : item.titulo + ', ver la prenda siguiente', title: item.titulo, 'aria-controls': reading.id });
       button.append(el('span', { class: materials ? 'leaf-label' : 'garment-label' }, item.titulo));
       if (materials) {
         button.style.setProperty('--leaf-color', colors[i]);
@@ -113,13 +122,17 @@ export function initCare() {
         const path = CONFIG.careImages?.[item.titulo], image = path ? picture(path, 'Recurso ilustrativo para ' + item.titulo) : null;
         if (image) { button.append(image); button.classList.add('has-art'); }
       }
-      button.onclick = () => materials ? select(index + 1, 1, 'fan') : select(i);
+      // La tela de arriba pasa a la siguiente; cualquier otra tela visible se elige directamente.
+      button.onclick = () => materials ? (i === index ? select(index + 1, 1, 'fan') : select(i, (i - index + items.length) % items.length === 1 ? 1 : -1, 'fan')) : change(1);
       if (materials) button.onkeydown = e => {
         const moves = { ArrowRight: (i + 1) % items.length, ArrowLeft: (i - 1 + items.length) % items.length, Home: 0, End: items.length - 1 };
         if (e.key in moves) { e.preventDefault(); select(moves[e.key], e.key === 'ArrowLeft' || e.key === 'Home' ? -1 : 1, 'fan'); }
       };
-      buttons.push(button); (materials ? fan : $('#garment-buttons')).append(button);
-    }); render();
+      buttons.push(button); stage.append(button);
+    });
+    frame.classList.add('care-pager'); frame.append(prev, next, count);
+    onSwipe(stage, change);
+    render();
   };
   initGroup(CARE.slice(0, 8), '#fabric-reading', true);
   initGroup(CARE.slice(8), '#garment-reading', false);
@@ -133,33 +146,95 @@ export async function initEditorial(openReader) {
     const button = el('button', { type: 'button' }, 'Reintentar'); button.onclick = () => { status.replaceChildren(); retry(); }; status.append(button);
   };
   const stamp = () => el('span', { class: 'demo-stamp' }, demoStamp());
+  // Agenda: listado paginado como el del Mapa, con la información de la hoja "Agenda".
+  const dateLabel = iso => new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.timezone, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(iso + 'T12:00:00-03:00'));
   const loadAgenda = async () => {
     try {
       let events;
-      if (DEMO) events = DEMO_AGENDA;
+      if (DEMO) events = DEMO_AGENDA.map(r => ({ id: r.id, nombre: r.titulo, descripcion: r.descripcion, demo: true, next: '' }));
       else {
         const { connected, rows } = await fetchRows(CONFIG.sources.agenda); if (!connected) return;
-        events = published(rows).map(r => ({ ...r, next: nextEventDate(r) })).filter(r => r.id && r.titulo && r.next).sort((a, b) => a.next.localeCompare(b.next));
+        events = normalizeEvents(rows);
       }
       if (!events.length) return;
       $('#agenda').classList.remove('is-empty');
-      let count = 3;
+      let page = 1; const expanded = new Set();
       const render = () => {
         const board = $('#agenda-board'); board.replaceChildren();
-        events.slice(0, count).forEach(r => {
-          const card = el('article', { class: 'agenda-poster' });
-          if (r.demo) card.append(stamp(), el('span', { class: 'poster-date' }, 'Fecha · horario'));
-          else card.append(el('time', { datetime: r.next }, new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.timezone, day: 'numeric', month: 'long' }).format(new Date(r.next + 'T12:00:00-03:00'))));
-          card.append(el('h3', {}, r.titulo));
-          const img = picture(r.imagen, r.titulo); if (img) card.append(img);
-          [r.barrio, r.direccion, r.horario, r.acceso, r.descripcion].filter(Boolean).forEach(t => card.append(el('p', {}, t)));
-          if (safeURL(r.enlace)) card.append(link('Ver detalles ↗', r.enlace, 'text-link'));
+        const pages = Math.ceil(events.length / CONFIG.pageSize);
+        $('#agenda-pagination').hidden = pages < 2;
+        $('#agenda-count').textContent = `Página ${page} de ${pages} · ${events.length} fechas`;
+        $('#agenda-prev').disabled = page <= 1; $('#agenda-next').disabled = page >= pages;
+        events.slice((page - 1) * CONFIG.pageSize, page * CONFIG.pageSize).forEach(r => {
+          const card = el('article', { class: 'store-card agenda-card', 'aria-label': r.nombre });
+          if (r.demo) card.append(stamp());
+          const meta = el('div', { class: 'meta' });
+          // Fecha si la hoja la tiene; si no, los días.
+          const when = r.next ? el('time', { datetime: r.next }, dateLabel(r.next)) : r.dias || r.fechaTexto ? el('span', {}, r.dias || r.fechaTexto) : r.demo ? el('span', {}, 'Fecha · horario') : null;
+          if (when) meta.append(when);
+          if (r.barrio) meta.append(el('span', {}, r.barrio));
+          if (r.precio) meta.append(el('span', { class: 'store-price' }, r.precio));
+          if (r.tipo) meta.append(el('span', { class: 'store-kind' }, r.tipo));
+          card.append(meta, el('h3', {}, r.nombre));
+          const open = expanded.has(r.id), detailsId = 'agenda-details-' + r.id.replace(/[^\w-]/g, '_');
+          const more = el('button', { type: 'button', class: 'store-more', 'aria-expanded': String(open), 'aria-controls': detailsId }, open ? 'Ver menos' : 'Ver más');
+          const details = el('div', { class: 'store-details', id: detailsId }); details.hidden = !open;
+          if (r.direccion) details.append(el('p', {}, r.direccion));
+          if (r.dias && r.next) details.append(el('p', { class: 'specialties' }, r.dias));
+          if (r.horario) details.append(el('p', { class: 'specialties' }, r.horario));
+          [r.acceso, r.especialidad].filter(Boolean).forEach(t => details.append(el('p', { class: 'specialties' }, t)));
+          if (r.descripcion) details.append(el('p', { class: 'store-description' }, r.descripcion));
+          const img = picture(r.imagen, r.nombre); if (img) details.append(img);
+          const actions = el('div', { class: 'actions' });
+          if (r.direccion) actions.append(link('Cómo llegar ↗', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${r.direccion}, ${r.barrio ? r.barrio + ', ' : ''}CABA`)));
+          if (r.enlace) actions.append(link('Instagram ↗', r.enlace));
+          if (actions.children.length) details.append(actions);
+          more.onclick = () => {
+            const show = details.hidden; details.hidden = !show; more.setAttribute('aria-expanded', String(show)); more.textContent = show ? 'Ver menos' : 'Ver más';
+            if (show) expanded.add(r.id); else expanded.delete(r.id);
+          };
+          if (details.children.length) card.append(more, details);
           board.append(card);
         });
-        $('#agenda-more').hidden = count >= events.length;
       };
-      $('#agenda-more').onclick = () => { count += 3; render(); }; render();
+      $('#agenda-prev').onclick = () => { if (page > 1) { page--; render(); $('#agenda-board').scrollTop = 0; } };
+      $('#agenda-next').onclick = () => { if (page * CONFIG.pageSize < events.length) { page++; render(); $('#agenda-board').scrollTop = 0; } };
+      render();
     } catch { $('#agenda-board').hidden = true; errorState('#agenda-status', () => { $('#agenda-board').hidden = false; loadAgenda(); }); }
+  };
+  // Muro: Polaroids. Abajo, hasta 180 caracteres; "Seguir leyendo" da vuelta la foto para leer todo, con nombre y red social.
+  // Se ven 3 en escritorio, 2 en tablet y 1 en el teléfono; las flechas (o deslizar) pasan a las siguientes.
+  const WALL_PREVIEW = 180;
+  const preview = text => {
+    const flat = String(text || '').replace(/\s+/g, ' ').trim(); if (flat.length <= WALL_PREVIEW) return { text: flat, cut: false };
+    let cut = flat.slice(0, WALL_PREVIEW); const space = cut.lastIndexOf(' '); if (space > WALL_PREVIEW * 0.6) cut = cut.slice(0, space);
+    return { text: cut.replace(/[\s,.;:]+$/, '') + '…', cut: true };
+  };
+  const handleLabel = url => { const m = String(url).match(/^https:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9_.]{1,30})\/?$/); return m ? '@' + m[1] : 'Red social ↗'; };
+  const wallQueries = [matchMedia('(max-width: 640px)'), matchMedia('(max-width: 900px)')];
+  const perPage = () => wallQueries[0].matches ? 1 : wallQueries[1].matches ? 2 : 3;
+  const polaroid = r => {
+    const card = el('article', { class: 'polaroid', 'aria-label': 'Hallazgo de ' + r.nombre_alias });
+    const inner = el('div', { class: 'polaroid-inner' }), front = el('div', { class: 'polaroid-face polaroid-front' }), back = el('div', { class: 'polaroid-face polaroid-back' });
+    if (r.demo) front.append(stamp());
+    const photo = el('div', { class: 'polaroid-photo' }), img = picture(r.imagen, r.alt || 'Hallazgo compartido por ' + r.nombre_alias);
+    if (img) photo.append(img); else photo.classList.add('is-empty');
+    const { text, cut } = preview(r.texto), caption = el('div', { class: 'polaroid-caption' });
+    caption.append(el('p', {}, text));
+    const social = safeURL(r.red_url), author = () => { const p = el('p', { class: 'polaroid-author' }); p.append(el('strong', {}, r.nombre_alias)); if (social) p.append(link(handleLabel(social), social)); return p; };
+    front.append(photo, caption);
+    if (!cut) { caption.append(author()); inner.append(front); card.append(inner); return card; }
+    const flip = (toBack, focusSelector) => {
+      card.classList.toggle('is-flipped', toBack); front.inert = toBack; back.inert = !toBack;
+      front.setAttribute('aria-hidden', String(toBack)); back.setAttribute('aria-hidden', String(!toBack));
+      card.querySelector(focusSelector)?.focus({ preventScroll: true });
+    };
+    const readMore = el('button', { type: 'button', class: 'polaroid-turn' }, 'Seguir leyendo'), showImage = el('button', { type: 'button', class: 'polaroid-turn' }, 'Ver imagen');
+    readMore.onclick = () => flip(true, '.polaroid-back .polaroid-turn'); showImage.onclick = () => flip(false, '.polaroid-front .polaroid-turn');
+    caption.append(readMore);
+    const body = el('div', { class: 'polaroid-text' }); paragraphs(r.texto, body);
+    back.append(body, author(), showImage); back.inert = true; back.setAttribute('aria-hidden', 'true');
+    inner.append(front, back); card.append(inner); return card;
   };
   const loadWall = async () => {
     try {
@@ -170,16 +245,21 @@ export async function initEditorial(openReader) {
         posts = published(rows).filter(r => r.id && r.nombre_alias && safeImage(r.imagen)).sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
       }
       if (!posts.length) return;
-      $('#comunidad').classList.remove('is-empty'); const wall = $('#wall'); wall.replaceChildren();
-      posts.forEach(r => {
-        const b = el('button', { type: 'button', class: 'wall-item', 'aria-label': r.demo ? 'Abrir ' + r.nombre_alias : 'Abrir hallazgo de ' + r.nombre_alias });
-        if (r.demo) b.append(stamp());
-        const img = picture(r.imagen, r.alt || 'Hallazgo compartido por ' + r.nombre_alias); if (img) b.append(img);
-        b.append(el('span', {}, r.texto), el('strong', {}, r.nombre_alias));
-        if (r.demo) b.append(el('small', {}, 'Recurso del manual; no es una publicación.'));
-        b.onclick = () => openReader(r.nombre_alias, container => { if (r.demo) container.append(stamp()); const img = picture(r.imagen, r.alt || 'Hallazgo de ' + r.nombre_alias); if (img) container.append(img); paragraphs(r.texto, container); if (safeURL(r.red_url)) container.append(link('Web o red social ↗', r.red_url, 'text-link')); }, b);
-        wall.append(b);
-      });
+      $('#muro').classList.remove('is-empty');
+      const wall = $('#wall'), prev = $('#wall-prev'), next = $('#wall-next'), count = $('#wall-count');
+      let start = 0;
+      const render = () => {
+        const n = perPage(); start = Math.min(Math.floor(start / n) * n, Math.max(0, posts.length - 1));
+        wall.replaceChildren(...posts.slice(start, start + n).map(polaroid)); wall.dataset.perPage = String(n);
+        const paged = posts.length > n; prev.hidden = next.hidden = count.hidden = !paged;
+        prev.disabled = start <= 0; next.disabled = start + n >= posts.length;
+        count.textContent = n === 1 ? `${start + 1} de ${posts.length}` : `${start + 1}–${Math.min(start + n, posts.length)} de ${posts.length}`;
+      };
+      const move = delta => { const n = perPage(), to = start + delta * n; if (to < 0 || to >= posts.length) return; start = to; render(); };
+      prev.onclick = () => move(-1); next.onclick = () => move(1);
+      onSwipe(wall, move);
+      wallQueries.forEach(q => q.addEventListener('change', render));
+      render();
     } catch { $('#wall').hidden = true; errorState('#wall-status', () => { $('#wall').hidden = false; loadWall(); }); }
   };
   let noteIndex = 0, listView = false;

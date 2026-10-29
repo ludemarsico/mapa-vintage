@@ -43,7 +43,7 @@ async function applyFont(key, initial = false) {
   }
   if (currentRevision !== revision) return;
   const win = frame.contentWindow;
-  const sections = [...doc.querySelectorAll('main>section')];
+  const sections = [...doc.querySelectorAll('main .view:not([hidden]) > section, main > section')];
   const anchor = sections.find(section => section.getBoundingClientRect().bottom > 100);
   const previousTop = anchor?.getBoundingClientRect().top;
   if (key === 'actual') delete doc.documentElement.dataset.fontPreview;
@@ -51,7 +51,9 @@ async function applyFont(key, initial = false) {
   // Mantiene la sección que se estaba mirando al alternar las fuentes.
   if (initial) {
     const requested = url.hash.slice(1) || 'recorridos';
-    (doc.getElementById(requested) || doc.querySelector('#recorridos')).scrollIntoView({ behavior: 'instant' });
+    // El sitio muestra una vista por vez: el ancla abre la vista que contiene la sección.
+    const target = doc.getElementById(requested) ? requested : 'recorridos';
+    win.location.replace(win.location.pathname + win.location.search + '#' + target);
   } else if (anchor) {
     win.scrollBy({ top: anchor.getBoundingClientRect().top - previousTop, behavior: 'instant' });
   }

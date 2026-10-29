@@ -2,7 +2,9 @@ import { safeURL, safeImage } from './data.js';
 export const $ = selector => document.querySelector(selector);
 export function el(tag, attrs = {}, text = '') {
   const n = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) { if (k === 'class') n.className = v; else if (v !== undefined && v !== null) n.setAttribute(k, String(v)); }
+  for (const [k, v] of Object.entries(attrs)) { if (k === 'class') n.className = v;
+    // Estilos por CSSOM: compatibles con una Content-Security-Policy sin estilos en línea.
+    else if (k === 'style') n.style.cssText = String(v); else if (v !== undefined && v !== null) n.setAttribute(k, String(v)); }
   if (text) n.textContent = text;
   return n;
 }
