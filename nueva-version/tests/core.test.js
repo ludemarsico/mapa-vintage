@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { parseCSV, normalizeStores, normalizeEvents, sheetDate, matches, fold, safeURL, safeImage, socialURL, nextEventDate, buenosAiresDate, validDate } from '../js/data.js';
 import { socialHandle } from '../js/hallazgo.js';
 import { generateRoute, totals, alternatives, encodeRoute, restoreRoute } from '../js/routes.js';
@@ -22,6 +22,7 @@ test('solo exige nombre y coordenadas válidas', () => { for (const bad of [{ No
 test('un ID repetido en la hoja no saca locales: se distingue con sufijo', () => { const { stores: list } = normalizeStores([row, { ...row, Nombre: 'Otro' }]); assert.equal(list.length, 2); assert.notEqual(list[0].id, list[1].id); });
 test('Agenda: fechas de Sheets, pasadas ocultas, sin fecha al final', () => { const rows = [{ Nombre: 'Sin fecha', Fecha: '', Horario: 'Domingos' }, { Nombre: 'Pasada', Fecha: '01/10/2026' }, { Nombre: 'Próxima', Fecha: '8/11/2026', Barrio: 'San Telmo', Instagram: '@feria' }, { Nombre: 'Antes', Fecha: '2026-11-01' }, { Nombre: 'Con estado', Fecha: '2026-11-02', Estado: 'borrador' }]; const list = normalizeEvents(rows, '2026-10-29'); assert.deepEqual(list.map(e => e.nombre), ['Antes', 'Con estado', 'Próxima', 'Sin fecha']); assert.equal(list[2].next, '2026-11-08'); assert.equal(list[2].enlace, 'https://www.instagram.com/feria/'); assert.equal(sheetDate('31/02/2026'), ''); });
 test('Agenda con las columnas de la hoja: Días, Horarios, Rango Precio, sin fecha', () => { const [e] = normalizeEvents([{ ID: '1', Nombre: 'Feria de prueba', Barrio: 'Palermo', Dirección: 'Calle 1', Latitud: '', Longitud: '', Tipología: 'Feria colectiva', 'Rango Precio': '$', Especialidad: 'Mix', Días: 'Sábados y domingos', Horarios: '11 a 19', Instagram: '@prueba', 'Descripción breve': 'Texto' }], '2026-10-29'); assert.equal(e.dias, 'Sábados y domingos'); assert.equal(e.horario, '11 a 19'); assert.equal(e.precio, '$'); assert.equal(e.tipo, 'Feria colectiva'); assert.equal(e.descripcion, 'Texto'); assert.equal(e.next, ''); });
+test('Agenda: una fecha en la columna Días es la fecha del evento', () => { const rows = [{ Nombre: 'OGA', Días: '07/11/2026', Horarios: '10 a 18:30h' }, { Nombre: 'Pasada', Días: '01/11/2026' }, { Nombre: 'Fija', Días: 'Sábados' }]; const list = normalizeEvents(rows, '2026-11-04'); assert.deepEqual(list.map(e => [e.nombre, e.next, e.dias]), [['OGA', '2026-11-07', ''], ['Fija', '', 'Sábados']]); });
 test('Agenda acepta el formato anterior con recurrencia', () => { const [e] = normalizeEvents([{ titulo: 'Feria', fecha_inicio: '2026-10-01', recurrencia: 'semanal:7' }], '2026-10-29'); assert.equal(e.next, '2026-11-01'); });
 test('red social del hallazgo: @usuario, enlace seguro o vacío', () => { assert.equal(socialHandle('@mi.usuario'), 'https://www.instagram.com/mi.usuario/'); assert.equal(socialHandle('https://example.com/yo'), 'https://example.com/yo'); assert.equal(socialHandle('javascript:alert(1)'), ''); assert.equal(socialHandle('@ con espacios'), ''); assert.equal(socialHandle(''), ''); });
 test('coordenadas decimales con coma son compatibles', () => assert.equal(normalizeStores([{ ...row, Latitud: '-34,60' }]).stores[0].lat, -34.6));
@@ -40,8 +41,15 @@ test('fechas inexistentes son inválidas', () => { assert.equal(validDate('2026-
 test('agenda oculta vencidos y respeta intervalo inclusivo', () => { assert.equal(nextEventDate({ fecha_inicio: '2026-10-01' }, '2026-10-17'), ''); assert.equal(nextEventDate({ fecha_inicio: '2026-10-16', fecha_fin: '2026-10-18' }, '2026-10-17'), '2026-10-17'); });
 test('recurrencias semanales y mensuales requieren reglas válidas', () => { assert.equal(nextEventDate({ fecha_inicio: '2026-10-01', recurrencia: 'semanal:7' }, '2026-10-17'), '2026-10-18'); assert.equal(nextEventDate({ fecha_inicio: '2026-10-01', recurrencia: 'mensual:20' }, '2026-10-17'), '2026-10-20'); assert.equal(nextEventDate({ fecha_inicio: '2026-10-01', recurrencia: 'cada tanto' }, '2026-10-17'), ''); });
 test('contrato: origen y evento se agregan dentro de descripcion', () => { const text = serializeProposal({ source: 'recomendado', type: 'Feria colectiva', event: 'fecha de prueba', text: 'Descripción original' }); assert.match(text, /Recomendación de visitante/); assert.match(text, /Agenda/); assert.ok(text.endsWith('Descripción original')); });
-test('los 13 cuidados y las cinco definiciones coinciden íntegros con el megaprompt', () => {
-  const doc = readFileSync(new URL('../assets/originales/Mapa-Vintage-megaprompt-Codex.md', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
-  assert.equal(CARE.length, 13); assert.equal(GLOSSARY.length, 5);
-  [...CARE, ...GLOSSARY].forEach(item => assert.ok(doc.includes('### ' + item.titulo + '\n\n' + item.texto), item.titulo));
+test('los 18 cuidados coinciden íntegros con Cuidados.pdf y las cinco definiciones con el megaprompt', () => {
+  const read = name => readFileSync(new URL('../assets/originales/' + name, import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const care = read('cuidados-2026-11-04.md'), doc = read('Mapa-Vintage-megaprompt-Codex.md');
+  assert.equal(CARE.length, 18); assert.equal(GLOSSARY.length, 5);
+  CARE.forEach(item => assert.ok(care.includes('### ' + item.titulo + '\n\n' + item.texto + '\n'), item.titulo));
+  GLOSSARY.forEach(item => assert.ok(doc.includes('### ' + item.titulo + '\n\n' + item.texto), item.titulo));
+});
+test('cada prenda del perchero tiene su texto de cuidado y su imagen', () => {
+  const titles = new Set(CARE.map(c => c.titulo));
+  CONFIG.prendas.forEach(p => { assert.ok(titles.has(p.cuidado), p.etiqueta); assert.ok(existsSync(new URL('../assets/identidad/prendas/' + p.imagen + '.webp', import.meta.url)), p.imagen); });
+  assert.ok(!titles.has('Calzado de cuero'));
 });

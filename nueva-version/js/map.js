@@ -21,7 +21,7 @@ export function createMap(onSelect) {
   let visible = [], selectedId = '', pendingFit = false;
   const icon = selected => L.divIcon({
     className: 'map-pin',
-    html: '<div class="map-marker' + (selected ? ' selected' : '') + '"><img src="assets/miscelaneas/pin-etiqueta' + (selected ? '-rosa' : '') + '.svg" width="28" height="34" alt="" aria-hidden="true" draggable="false"></div>',
+    html: '<div class="map-marker' + (selected ? ' selected' : '') + '"><img src="assets/identidad/pin' + (selected ? '-activo' : '') + '.svg" width="28" height="34" alt="" aria-hidden="true" draggable="false"></div>',
     iconSize: [44, 44], iconAnchor: [22, 35], popupAnchor: [0, -34]
   });
   const icons = { normal: icon(false), selected: icon(true) };

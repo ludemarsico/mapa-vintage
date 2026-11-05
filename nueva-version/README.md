@@ -34,6 +34,7 @@ Ver [inventario de recursos](docs/ASSETS.md) para las imágenes disponibles y pe
 
 - [Estado vigente al 27/10/2026](docs/SESSION-LOG-2026-10-27.md): cuatro vistas, escala, formularios y seguridad.
 - [Cambios del 29/10/2026](docs/SESSION-LOG-2026-10-29.md): lista, mapa, Agenda en lista, Muro de Polaroids y curaduría desde la hoja.
+- [Nueva identidad visual, 4/11/2026](docs/SESSION-LOG-2026-11-04.md): tipografías, paleta, imágenes y el diseño de Canva en las cuatro vistas.
 - [Activar la recepción verificada de propuestas](docs/RECEPCION-DE-PROPUESTAS.md).
 - [Guía sencilla de mantenimiento](docs/MANTENIMIENTO.md).
 - [Contrato de datos e integraciones](docs/DATOS.md).

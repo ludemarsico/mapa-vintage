@@ -47,7 +47,7 @@ window.addEventListener('popstate', () => { if (!new URL(location.href).searchPa
 // El logo del encabezado está fijo en index.html; CONFIG.logo solo controla el footer.
 if (CONFIG.logo) {
   const logo = $('#footer-logo');
-  if (logo) { logo.src = CONFIG.logo; logo.hidden = false; $('#footer-name').hidden = true; logo.onerror = () => { logo.hidden = true; $('#footer-name').hidden = false; }; }
+  if (logo && $('#footer-name')) { logo.src = CONFIG.logo; logo.hidden = false; $('#footer-name').hidden = true; logo.onerror = () => { logo.hidden = true; $('#footer-name').hidden = false; }; }
 }
 initForms(openDialog); initHallazgo(); initContact(); initGlossary(); initCare(); initEditorial(openReader);
 
@@ -77,28 +77,33 @@ function renderList() {
   if (!state.filtered.length) { root.append(el('p', { class: 'empty' }, 'No encontramos locales con esa combinación. Probá cambiar algún filtro.')); return; }
   state.filtered.slice((state.page - 1) * CONFIG.pageSize, state.page * CONFIG.pageSize).forEach(s => {
     const article = el('article', { class: 'store-card' + (s.id === state.selected ? ' selected' : ''), 'data-id': s.id, tabindex: '-1', 'aria-label': s.nombre });
-    // A la vista: barrio, precio en signos y clasificación. El resto aparece con "Ver más".
-    const meta = el('div', { class: 'meta' }); meta.append(el('span', {}, s.barrio));
-    if (s.precio) meta.append(el('span', { class: 'store-price', 'aria-label': priceLabels[s.precio] }, s.precio));
-    if (s.clasificacion) meta.append(el('span', { class: 'store-kind' }, s.clasificacion));
-    // El nombre lleva al local en el mapa.
+    // Cerrada, la ficha muestra solo el nombre (que lleva al local en el mapa) y la flecha para desplegar.
     const name = el('button', { type: 'button', class: 'store-name', 'aria-label': s.nombre + ', ver en el mapa' }, s.nombre);
     name.onclick = () => { switchView('map'); mapAPI.resize(); selectStore(s.id); $('#map-column').scrollIntoView({ block: 'nearest', behavior: 'auto' }); };
     const open = state.expanded.has(s.id), detailsId = 'store-details-' + s.id.replace(/[^\w-]/g, '_');
-    const more = el('button', { type: 'button', class: 'store-more', 'aria-expanded': String(open), 'aria-controls': detailsId }, open ? 'Ver menos' : 'Ver más');
+    const more = el('button', { type: 'button', class: 'store-more', 'aria-expanded': String(open), 'aria-controls': detailsId, 'aria-label': (open ? 'Ver menos de ' : 'Ver más de ') + s.nombre });
+    // Abierta: precio en signos y clasificación, dirección y barrio, horarios, descripción y enlaces.
     const details = el('div', { class: 'store-details', id: detailsId }); details.hidden = !open;
-    if (s.direccion) details.append(el('p', {}, s.direccion));
-    details.append(el('p', { class: 'specialties' }, s.horarios || 'Horarios sin informar'));
+    const kind = el('p', { class: 'store-kind' });
+    if (s.precio) kind.append(el('span', { class: 'store-price', 'aria-label': priceLabels[s.precio] }, s.precio));
+    if (s.precio && s.clasificacion) kind.append(el('span', { 'aria-hidden': 'true' }, ' – '));
+    if (s.clasificacion) kind.append(el('span', {}, s.clasificacion));
+    if (kind.children.length) details.append(kind);
+    details.append(el('p', { class: 'store-address' }, [s.direccion, s.barrio].filter(Boolean).join(' · ')));
+    details.append(el('p', { class: 'store-hours' }, s.horarios || 'Horarios sin informar'));
     if (s.descripcion) details.append(el('p', { class: 'store-description' }, s.descripcion));
     const actions = el('div', { class: 'actions' });
     const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${s.nombre}, ${s.direccion}, CABA`);
     actions.append(link('Cómo llegar ↗', maps)); if (s.web) actions.append(link('Instagram ↗', s.web)); details.append(actions);
     more.onclick = () => {
-      const show = details.hidden; details.hidden = !show; more.setAttribute('aria-expanded', String(show)); more.textContent = show ? 'Ver menos' : 'Ver más';
+      const show = details.hidden; details.hidden = !show; more.setAttribute('aria-expanded', String(show)); more.setAttribute('aria-label', (show ? 'Ver menos de ' : 'Ver más de ') + s.nombre);
+      article.classList.toggle('is-open', show);
       if (show) state.expanded.add(s.id); else state.expanded.delete(s.id);
     };
+    article.classList.toggle('is-open', open);
     const title = el('h3'); title.append(name);
-    article.append(meta, title, more, details); root.append(article);
+    const head = el('div', { class: 'store-head' }); head.append(title, more);
+    article.append(head, details); root.append(article);
   });
 }
 function applyFilters() {
@@ -154,7 +159,7 @@ function renderRoute(extra = '') {
   renderProposals();
   const root = $('#route-stops'); root.replaceChildren();
   stops.forEach((s, i) => {
-    const li = el('li'); li.append(el('h4', {}, s.nombre), el('p', {}, `${s.direccion} · ${s.barrio}`));
+    const li = el('li'); li.append(el('h4', {}, s.nombre), el('p', {}, `${s.direccion} - ${s.barrio}`));
     const actions = el('div', { class: 'actions' });
     const remove = el('button', { type: 'button', 'aria-label': 'Sacar del recorrido: ' + s.nombre }, 'Sacar del recorrido');
     remove.onclick = () => { state.stops.splice(i, 1); renderRoute(); updateRouteURL(); $('#route-stops').focus({ preventScroll: true }); };
@@ -179,7 +184,7 @@ function renderRoute(extra = '') {
 function renderProposals() {
   const root = $('#route-proposals'); root.replaceChildren(); root.hidden = state.proposals.length < 2;
   state.proposals.forEach((proposal, k) => {
-    const button = el('button', { type: 'button', 'aria-pressed': String(k === state.proposal), 'aria-label': `Propuesta ${k + 1}: ${proposal.length} paradas` }, `Propuesta ${k + 1}`);
+    const button = el('button', { type: 'button', 'aria-pressed': String(k === state.proposal), 'aria-label': `Propuesta ${'ABC'[k] || k + 1}: ${proposal.length} paradas` }, 'ABC'[k] || String(k + 1));
     button.onclick = () => { state.proposal = k; state.stops = [...proposal]; state.skipped.clear(); renderRoute(); updateRouteURL(); $('#route-proposals').children[k]?.focus({ preventScroll: true }); };
     root.append(button);
   });

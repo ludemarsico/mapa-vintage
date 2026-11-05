@@ -59,18 +59,26 @@ export function initForms(openDialog) {
     status.textContent = 'No pudimos confirmar la recepción. Si querés comprobar si llegó, escribinos a ' + CONFIG.email + '. Tus datos siguen acá. Revisá antes de reenviar para evitar duplicados.';
     dialog.querySelector('.dialog-close').disabled = false;
   };
+  // Entradas de "Sumá un espacio": Local o Feria o evento; adentro se pregunta si es propio o recomendado.
+  // "Proponer feria o evento" de la Agenda conserva su origen propio.
+  // Las opciones no pertenecen al formulario (atributo form): el envío original conserva sus seis campos.
+  const relation = $('#relation-fields'), relationValue = () => relation.querySelector('input:checked')?.value;
+  const submitLabel = () => DEMO ? 'Envíos desactivados en demostración' : source === 'evento' || form.elements.tipologia.value === EVENT_TYPE ? 'Proponer feria o evento' : source === 'recomendado' ? 'Recomendar un lugar' : 'Enviar propuesta';
+  const syncRelation = () => { if (!relation.disabled) source = relationValue() || 'propio'; submit.textContent = submitLabel(); };
+  relation.addEventListener('change', syncRelation);
+  const titles = { local: 'Sumá un local.', feria: 'Sumá una feria o evento.', evento: 'Proponé una feria o evento.', propio: 'Tengo un local, feria o evento.', recomendado: 'Conozco un lugar, feria o evento.' };
   document.querySelectorAll('[data-contribute]').forEach(button => button.addEventListener('click', () => {
     if (pending) { openDialog(dialog, button); return; }
-    source = button.dataset.contribute;
-    $('#form-title').textContent = source === 'evento' ? 'Proponé una feria o evento.' : source === 'propio' ? 'Tengo un local, feria o evento.' : 'Conozco un lugar, feria o evento.';
-    if (source === 'evento') { form.elements.tipologia.value = EVENT_TYPE; presetEvent = true; }
+    const entry = button.dataset.contribute, asks = entry === 'local' || entry === 'feria';
+    toggle(relation, asks); source = asks ? relationValue() || 'propio' : entry;
+    $('#form-title').textContent = titles[entry] || titles.propio;
+    if (entry === 'evento' || entry === 'feria') { form.elements.tipologia.value = EVENT_TYPE; presetEvent = true; }
     // Si la tipología vino precargada desde Agenda, no se arrastra a las otras entradas.
     else if (presetEvent) { form.elements.tipologia.value = ''; eventFields.querySelectorAll('input').forEach(i => { i.value = ''; }); presetEvent = false; }
-    syncType();
-    submit.textContent = DEMO ? 'Envíos desactivados en demostración' : source === 'evento' ? 'Proponer feria o evento' : source === 'propio' ? 'Enviar propuesta' : 'Recomendar un lugar';
+    syncType(); submit.textContent = submitLabel();
     syncButton(); openDialog(dialog, button);
   }));
-  form.elements.tipologia.addEventListener('change', () => { presetEvent = false; syncType(); });
+  form.elements.tipologia.addEventListener('change', () => { presetEvent = false; syncType(); if (!pending) submit.textContent = submitLabel(); });
   // Un cambio en los datos es una propuesta nueva; un reintento sin cambios conserva su identificador.
   form.addEventListener('input', () => { if (!pending) submissionId = crypto.randomUUID(); });
   form.addEventListener('submit', async event => {
@@ -102,10 +110,10 @@ export function initForms(openDialog) {
       let result; try { result = await response.json(); } catch { result = null; }
       if (confirmedReceipt(response, result, submissionId)) {
         status.textContent = 'Gracias, recibimos tu propuesta. La vamos a revisar antes de publicarla.';
-        form.reset(); presetEvent = false; syncType(); submissionId = crypto.randomUUID();
+        form.reset(); presetEvent = false; syncType(); syncRelation(); submissionId = crypto.randomUUID();
       } else status.textContent = result?.error ? 'No pudimos guardar la propuesta. ' + String(result.error).slice(0, 180) + ' Tus datos siguen acá.' : 'No pudimos confirmar la recepción. Tus datos siguen acá para que puedas intentar de nuevo.';
     } catch { status.textContent = 'No pudimos confirmar la recepción. Tus datos siguen acá para que puedas intentar de nuevo.'; }
-    finally { pending = false; submit.textContent = source === 'evento' ? 'Proponer feria o evento' : source === 'propio' ? 'Enviar propuesta' : 'Recomendar un lugar'; resetChallenge(); }
+    finally { pending = false; submit.textContent = submitLabel(); resetChallenge(); }
   }
   iframe.addEventListener('load', uncertain);
   iframe.addEventListener('error', () => {
