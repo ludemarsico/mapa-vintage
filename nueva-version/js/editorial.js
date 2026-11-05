@@ -39,103 +39,47 @@ export function onSwipe(target, change) {
   target.addEventListener('click', e => { if (swiped) { e.stopPropagation(); e.preventDefault(); swiped = false; } }, true);
 }
 
+// Cuidados: un perchero de prendas. Al elegir una, su texto aparece debajo.
+// El perchero se desplaza de costado (flechas, rueda o deslizando) y las flechas del teclado pasan de prenda.
 export function initCare() {
-  const fallback = $('#care-fallback'), fan = $('.swatch-fan');
-  fan.removeAttribute('aria-hidden'); fan.setAttribute('role', 'group'); fan.setAttribute('aria-label', 'Muestrario de materiales y tejidos');
-  fan.querySelector('.swatch-ring').setAttribute('aria-hidden', 'true');
-  const colors = ['#DCCBA4','#ECC8BE','#C9D2B7','#EBDDAA','#D5C8AF','#A3B4C0','#E9E4D7','#D9C9D2'];
-  // Materiales: abanico de telas; cualquier tela visible se puede elegir. Prendas: una prenda por página con su figurín.
-  // En ambos, flechas a los costados y deslizamiento en pantallas táctiles.
-  const initGroup = (items, readingSelector, materials) => {
-    let index = 0, turning = false;
-    const reading = $(readingSelector), buttons = [];
-    const stage = materials ? fan : $('#garment-buttons'), frame = materials ? $('.swatch-catalog') : stage;
-    const restingAngles = [-48, -32, -16, 0, 16, 32, 48, 58];
-    const noun = materials ? 'Tela' : 'Prenda';
-    const prev = el('button', { type: 'button', class: 'care-arrow care-arrow-prev', 'aria-label': noun + ' anterior', 'aria-controls': reading.id }, '←');
-    const next = el('button', { type: 'button', class: 'care-arrow care-arrow-next', 'aria-label': noun + ' siguiente', 'aria-controls': reading.id }, '→');
-    const count = el('p', { class: 'care-count', 'aria-hidden': 'true' });
-    const focusControl = target => {
-      if (target === 'fan') buttons[index].focus({ preventScroll: true });
-      else if (target) (target === 'next' ? next : prev).focus({ preventScroll: true });
-    };
-    const render = () => {
-      buttons.forEach((button, i) => {
-        const active = i === index; button.setAttribute('aria-pressed', String(active));
-        if (materials) {
-          button.tabIndex = active ? 0 : -1;
-          const depth = (i - index + items.length) % items.length;
-          button.style.setProperty('--leaf-order', active ? '20' : String(items.length - depth));
-          button.style.setProperty('--leaf-angle', active ? '-4deg' : restingAngles[i] + 'deg');
-        } else button.hidden = !active;
-      });
-      const item = items[index]; reading.replaceChildren(el('h4', {}, item.titulo), el('p', { class: 'care-full' }, item.texto));
-      count.textContent = `${index + 1} / ${items.length}`;
-      prev.disabled = next.disabled = turning;
-    };
-    const rotate = async (button, from, to, duration) => {
-      const motion = button.animate([{ transform: `rotate(${from}deg)` }, { transform: `rotate(${to}deg)` }], { duration, easing: 'cubic-bezier(.35,0,.2,1)', fill: 'forwards' });
-      try { await motion.finished; } finally { motion.cancel(); }
-    };
-    const select = async (i, direction = 1, focus = '') => {
-      if (turning) return;
-      const nextIndex = (i + items.length) % items.length;
-      if (nextIndex === index) return;
-      const sequential = nextIndex === (index + direction + items.length) % items.length;
-      if (!materials || !sequential || matchMedia('(prefers-reduced-motion: reduce)').matches || !buttons[index].animate) {
-        index = nextIndex; render(); focusControl(focus); return;
-      }
-      turning = true; fan.setAttribute('aria-busy', 'true'); prev.disabled = next.disabled = true;
-      const outgoing = index, moving = buttons[direction > 0 ? index : nextIndex];
-      moving.dataset.turning = 'true';
-      moving.style.setProperty('--turn-order', direction > 0 ? '40' : '0');
-      let committed = false;
-      const commit = () => { index = nextIndex; committed = true; render(); };
-      try {
-        await rotate(moving, direction > 0 ? -4 : restingAngles[nextIndex], -108, 280);
-        moving.style.setProperty('--turn-order', direction > 0 ? '0' : '40');
-        commit();
-        await rotate(moving, -108, direction > 0 ? restingAngles[outgoing] : -4, 240);
-      } catch {
-        // Una interrupción del navegador conserva la selección y los controles.
-        if (!committed) commit();
-      } finally {
-        delete moving.dataset.turning; moving.style.removeProperty('--turn-order');
-        turning = false; fan.setAttribute('aria-busy', 'false'); prev.disabled = next.disabled = false;
-        focusControl(focus);
-      }
-    };
-    const change = delta => select(index + delta, delta, delta > 0 ? 'next' : 'prev');
-    prev.onclick = () => change(-1); next.onclick = () => change(1);
-    items.forEach((item, i) => {
-      const button = el('button', { type: 'button', class: materials ? 'fan-leaf' : 'garment-button', 'aria-label': materials ? 'Mostrar cuidado de ' + item.titulo : item.titulo + ', ver la prenda siguiente', title: item.titulo, 'aria-controls': reading.id });
-      button.append(el('span', { class: materials ? 'leaf-label' : 'garment-label' }, item.titulo));
-      if (materials) {
-        button.style.setProperty('--leaf-color', colors[i]);
-        const path = safeImage(CONFIG.fabricImages?.[item.titulo]);
-        if (path) {
-          button.append(el('img', { class: 'leaf-texture', src: path, alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async', draggable: 'false' }));
-          button.classList.add('has-texture');
-        }
-      }
-      else {
-        const path = CONFIG.careImages?.[item.titulo], image = path ? picture(path, 'Recurso ilustrativo para ' + item.titulo) : null;
-        if (image) { button.append(image); button.classList.add('has-art'); }
-      }
-      // La tela de arriba pasa a la siguiente; cualquier otra tela visible se elige directamente.
-      button.onclick = () => materials ? (i === index ? select(index + 1, 1, 'fan') : select(i, (i - index + items.length) % items.length === 1 ? 1 : -1, 'fan')) : change(1);
-      if (materials) button.onkeydown = e => {
-        const moves = { ArrowRight: (i + 1) % items.length, ArrowLeft: (i - 1 + items.length) % items.length, Home: 0, End: items.length - 1 };
-        if (e.key in moves) { e.preventDefault(); select(moves[e.key], e.key === 'ArrowLeft' || e.key === 'Home' ? -1 : 1, 'fan'); }
-      };
-      buttons.push(button); stage.append(button);
-    });
-    frame.classList.add('care-pager'); frame.append(prev, next, count);
-    onSwipe(stage, change);
-    render();
+  const rail = $('#care-rail'), reading = $('#care-reading'), fallback = $('#care-fallback');
+  const texts = new Map(CARE.map(c => [c.titulo, c.texto]));
+  const items = CONFIG.prendas.filter(p => texts.get(p.cuidado));
+  if (!rail || !items.length) return;
+  const buttons = [], track = el('div', { class: 'garment-track' });
+  const smooth = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+  const select = (index, focus = false, reveal = true) => {
+    buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(i === index)));
+    const item = items[index];
+    reading.replaceChildren(el('h3', {}, item.cuidado), el('p', {}, texts.get(item.cuidado)));
+    const button = buttons[index];
+    // Solo se mueve el perchero (nunca la página) para que la prenda elegida quede a la vista.
+    const left = button.offsetLeft, right = left + button.offsetWidth;
+    if (reveal && (left < track.scrollLeft || right > track.scrollLeft + track.clientWidth)) track.scrollTo({ left: left - (track.clientWidth - button.offsetWidth) / 2, behavior: smooth() });
+    if (focus) button.focus({ preventScroll: true });
   };
-  initGroup(CARE.slice(0, 8), '#fabric-reading', true);
-  initGroup(CARE.slice(8), '#garment-reading', false);
+  items.forEach((item, i) => {
+    const button = el('button', { type: 'button', class: 'garment', 'aria-pressed': 'false', 'aria-controls': 'care-reading' });
+    button.append(el('img', { src: `assets/identidad/prendas/${item.imagen}.webp`, alt: '', loading: 'lazy', decoding: 'async', draggable: 'false' }), el('span', {}, item.etiqueta));
+    button.onclick = () => select(i);
+    button.onkeydown = e => {
+      const moves = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: items.length - 1 };
+      if (e.key in moves) { e.preventDefault(); select((moves[e.key] + items.length) % items.length, true); }
+    };
+    buttons.push(button);
+  });
+  track.append(...buttons);
+  const prev = el('button', { type: 'button', class: 'rail-arrow rail-arrow-prev', 'aria-label': 'Ver prendas anteriores', 'aria-controls': 'care-rail' }, '←');
+  const next = el('button', { type: 'button', class: 'rail-arrow rail-arrow-next', 'aria-label': 'Ver más prendas', 'aria-controls': 'care-rail' }, '→');
+  const page = delta => track.scrollBy({ left: delta * track.clientWidth * 0.8, behavior: smooth() });
+  prev.onclick = () => page(-1); next.onclick = () => page(1);
+  const edges = () => { prev.disabled = track.scrollLeft <= 2; next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2; };
+  // También al mostrarse la vista: el perchero estaba oculto y medía cero.
+  track.addEventListener('scroll', edges, { passive: true }); if (window.ResizeObserver) new ResizeObserver(edges).observe(track); else window.addEventListener('resize', edges);
+  // Las prendas cargan de a poco: cada imagen nueva cambia el ancho del perchero.
+  track.querySelectorAll('img').forEach(img => img.addEventListener('load', edges));
+  rail.replaceChildren(prev, track, next); rail.hidden = false; reading.hidden = false;
+  select(0, false, false); edges();
   if (fallback) fallback.hidden = true;
 }
 
@@ -146,8 +90,11 @@ export async function initEditorial(openReader) {
     const button = el('button', { type: 'button' }, 'Reintentar'); button.onclick = () => { status.replaceChildren(); retry(); }; status.append(button);
   };
   const stamp = () => el('span', { class: 'demo-stamp' }, demoStamp());
-  // Agenda: listado paginado como el del Mapa, con la información de la hoja "Agenda".
-  const dateLabel = iso => new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.timezone, weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(iso + 'T12:00:00-03:00'));
+  // Agenda: listado paginado con la información de la hoja "Agenda".
+  const day = (iso, options) => new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.timezone, ...options }).format(new Date(iso + 'T12:00:00-03:00'));
+  const shortDate = iso => day(iso, { day: '2-digit', month: '2-digit' });
+  const weekday = iso => { const w = day(iso, { weekday: 'long' }); return w.charAt(0).toUpperCase() + w.slice(1); };
+  const dateLabel = iso => day(iso, { weekday: 'long', day: 'numeric', month: 'long' });
   const loadAgenda = async () => {
     try {
       let events;
@@ -158,7 +105,7 @@ export async function initEditorial(openReader) {
       }
       if (!events.length) return;
       $('#agenda').classList.remove('is-empty');
-      let page = 1; const expanded = new Set();
+      let page = 1;
       const render = () => {
         const board = $('#agenda-board'); board.replaceChildren();
         const pages = Math.ceil(events.length / CONFIG.pageSize);
@@ -166,35 +113,24 @@ export async function initEditorial(openReader) {
         $('#agenda-count').textContent = `Página ${page} de ${pages} · ${events.length} fechas`;
         $('#agenda-prev').disabled = page <= 1; $('#agenda-next').disabled = page >= pages;
         events.slice((page - 1) * CONFIG.pageSize, page * CONFIG.pageSize).forEach(r => {
-          const card = el('article', { class: 'store-card agenda-card', 'aria-label': r.nombre });
-          if (r.demo) card.append(stamp());
-          const meta = el('div', { class: 'meta' });
-          // Fecha si la hoja la tiene; si no, los días.
-          const when = r.next ? el('time', { datetime: r.next }, dateLabel(r.next)) : r.dias || r.fechaTexto ? el('span', {}, r.dias || r.fechaTexto) : r.demo ? el('span', {}, 'Fecha · horario') : null;
-          if (when) meta.append(when);
-          if (r.barrio) meta.append(el('span', {}, r.barrio));
-          if (r.precio) meta.append(el('span', { class: 'store-price' }, r.precio));
-          if (r.tipo) meta.append(el('span', { class: 'store-kind' }, r.tipo));
-          card.append(meta, el('h3', {}, r.nombre));
-          const open = expanded.has(r.id), detailsId = 'agenda-details-' + r.id.replace(/[^\w-]/g, '_');
-          const more = el('button', { type: 'button', class: 'store-more', 'aria-expanded': String(open), 'aria-controls': detailsId }, open ? 'Ver menos' : 'Ver más');
-          const details = el('div', { class: 'store-details', id: detailsId }); details.hidden = !open;
-          if (r.direccion) details.append(el('p', {}, r.direccion));
-          if (r.dias && r.next) details.append(el('p', { class: 'specialties' }, r.dias));
-          if (r.horario) details.append(el('p', { class: 'specialties' }, r.horario));
-          [r.acceso, r.especialidad].filter(Boolean).forEach(t => details.append(el('p', { class: 'specialties' }, t)));
-          if (r.descripcion) details.append(el('p', { class: 'store-description' }, r.descripcion));
-          const img = picture(r.imagen, r.nombre); if (img) details.append(img);
-          const actions = el('div', { class: 'actions' });
-          if (r.direccion) actions.append(link('Cómo llegar ↗', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${r.direccion}, ${r.barrio ? r.barrio + ', ' : ''}CABA`)));
-          if (r.enlace) actions.append(link('Instagram ↗', r.enlace));
-          if (actions.children.length) details.append(actions);
-          more.onclick = () => {
-            const show = details.hidden; details.hidden = !show; more.setAttribute('aria-expanded', String(show)); more.textContent = show ? 'Ver menos' : 'Ver más';
-            if (show) expanded.add(r.id); else expanded.delete(r.id);
-          };
-          if (details.children.length) card.append(more, details);
-          board.append(card);
+          // Como en el diseño: fecha (o días) a la izquierda, nombre al centro y los datos prácticos a la derecha.
+          const row = el('article', { class: 'agenda-row', 'aria-label': r.nombre });
+          if (r.demo) row.append(stamp());
+          const when = el('p', { class: 'agenda-when' });
+          if (r.next) when.append(el('time', { datetime: r.next, title: dateLabel(r.next) }, shortDate(r.next)));
+          else when.textContent = r.dias || r.fechaTexto || (r.demo ? 'Fecha' : '');
+          const main = el('div', { class: 'agenda-main' }); main.append(el('h3', {}, r.nombre));
+          const kind = [r.tipo, r.precio].filter(Boolean).join(' · '); if (kind) main.append(el('p', { class: 'agenda-kind' }, kind));
+          if (r.descripcion) main.append(el('p', { class: 'agenda-description' }, r.descripcion));
+          const img = picture(r.imagen, r.nombre); if (img) main.append(img);
+          const facts = el('ul', { class: 'agenda-facts' });
+          const place = [r.direccion, r.barrio].filter(Boolean).join(', ');
+          [r.next ? r.dias || weekday(r.next) : '', r.horario, place, r.acceso, r.especialidad].filter(Boolean).forEach(t => facts.append(el('li', {}, t)));
+          const links = el('li', { class: 'agenda-links' });
+          if (r.direccion) links.append(link('Cómo llegar ↗', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place + ', CABA')));
+          if (r.enlace) links.append(link('Instagram ↗', r.enlace));
+          if (links.children.length) facts.append(links);
+          row.append(when, main, facts); board.append(row);
         });
       };
       $('#agenda-prev').onclick = () => { if (page > 1) { page--; render(); $('#agenda-board').scrollTop = 0; } };
@@ -312,6 +248,8 @@ export async function initEditorial(openReader) {
       restoreNote();
     } catch { $('#notes').hidden = true; errorState('#notes-status', () => { $('#notes').hidden = false; loadNotes(); }); }
   };
+  // Notas al margen: hoy fuera de la página; el código queda listo por si vuelven.
+  if (!$('#notes')) { await Promise.allSettled([loadAgenda(), loadWall()]); return; }
   $('#note-prev').onclick = () => { noteIndex = (noteIndex - 1 + notesData.length) % notesData.length; renderNotes(); };
   $('#note-next').onclick = () => { noteIndex = (noteIndex + 1) % notesData.length; renderNotes(); };
   $('#notes-list-toggle').onclick = () => { listView = !listView; renderNotes(); };

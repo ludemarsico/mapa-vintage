@@ -9,27 +9,35 @@ export const CONFIG = {
   // Apps Script de la Agenda: las ferias y eventos propuestos llegan a su hoja "Aportes", con los mismos seis campos.
   agendaFormEndpoint: 'https://script.google.com/macros/s/AKfycby7Zul6GiGu0DGleZchoKiRiVeoXXSv5ipnd7HMe0rkiwPpSUuKNEniTe_r6v5pkheOuQ/exec',
   email: 'mapavintage.ba@gmail.com',
-  // Solo para el footer: el encabezado ya muestra assets/MAPA (7) (1).png desde index.html.
+  // Logo y collage del pie están fijos en index.html.
   logo: '',
   // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
   hallazgos: { endpoint: '', turnstileSiteKey: '' },
   // Receptor nuevo de propuestas (integraciones/propuestas/Code.gs): escribe en "Agenda a verificar" y "Espacios a verificar".
   // Mientras esté vacío se usa formEndpoint, el formulario original.
   propuestas: { endpoint: '', turnstileSiteKey: '' },
-  // Figurines originales aportados para los cinco tipos de prendas.
-  careImages: {
-    'Prendas plisadas': 'assets/cuidados/Falda dorada plisada para muñeca de papel.png',
-    'Tapados de lana': 'assets/cuidados/Abrigo recortable de cuadros turquesa.png',
-    'Ropa interior': 'assets/cuidados/Recortable vintage de lencería azul.png',
-    'Trajes de baño': 'assets/cuidados/Bikini vintage con pestañas de papel.png',
-    'Calzado de cuero': 'assets/cuidados/Botines verde oliva con pestañas de papel.png'
-  },
-  fabricImages: {
-    'Seda': 'assets/telas/seda.jpg', 'Satén o raso': 'assets/telas/saten.jpg',
-    'Lana': 'assets/telas/lana.jpg', 'Cashmere': 'assets/telas/cashmere.jpg',
-    'Lino': 'assets/telas/lino.jpg', 'Denim / jean': 'assets/telas/denim.jpg',
-    'Algodón': 'assets/telas/algodon.jpg', 'Microtul': 'assets/telas/microtul.jpg'
-  },
+  // Cuidados: el perchero de prendas, en este orden. "cuidado" es el título del texto en content.js (CARE).
+  // Una prenda sin texto de cuidado queda oculta hasta que se agregue su texto.
+  prendas: [
+    { etiqueta: 'Lana', imagen: 'lana', cuidado: 'Lana' },
+    { etiqueta: 'Cuero', imagen: 'cuero', cuidado: 'Cuero' },
+    { etiqueta: 'Seda', imagen: 'seda', cuidado: 'Seda' },
+    { etiqueta: 'Gamuza', imagen: 'gamuza', cuidado: 'Gamuza' },
+    { etiqueta: 'Plisado', imagen: 'plisado', cuidado: 'Plisado' },
+    { etiqueta: 'Estampas', imagen: 'estampas', cuidado: 'Estampas' },
+    { etiqueta: 'Tejidos a mano', imagen: 'tejidoamano', cuidado: 'Tejidos a mano' },
+    { etiqueta: 'Jean', imagen: 'denim', cuidado: 'Denim' },
+    { etiqueta: 'Satén', imagen: 'saten', cuidado: 'Satén' },
+    { etiqueta: 'Cashmere', imagen: 'cashmere', cuidado: 'Cashmere' },
+    { etiqueta: 'Lino', imagen: 'lino', cuidado: 'Lino' },
+    { etiqueta: 'Algodón', imagen: 'algodon', cuidado: 'Algodón' },
+    { etiqueta: 'Tapados', imagen: 'panio', cuidado: 'Tapados de paño' },
+    { etiqueta: 'Tul y encaje', imagen: 'tul', cuidado: 'Tul y encaje' },
+    { etiqueta: 'Terciopelo', imagen: 'terciopelo', cuidado: 'Terciopelo' },
+    { etiqueta: 'Lentejuelas', imagen: 'lentejuelas', cuidado: 'Lentejuelas y bordados' },
+    { etiqueta: 'Lencería', imagen: 'lenceria', cuidado: 'Lencería' },
+    { etiqueta: 'Trajes de baño', imagen: 'tajedebanio', cuidado: 'Trajes de baño' }
+  ],
   columns: {
     id: ['ID', 'id'], nombre: ['Nombre'], barrio: ['Barrio'], direccion: ['Dirección', 'Direccion'],
     lat: ['Latitud'], lng: ['Longitud'], tipo: ['Tipología', 'Tipologia'], precio: ['Rango Precio'],

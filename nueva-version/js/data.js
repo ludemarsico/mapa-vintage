@@ -157,7 +157,9 @@ export function normalizeEvents(rows, today = buenosAiresDate()) {
   for (const row of rows) {
     const g = key => get(row, key, C), nombre = g('nombre');
     if (!nombre) continue;
-    const fecha = sheetDate(g('fecha')), fin = sheetDate(g('fechaFin'));
+    // Una fecha cargada en la columna Días (07/11/2026) cuenta como fecha del evento.
+    const diasFecha = !g('fecha') && sheetDate(g('dias'));
+    const fecha = sheetDate(g('fecha')) || diasFecha, fin = sheetDate(g('fechaFin'));
     let next = '';
     if (fecha && g('recurrencia')) { next = nextEventDate({ fecha_inicio: fecha, fecha_fin: fin, recurrencia: g('recurrencia') }, today); if (!next) continue; }
     else if (fecha) { if ((fin || fecha) < today) continue; next = fecha < today ? today : fecha; }
@@ -165,7 +167,7 @@ export function normalizeEvents(rows, today = buenosAiresDate()) {
     if (ids.has(id)) { let n = 2; while (ids.has(id + '-' + n)) n++; id += '-' + n; }
     ids.add(id);
     const precio = g('precio').replace(/\s/g, '');
-    const event = { id, nombre, next, fechaTexto: fecha ? '' : g('fecha'), dias: g('dias'), tipo: g('tipo'), horario: g('horario'), precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', especialidad: g('especialidad'), barrio: g('barrio'), direccion: g('direccion'),
+    const event = { id, nombre, next, fechaTexto: fecha ? '' : g('fecha'), dias: diasFecha ? '' : g('dias'), tipo: g('tipo'), horario: g('horario'), precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', especialidad: g('especialidad'), barrio: g('barrio'), direccion: g('direccion'),
       descripcion: g('descripcion'), acceso: g('acceso'), enlace: socialURL(g('enlace')), imagen: safeImage(g('imagen')) };
     (next ? dated : undated).push(event);
   }
