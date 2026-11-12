@@ -35,7 +35,8 @@ Ver [inventario de recursos](docs/ASSETS.md) para las imágenes disponibles y pe
 - [Estado vigente al 27/10/2026](docs/SESSION-LOG-2026-10-27.md): cuatro vistas, escala, formularios y seguridad.
 - [Cambios del 29/10/2026](docs/SESSION-LOG-2026-10-29.md): lista, mapa, Agenda en lista, Muro de Polaroids y curaduría desde la hoja.
 - [Nueva identidad visual, 4/11/2026](docs/SESSION-LOG-2026-11-04.md): tipografías, paleta, imágenes y el diseño de Canva en las cuatro vistas.
-- [Activar la recepción verificada de propuestas](docs/RECEPCION-DE-PROPUESTAS.md).
+- [Correcciones del 10/11/2026](docs/SESSION-LOG-2026-11-10.md): menú, Agenda propia, Recursos, portada, etiquetas, filtros, teléfono y receptor de aportes y fotos.
+- [Activar la recepción de aportes y fotos](docs/RECEPCION-DE-APORTES.md).
 - [Guía sencilla de mantenimiento](docs/MANTENIMIENTO.md).
 - [Contrato de datos e integraciones](docs/DATOS.md).
 - [Qué se probó y límites de la revisión](docs/VERIFICACION.md).
@@ -57,4 +58,4 @@ La revisión de composición e interacciones se documenta en `docs/SEGUNDA-PASAD
 
 ## Revisión de participación
 
-Ver `docs/TERCERA-PASADA.md` y `docs/RECEPCION-DE-HALLAZGOS.md`. El contacto es estático. Comunidad tiene campos integrados y recepción desactivada hasta configurar el servicio separado. No se incorporó el JPG del logo, que no está accesible como archivo.
+Ver `docs/TERCERA-PASADA.md` y `docs/RECEPCION-DE-APORTES.md`. El contacto es estático. Comunidad recibe fotos cuando se instala el receptor de aportes en la planilla del Directorio. No se incorporó el JPG del logo, que no está accesible como archivo.

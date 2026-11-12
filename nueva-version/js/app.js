@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { fetchRows, normalizeStores, filterStores } from './data.js';
-import { generateRoutes, alternatives, encodeRoute, restoreRoute, googleRoute } from './routes.js';
+import { generateRoutes, alternatives, encodeRoute, restoreRoute, googleRoute, shareText } from './routes.js';
 import { $, el, link } from './dom.js';
 import { createMap } from './map.js';
 import { initCare, initGlossary, initEditorial } from './editorial.js';
@@ -51,9 +51,9 @@ if (CONFIG.logo) {
 }
 initForms(openDialog); initHallazgo(); initContact(); initGlossary(); initCare(); initEditorial(openReader);
 
-const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', prenda: '', mode: 'express' }, stops: [], skipped: new Set(), proposals: [], proposal: 0, expanded: new Set() };
-const filterState = () => ({ query: $('#search').value, barrio: $('#filter-barrio').value, prendas: $('#filter-prenda').value ? [$('#filter-prenda').value] : [], precio: $('#filter-precio').value });
-const priceLabels = { '$': '$ · Más accesible', '$$': '$$ · Intermedio', '$$$': '$$$ · Más alto' };
+const state = { stores: [], filtered: [], page: 1, selected: '', loaded: false, prefs: { barrio: '', tipo: '', mode: 'express' }, stops: [], skipped: new Set(), proposals: [], proposal: 0, expanded: new Set() };
+const filterState = () => ({ query: $('#search').value, barrio: $('#filter-barrio').value, tipo: $('#filter-tipo').value, precio: $('#filter-precio').value });
+const priceLabels = { '$': 'Precio bajo', '$$': 'Precio medio', '$$$': 'Precio alto' };
 function switchView(view) {
   $('#directory-grid').dataset.view = view;
   $('#view-map').setAttribute('aria-pressed', String(view === 'map')); $('#view-list').setAttribute('aria-pressed', String(view === 'list'));
@@ -86,8 +86,8 @@ function renderList() {
     const details = el('div', { class: 'store-details', id: detailsId }); details.hidden = !open;
     const kind = el('p', { class: 'store-kind' });
     if (s.precio) kind.append(el('span', { class: 'store-price', 'aria-label': priceLabels[s.precio] }, s.precio));
-    if (s.precio && s.clasificacion) kind.append(el('span', { 'aria-hidden': 'true' }, ' – '));
-    if (s.clasificacion) kind.append(el('span', {}, s.clasificacion));
+    if (s.precio && s.clases.length) kind.append(el('span', { 'aria-hidden': 'true' }, ' – '));
+    if (s.clases.length) kind.append(el('span', {}, s.clases.join(' · ')));
     if (kind.children.length) details.append(kind);
     details.append(el('p', { class: 'store-address' }, [s.direccion, s.barrio].filter(Boolean).join(' · ')));
     details.append(el('p', { class: 'store-hours' }, s.horarios || 'Horarios sin informar'));
@@ -111,7 +111,7 @@ function applyFilters() {
   if (!state.filtered.some(s => s.id === state.selected)) state.selected = '';
   $('#results-count').textContent = `${state.filtered.length} locales · todos los resultados en el mapa`;
   const chips = $('#active-filters'); chips.replaceChildren();
-  [['query', filters.query, '#search'], ['barrio', filters.barrio, '#filter-barrio'], ['prenda', filters.prendas[0], '#filter-prenda'], ['precio', filters.precio, '#filter-precio']].forEach(([, value, selector]) => {
+  [['query', filters.query, '#search'], ['barrio', filters.barrio, '#filter-barrio'], ['tipo', filters.tipo, '#filter-tipo'], ['precio', filters.precio, '#filter-precio']].forEach(([, value, selector]) => {
     if (!value) return; const button = el('button', { type: 'button', class: 'filter-chip', 'aria-label': 'Quitar filtro: ' + value }, value + ' ×');
     button.onclick = () => { $(selector).value = ''; applyFilters(); }; chips.append(button);
   });
@@ -130,9 +130,7 @@ async function loadStores() {
   try {
     const { rows } = await fetchRows(CONFIG.sources.locales); const { stores, review } = normalizeStores(rows); state.stores = stores; state.loaded = true;
     const barrios = [...new Set(stores.map(s => s.barrio))].sort((a, b) => a.localeCompare(b, 'es'));
-    const prendas = CONFIG.categories;
-    setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios); setOptions('#filter-prenda', prendas); setOptions('#route-prenda', prendas);
-    setOptions('#filter-precio', ['$', '$$', '$$$'].filter(p => stores.some(s => s.precio === p)), priceLabels);
+    setOptions('#filter-barrio', barrios); setOptions('#route-barrio', barrios);
     $('#route-submit').disabled = !stores.length;
     applyFilters();
     if (!stores.length) { $('#store-list').replaceChildren(el('p', { class: 'empty' }, 'No hay locales con datos suficientes para publicar en el directorio. Las fichas necesitan revisión editorial.')); $('#results-count').textContent = 'Sin locales publicables por ahora.'; }
@@ -144,7 +142,7 @@ async function loadStores() {
     $('#route-message').textContent = 'Necesitamos cargar los locales para armar tu recorrido.';
   }
 }
-function prefsFromForm() { return { barrio: $('#route-barrio').value, prenda: $('#route-prenda').value, mode: $('#route-form').elements.mode.value }; }
+function prefsFromForm() { return { barrio: $('#route-barrio').value, tipo: $('#route-tipo').value, mode: $('#route-form').elements.mode.value }; }
 $('#route-form').addEventListener('submit', e => {
   e.preventDefault(); if (!state.loaded) return;
   // Las propuestas parten de los locales que muestra el mapa con sus filtros actuales.
@@ -177,7 +175,7 @@ function renderRoute(extra = '') {
   const url = encodeRoute(location.href, state.prefs, stops);
   $('#route-google').hidden = $('#route-whatsapp').hidden = $('#route-copy').hidden = !stops.length;
   $('#route-google').href = googleRoute(stops);
-  $('#route-whatsapp').href = 'https://wa.me/?text=' + encodeURIComponent('Mi recorrido de Mapa Vintage: ' + url);
+  $('#route-whatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(shareText(url));
   $('#route-message').textContent = '';
 }
 // Selector de propuestas: solo aparece cuando hay más de una para elegir.
@@ -199,7 +197,7 @@ function restoreSharedRoute() {
   const restored = restoreRoute(location.href, state.stores);
   if (!restored) { state.stops = []; $('#route-result').hidden = true; $('#route-placeholder').hidden = false; return; }
   state.stops = restored.stops; state.prefs = restored.prefs; state.skipped.clear(); state.proposals = []; state.proposal = 0;
-  $('#route-barrio').value = state.prefs.barrio; $('#route-prenda').value = state.prefs.prenda; $('#route-form').elements.mode.value = state.prefs.mode;
+  $('#route-barrio').value = state.prefs.barrio; $('#route-tipo').value = state.prefs.tipo; $('#route-form').elements.mode.value = state.prefs.mode;
   renderRoute([restored.missing ? 'El enlace incluye paradas retiradas, repetidas o preferencias que cambiaron. Revisá el recorrido actual.' : '', restored.discontinuous ? 'Las paradas compartidas están demasiado separadas para nuestro criterio de paseo. Volvé a generar la propuesta.' : ''].filter(Boolean).join(' '));
 }
 window.addEventListener('popstate', restoreSharedRoute);

@@ -6,6 +6,8 @@
 
 Encabezados observados en la consulta real del 17/10/2026: `ID`, `Nombre`, `Barrio`, `Dirección`, `Latitud`, `Longitud`, `Tipología`, `Rango Precio`, `Especialidad`, `Horarios`, `Instagram`, `Descripción breve`. 29 filas. La normalización de esta entrega admite 21 para directorio y aparta 8; esto es una lectura de la fuente, no una verificación presencial independiente de los comercios.
 
+**Etiquetas de cada local (10/11/2026).** Cada local muestra Vintage, Segunda mano o Feria americana, y el filtro Tipo y Armá tu recorrido usan esas etiquetas. Salen de la Tipología: Boutique Vintage → Vintage; Tienda de segunda mano y Cadena de reventa → Segunda mano; Feria americana → Feria americana. Para sumar varias etiquetas a un local, agregá una columna **Clasificación** y escribilas separadas por coma (por ejemplo `Vintage, Segunda mano`): cuando la celda tiene algo, manda sobre la Tipología.
+
 ## Normalización y supuestos
 
 - Nombres de columnas centralizados en `CONFIG.columns`. Comparación sin tildes ni diferencias de mayúsculas, con espacios normalizados.

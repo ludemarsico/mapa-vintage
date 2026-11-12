@@ -2,18 +2,13 @@ import { CONFIG } from './config.js';
 import { DEMO } from './demo.js';
 import { safeURL } from './data.js';
 import { $ } from './dom.js';
-import { loadTurnstile } from './turnstile.js';
-export const PHOTO_LIMIT = 5 * 1024 * 1024;
+import { aportesEndpoint, sendAporte } from './forms.js';
+export const PHOTO_LIMIT = 15 * 1024 * 1024;
 export function photoError(file) {
   if (!file) return 'Elegí una foto para compartir.';
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return 'Elegí una foto JPG, PNG o WebP.';
-  if (file.size <= 0 || file.size > PHOTO_LIMIT) return 'La foto debe pesar hasta 5 MB.';
+  if (file.size <= 0 || file.size > PHOTO_LIMIT) return 'La foto debe pesar hasta 15 MB.';
   return '';
-}
-export function hallazgoEndpoint(value) {
-  const url = safeURL(value); if (!url || !url.startsWith('https:')) return '';
-  const host = new URL(url).hostname;
-  return /(^|\.)script\.google(?:usercontent)?\.com$/i.test(host) ? '' : url;
 }
 // La red social se escribe como @usuario (Instagram); también se acepta un enlace completo. Vacío es válido.
 export function socialHandle(value) {
@@ -21,55 +16,54 @@ export function socialHandle(value) {
   const handle = s.match(/^@?([A-Za-z0-9_.]{1,30})$/); if (handle) return 'https://www.instagram.com/' + handle[1] + '/';
   return safeURL(s);
 }
-export function confirmedReceipt(response, body, expectedId) {
-  return [200, 202].includes(response.status) && body?.received === true && (!expectedId || body.id === expectedId) && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id || '');
+// La foto viaja como JPEG de hasta 1600 px: pesa poco y pierde los datos internos del archivo (como la ubicación).
+async function preparePhoto(file, max = 1600) {
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas'); canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
+  const context = canvas.getContext('2d'); context.fillStyle = '#FFFFFF'; context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close?.();
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+  const url = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(blob); });
+  return String(url).split(',')[1];
 }
 export function initHallazgo() {
   const form = $('#hallazgo-form'), fileInput = $('#hallazgo-photo'), preview = $('#hallazgo-preview'), button = $('#hallazgo-submit'), status = $('#hallazgo-status');
-  const endpoint = hallazgoEndpoint(CONFIG.hallazgos?.endpoint), siteKey = CONFIG.hallazgos?.turnstileSiteKey || '';
-  const connected = !!endpoint && !!siteKey && !DEMO;
-  let previewURL = '', token = '', widgetId, pending = false, draftId = crypto.randomUUID();
+  const endpoint = DEMO ? '' : aportesEndpoint(CONFIG.aportes?.endpoint);
+  let previewURL = '', pending = false, draftId = crypto.randomUUID();
+  const offMessage = DEMO ? 'Contenido de demostración. Los envíos están desactivados.' : 'La recepción de fotos todavía no está habilitada. Tu aporte no se enviará.';
   const releasePreview = () => { if (previewURL) URL.revokeObjectURL(previewURL); previewURL = ''; };
   window.addEventListener('pagehide', releasePreview);
-  form.addEventListener('input', event => { if (!pending && ['photo','text','alias','social_url'].includes(event.target.name)) draftId = crypto.randomUUID(); });
+  form.addEventListener('input', event => { if (!pending && ['photo', 'text', 'alias', 'social_url'].includes(event.target.name)) draftId = crypto.randomUUID(); });
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0], error = photoError(file); releasePreview();
     $('#hallazgo-photo-choose').textContent = file ? 'Cambiar foto ↗' : 'Elegí una foto ↗';
     fileInput.setCustomValidity(error); preview.hidden = true; $('#hallazgo-photo-prompt').hidden = false;
     if (error) { if (file) status.textContent = error; return; }
+    status.textContent = endpoint ? '' : offMessage;
     previewURL = URL.createObjectURL(file); preview.src = previewURL; preview.hidden = false; $('#hallazgo-photo-prompt').hidden = true;
-    if (!connected) status.textContent = DEMO ? 'Contenido de demostración. Los envíos están desactivados.' : 'Podés revisar tu foto y tu texto. La recepción todavía no está habilitada; nada se enviará.';
   });
-  const syncButton = () => { button.disabled = !connected || !token || pending; };
-  const resetChallenge = () => { token = ''; if (widgetId !== undefined) window.turnstile?.reset(widgetId); syncButton(); };
-  if (DEMO) status.textContent = 'Contenido de demostración. Los envíos están desactivados.';
-  else if (connected) {
-    status.textContent = 'Preparando la verificación…';
-    const render = () => {
-      widgetId = window.turnstile.render('#hallazgo-verification', { sitekey: siteKey, action: 'hallazgo', callback: value => { token = value; if (status.textContent.includes('verificación')) status.textContent = ''; syncButton(); }, 'expired-callback': () => { token = ''; syncButton(); }, 'error-callback': () => { token = ''; syncButton(); status.textContent = 'No pudimos completar la verificación. Recargá la página para intentar de nuevo.'; } });
-    };
-    loadTurnstile().then(render, () => { status.textContent = 'La verificación no está disponible. Nada se envió; podés intentar más tarde.'; });
-  }
-  syncButton();
+  button.disabled = !endpoint; status.textContent = endpoint ? '' : offMessage;
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (!connected || !token || pending) { if (!connected) status.textContent = DEMO ? 'Contenido de demostración. Los envíos están desactivados.' : 'La recepción de fotos todavía no está habilitada. Tu aporte no se enviará.'; return; }
+    if (!endpoint || pending) { if (!endpoint) status.textContent = offMessage; return; }
     fileInput.setCustomValidity(photoError(fileInput.files[0]));
     const social = $('#hallazgo-social'); social.setCustomValidity(social.value.trim() && !socialHandle(social.value) ? 'Escribí tu usuario con @ (por ejemplo @mapavintage) o un enlace https://.' : '');
     if (!form.reportValidity()) return;
-    const body = new FormData(form); body.set('social_url', socialHandle(social.value)); body.set('submission_id', draftId); body.set('cf-turnstile-response', token);
-    pending = true; syncButton(); status.textContent = 'Enviando tu hallazgo…';
-    // Se congelan los campos, pero el FormData ya conserva el archivo y el texto.
+    pending = true; button.disabled = true; status.textContent = 'Enviando tu hallazgo…';
+    // Se congelan los campos mientras se envía.
     const controls = [...form.querySelectorAll('input,textarea')]; controls.forEach(n => { n.disabled = true; });
+    let error;
     try {
-      const response = await fetch(endpoint, { method: 'POST', body, credentials: 'omit', signal: AbortSignal.timeout(30000) });
-      let result; try { result = await response.json(); } catch { result = null; }
-      if (confirmedReceipt(response, result, draftId)) {
-        status.textContent = 'Gracias, recibí tu hallazgo. Lo voy a revisar antes de publicarlo.';
-        form.reset(); $('#hallazgo-photo-choose').textContent = 'Elegí una foto ↗'; releasePreview(); preview.hidden = true; $('#hallazgo-photo-prompt').hidden = false; draftId = crypto.randomUUID();
-      } else status.textContent = response.status >= 400 && result?.error ? 'No pudimos completar el envío. Tus datos siguen acá. ' + String(result.error).slice(0, 180) : 'No pudimos confirmar la recepción. Tus datos siguen acá para que puedas intentar de nuevo.';
-    } catch { status.textContent = 'No pudimos confirmar la recepción. Tus datos siguen acá para que puedas intentar de nuevo.'; }
-    finally { pending = false; controls.forEach(n => { n.disabled = false; }); resetChallenge(); }
+      const foto = await preparePhoto(fileInput.files[0]);
+      error = await sendAporte(endpoint, { tipo: 'hallazgo', submission_id: draftId, alias: $('#hallazgo-alias').value.trim(), texto: $('#hallazgo-text').value.trim(), red: socialHandle(social.value), foto });
+    } catch { error = 'No pudimos preparar la foto. Probá con otra.'; }
+    controls.forEach(n => { n.disabled = false; });
+    if (!error) {
+      status.textContent = 'Gracias, recibí tu hallazgo. Lo voy a revisar antes de publicarlo.';
+      form.reset(); $('#hallazgo-photo-choose').textContent = 'Elegí una foto ↗'; releasePreview(); preview.hidden = true; $('#hallazgo-photo-prompt').hidden = false; draftId = crypto.randomUUID();
+    } else status.textContent = error + ' Tus datos siguen acá para que puedas intentar de nuevo.';
+    pending = false; button.disabled = false;
   });
   $('#hallazgo-social').addEventListener('input', event => event.target.setCustomValidity(''));
 }
