@@ -2,28 +2,34 @@
 .wall-carousel{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:8px}
 .community-section.is-empty .wall-carousel{display:block}
 .wall-arrow{width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
-.wall-arrow[hidden]{display:block;visibility:hidden}
+/* Una flecha oculta conserva su lugar: si saliera de la grilla, el muro caería en la columna de la flecha. */
+.wall-arrow[hidden]{display:block!important;visibility:hidden}
+#wall-prev{grid-column:1}#wall.wall{grid-column:2}#wall-next{grid-column:3}
 .community-section.is-empty .wall-arrow{display:none}
 .wall-arrow:hover:not(:disabled),.wall-arrow:focus-visible{background:var(--stone)}
 .wall-arrow:disabled{opacity:.3;cursor:default}
 .wall-count{margin:4px 0 0;text-align:center;font-size:13px;letter-spacing:.06em}
 .wall-count[hidden]{display:none}
-#wall.wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;align-items:start;padding:28px 6px 36px;touch-action:pan-y}
-#wall.wall[data-per-page="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
-#wall.wall[data-per-page="1"]{grid-template-columns:minmax(0,340px);justify-content:center}
+/* Centradas aunque haya menos fotos que lugares. */
+#wall.wall{display:flex;justify-content:center;align-items:flex-start;gap:36px;padding:28px 6px 36px;touch-action:pan-y}
+#wall.wall>.polaroid{flex:0 1 calc((100% - 72px) / 3);max-width:320px}
+#wall.wall[data-per-page="2"]>.polaroid{flex-basis:calc((100% - 36px) / 2)}
+#wall.wall[data-per-page="1"]>.polaroid{flex-basis:100%;max-width:340px}
 .community-section.is-empty #wall.wall{display:block;padding:0}
 
-.polaroid{--tilt:-1.6deg;position:relative;perspective:1400px;transform:rotate(var(--tilt));transform-origin:50% 100%}
+.polaroid{--tilt:-1.6deg;position:relative;cursor:pointer;perspective:1400px;transform:rotate(var(--tilt));transform-origin:50% 100%}
 .polaroid:nth-child(3n+2){--tilt:1.3deg}
 .polaroid:nth-child(3n){--tilt:-.7deg}
 .polaroid-inner{position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
 .polaroid.is-flipped .polaroid-inner{transform:rotateY(180deg)}
 .polaroid-face{display:flex;flex-direction:column;background:#fff;color:var(--ink);padding:14px 14px 18px;box-shadow:2px 5px 12px #0002,0 0 0 1px #0000000d;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.polaroid-back{position:absolute;inset:0;overflow:auto;transform:rotateY(180deg);padding:22px 20px}
+/* Dorso: la historia completa, del mismo tamaño que el frente. */
+.polaroid-back{position:absolute;inset:0;overflow:auto;transform:rotateY(180deg);padding:24px 22px;justify-content:center}
 .polaroid-photo{aspect-ratio:1/1;overflow:hidden;background:#E9E4D7}
 .polaroid-photo img{display:block;width:100%;height:100%;object-fit:cover}
 .polaroid-photo.is-empty{background:repeating-linear-gradient(45deg,#E9E4D7 0 12px,#E2DCCD 12px 24px)}
-.polaroid-caption{min-height:150px;padding:14px 4px 0}
+.polaroid-caption{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px;padding:12px 2px 0}
+.polaroid-caption .polaroid-turn{margin-top:4px}
 .polaroid-caption>p,.polaroid-text p{margin:0 0 8px;font-size:15px;line-height:1.55}
 .polaroid-author{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:6px 0 0;font-size:13px}
 .polaroid-author strong{font-weight:600}
@@ -42,5 +48,4 @@
   .wall-carousel{grid-template-columns:36px minmax(0,1fr) 36px;gap:4px}
   .wall-arrow{width:36px}
   #wall.wall{padding:20px 0 28px}
-  .polaroid-caption{min-height:120px}
 }

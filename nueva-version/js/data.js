@@ -63,11 +63,11 @@ export function storeTags(value) {
   const extras = text.split(/[,;|]/).map(t => t.trim()).filter(Boolean);
   return { categorias, etiquetas: [...new Set([...categorias, ...extras])] };
 }
+// Columna Clasificación: puede sumar varias etiquetas ("Vintage, Segunda mano"). Vacía, se usa la Tipología.
 export function classify(value, tipo) {
   const v = fold(value);
-  if (!v) return CONFIG.classificationByType[fold(tipo)] || '';
-  const vintage = /\bvintage\b/.test(v), segunda = /segunda mano|second hand|thrift/.test(v);
-  return vintage && segunda ? 'Vintage y segunda mano' : vintage ? 'Vintage' : segunda ? 'Segunda mano' : '';
+  if (!v) return [...(CONFIG.classificationByType[fold(tipo)] || [])];
+  return [/\bvintage\b/.test(v) && 'Vintage', /segunda mano|second hand|thrift/.test(v) && 'Segunda mano', /feria americana/.test(v) && 'Feria americana'].filter(Boolean);
 }
 // La curaduría se hace en la hoja Directorio: todo local incluido ahí se publica.
 // Solo quedan afuera las filas que no se pueden mostrar: sin nombre o sin coordenadas para ubicarlas en el mapa.
@@ -92,17 +92,17 @@ export function normalizeStores(rows) {
     const barrio = get(row, 'barrio') || 'Barrio sin informar', { categorias, etiquetas } = storeTags(get(row, 'especialidad'));
     stores.push({ id, nombre, direccion, barrio, lat, lng, tipo,
       precio: ['$', '$$', '$$$'].includes(precio) ? precio : '', prendas, especialidades: etiquetas, categoria: get(row, 'especialidad'), categorias,
-      clasificacion: classify(get(row, 'clasificacion'), tipo),
+      clases: classify(get(row, 'clasificacion'), tipo),
       horarios: get(row, 'horarios'), web: socialURL(get(row, 'web')), descripcion: get(row, 'descripcion'),
       busqueda: { nombre: fold(nombre), barrio: fold(barrio), categorias: categorias.map(fold) } });
   }
   return { stores, review };
 }
 // Los filtros se normalizan una vez y cada local usa sus claves ya calculadas al cargar.
-const compileFilters = f => ({ query: fold(f.query), barrio: fold(f.barrio), precio: f.precio || '', prendas: (f.prendas || []).filter(Boolean).map(p => [p, fold(p)]) });
+const compileFilters = f => ({ query: fold(f.query), barrio: fold(f.barrio), precio: f.precio || '', tipo: f.tipo || '', prendas: (f.prendas || []).filter(Boolean).map(p => [p, fold(p)]) });
 function passes(store, c) {
   const k = store.busqueda || { nombre: fold(store.nombre), barrio: fold(store.barrio), categorias: (store.categorias || [store.categoria]).filter(Boolean).map(fold) };
-  return (!c.query || k.nombre.includes(c.query)) && (!c.barrio || k.barrio === c.barrio) && (!c.precio || store.precio === c.precio) &&
+  return (!c.query || k.nombre.includes(c.query)) && (!c.barrio || k.barrio === c.barrio) && (!c.precio || store.precio === c.precio) && (!c.tipo || (store.clases || []).includes(c.tipo)) &&
     (!c.prendas.length || c.prendas.some(([p, folded]) => store.prendas.includes(p) || k.categorias.includes(folded)));
 }
 export const matches = (store, filters) => passes(store, compileFilters(filters));
@@ -115,6 +115,12 @@ export async function fetchRows(url) {
   const text = await response.text();
   if (/^\s*</.test(text)) throw new Error('La fuente devolvió HTML en lugar de CSV');
   return { connected: true, rows: parseCSV(text) };
+}
+// Hallazgos que entrega el receptor de aportes: solo fotos servidas por Google Drive y datos completos.
+export function receiverPosts(body) {
+  return (Array.isArray(body?.posts) ? body.posts : []).filter(p => p && typeof p.id === 'string' && p.id && typeof p.nombre_alias === 'string' && p.nombre_alias.trim()
+    && /^https:\/\/lh3\.googleusercontent\.com\/d\/[\w-]+=w\d+$/.test(p.imagen || ''))
+    .map(p => ({ id: p.id, nombre_alias: p.nombre_alias.trim(), texto: String(p.texto || ''), red_url: safeURL(p.red_url || ''), imagen: p.imagen }));
 }
 export const published = rows => rows.filter(r => fold(r.estado) === 'publicado');
 export function buenosAiresDate(now = new Date()) {

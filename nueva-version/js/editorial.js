@@ -1,8 +1,9 @@
 import { CONFIG } from './config.js';
 import { CARE, GLOSSARY } from './content.js';
-import { fetchRows, published, normalizeEvents, safeImage, safeURL, validDate } from './data.js';
+import { fetchRows, published, normalizeEvents, safeImage, safeURL, validDate, receiverPosts } from './data.js';
 import { $, el, link, picture, paragraphs } from './dom.js';
 import { DEMO, DEMO_AGENDA, DEMO_WALL, DEMO_NOTES, demoStamp } from './demo.js';
+import { aportesEndpoint } from './forms.js';
 
 export function initGlossary() {
   const root = $('#glossary-files'), fallback = el('div', { id: 'glossary-fallback' });
@@ -104,7 +105,7 @@ export async function initEditorial(openReader) {
         events = normalizeEvents(rows);
       }
       if (!events.length) return;
-      $('#agenda').classList.remove('is-empty');
+      $('#agenda-fechas').classList.remove('is-empty');
       let page = 1;
       const render = () => {
         const board = $('#agenda-board'); board.replaceChildren();
@@ -138,14 +139,8 @@ export async function initEditorial(openReader) {
       render();
     } catch { $('#agenda-board').hidden = true; errorState('#agenda-status', () => { $('#agenda-board').hidden = false; loadAgenda(); }); }
   };
-  // Muro: Polaroids. Abajo, hasta 180 caracteres; "Seguir leyendo" da vuelta la foto para leer todo, con nombre y red social.
+  // Muro: Polaroids. Al frente, la foto con el nombre; al tocarla se da vuelta y el dorso muestra la historia completa.
   // Se ven 3 en escritorio, 2 en tablet y 1 en el teléfono; las flechas (o deslizar) pasan a las siguientes.
-  const WALL_PREVIEW = 180;
-  const preview = text => {
-    const flat = String(text || '').replace(/\s+/g, ' ').trim(); if (flat.length <= WALL_PREVIEW) return { text: flat, cut: false };
-    let cut = flat.slice(0, WALL_PREVIEW); const space = cut.lastIndexOf(' '); if (space > WALL_PREVIEW * 0.6) cut = cut.slice(0, space);
-    return { text: cut.replace(/[\s,.;:]+$/, '') + '…', cut: true };
-  };
   const handleLabel = url => { const m = String(url).match(/^https:\/\/(?:www\.)?instagram\.com\/([A-Za-z0-9_.]{1,30})\/?$/); return m ? '@' + m[1] : 'Red social ↗'; };
   const wallQueries = [matchMedia('(max-width: 640px)'), matchMedia('(max-width: 900px)')];
   const perPage = () => wallQueries[0].matches ? 1 : wallQueries[1].matches ? 2 : 3;
@@ -155,28 +150,31 @@ export async function initEditorial(openReader) {
     if (r.demo) front.append(stamp());
     const photo = el('div', { class: 'polaroid-photo' }), img = picture(r.imagen, r.alt || 'Hallazgo compartido por ' + r.nombre_alias);
     if (img) photo.append(img); else photo.classList.add('is-empty');
-    const { text, cut } = preview(r.texto), caption = el('div', { class: 'polaroid-caption' });
-    caption.append(el('p', {}, text));
     const social = safeURL(r.red_url), author = () => { const p = el('p', { class: 'polaroid-author' }); p.append(el('strong', {}, r.nombre_alias)); if (social) p.append(link(handleLabel(social), social)); return p; };
-    front.append(photo, caption);
-    if (!cut) { caption.append(author()); inner.append(front); card.append(inner); return card; }
-    const flip = (toBack, focusSelector) => {
+    const caption = el('div', { class: 'polaroid-caption' }), body = el('div', { class: 'polaroid-text' }); paragraphs(r.texto, body);
+    const readMore = el('button', { type: 'button', class: 'polaroid-turn' }, 'Leer su historia'), showImage = el('button', { type: 'button', class: 'polaroid-turn' }, 'Ver la foto');
+    caption.append(author(), readMore); front.append(photo, caption); back.append(body, author(), showImage);
+    const flip = (toBack, focus) => {
       card.classList.toggle('is-flipped', toBack); front.inert = toBack; back.inert = !toBack;
       front.setAttribute('aria-hidden', String(toBack)); back.setAttribute('aria-hidden', String(!toBack));
-      card.querySelector(focusSelector)?.focus({ preventScroll: true });
+      if (focus) (toBack ? showImage : readMore).focus({ preventScroll: true });
     };
-    const readMore = el('button', { type: 'button', class: 'polaroid-turn' }, 'Seguir leyendo'), showImage = el('button', { type: 'button', class: 'polaroid-turn' }, 'Ver imagen');
-    readMore.onclick = () => flip(true, '.polaroid-back .polaroid-turn'); showImage.onclick = () => flip(false, '.polaroid-front .polaroid-turn');
-    caption.append(readMore);
-    const body = el('div', { class: 'polaroid-text' }); paragraphs(r.texto, body);
-    back.append(body, author(), showImage); back.inert = true; back.setAttribute('aria-hidden', 'true');
+    readMore.onclick = event => { event.stopPropagation(); flip(true, true); }; showImage.onclick = event => { event.stopPropagation(); flip(false, true); };
+    // Tocar cualquier parte de la Polaroid también la da vuelta, salvo el enlace a la red social.
+    card.addEventListener('click', event => { if (!event.target.closest('a')) flip(!card.classList.contains('is-flipped'), false); });
+    back.inert = true; back.setAttribute('aria-hidden', 'true');
     inner.append(front, back); card.append(inner); return card;
   };
   const loadWall = async () => {
     try {
       let posts;
+      const receiver = DEMO ? '' : aportesEndpoint(CONFIG.aportes?.endpoint);
       if (DEMO) posts = DEMO_WALL;
-      else {
+      // Con el receptor de aportes, el muro muestra los hallazgos marcados como Publicado en la hoja "Hallazgos".
+      else if (receiver) {
+        const response = await fetch(receiver + '?muro=1', { credentials: 'omit', signal: AbortSignal.timeout(18000) });
+        if (!response.ok) throw new Error('muro'); posts = receiverPosts(await response.json());
+      } else {
         const { connected, rows } = await fetchRows(CONFIG.sources.muro); if (!connected) return;
         posts = published(rows).filter(r => r.id && r.nombre_alias && safeImage(r.imagen)).sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
       }

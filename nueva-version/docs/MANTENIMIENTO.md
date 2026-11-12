@@ -46,7 +46,7 @@ La fuente publicada es pública: no pongas correos privados, teléfonos de conta
 
 La sección ahora ofrece “Compartí tu hallazgo” con foto, texto, alias y red opcional. La vista previa funciona en el navegador. La recepción real necesita su propio servicio y continúa desactivada; no utiliza el Apps Script de locales.
 
-Seguí `RECEPCION-DE-HALLAZGOS.md` para configurar el receptor independiente. Las fotos se guardan en privado y los textos en una cola pendiente. Luego de revisar un aporte, descargá la foto, guardá su copia web en `assets/muro/` y añadí alias, texto, ruta, alt y red opcional a la pestaña Muro. Marcá `estado=publicado` solo después de aprobarlo. El receptor no publica automáticamente ni escribe en Sheets.
+Seguí `RECEPCION-DE-APORTES.md` para instalar el receptor. Cada foto llega a la carpeta "Mapa Vintage — Hallazgos" de tu Drive y a una fila de la hoja "Hallazgos" con Estado = Pendiente. Para que aparezca en el muro, cambiá el Estado a Publicado; para dejarla afuera, a Descartado. El muro se actualiza en unos cinco minutos.
 
 ## Formulario de espacios
 

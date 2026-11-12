@@ -29,6 +29,8 @@ button,a{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 :focus-visible{outline:3px solid var(--azul);outline-offset:3px}
 mark{background:var(--rosa);color:var(--negro);padding:.1em .3em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 [hidden]{display:none!important}
+/* Barras de desplazamiento finas, sin flechas. */
+html,dialog,#navigation,.store-list{scrollbar-width:thin;scrollbar-color:#0006 transparent}
 .visually-hidden{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .small,small{font-size:13px;line-height:1.5;color:var(--gris)}
 .optional{font-weight:400;color:var(--gris)}
@@ -90,10 +92,13 @@ mark{background:var(--rosa);color:var(--negro);padding:.1em .3em;box-decoration-
 .lead{font-weight:700;font-size:clamp(16px,1.4vw,19px);line-height:1.45;max-width:860px}
 .sticker{position:absolute;pointer-events:none;user-select:none}
 .section-head .sticker{right:0;top:50%;transform:translateY(-50%) rotate(-4deg);width:clamp(110px,14vw,190px)}
+.section-head .sticker-aportes{width:clamp(70px,7.5vw,104px)}
+/* El teléfono de Armá tu recorrido queda por encima de la línea del título. */
+.section-head .sticker-route{top:auto;bottom:12px;transform:rotate(-4deg);width:clamp(90px,9vw,128px)}
 
 /* Mapa: portada */
-.hero{position:relative;height:clamp(420px,74vh,760px);overflow:hidden;background:var(--marfil)}
-.hero-photo{width:100%;height:100%;object-fit:cover;object-position:50% 72%}
+.hero{position:relative;height:calc(100vh - var(--header));height:calc(100svh - var(--header));min-height:420px;overflow:hidden;background:var(--marfil)}
+.hero-photo{width:100%;height:100%;object-fit:cover;object-position:50% 100%}
 .hero::after{content:"";position:absolute;inset:0;background:rgb(250 250 250 / .32);pointer-events:none}
 .hero-cta{position:absolute;z-index:1;left:50%;bottom:9%;transform:translateX(-50%);min-width:min(280px,80vw);min-height:50px;font-size:18px}
 .hero-cta:hover:not(:disabled){transform:translate(-50%,-1px)}
@@ -116,16 +121,14 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .active-filters:empty{display:none}
 .filter-chip{min-height:32px;padding:4px 12px;border:1px solid var(--negro);border-radius:999px;background:var(--rosa);font:400 12px var(--mono)}
 .directory-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);border:1.5px solid var(--negro);background:var(--blanco)}
-.map-column{position:relative;min-width:0}
-#map{height:clamp(460px,62vh,640px);background:#E8E6DF;isolation:isolate}
+/* El mapa llega hasta el borde de abajo, a la altura de la lista con su paginación. */
+.map-column{position:relative;display:flex;flex-direction:column;min-width:0}
+#map{flex:1 1 auto;min-height:clamp(460px,62vh,640px);background:#E8E6DF;isolation:isolate}
 .map-loading{padding:32px;font:700 22px/1.3 var(--titulo);text-transform:uppercase}
 #map-error{padding:0 12px}
 #map-error:empty{display:none}
 .list-column{display:flex;flex-direction:column;min-width:0;border-left:1.5px solid var(--negro)}
-.store-list{height:clamp(460px,62vh,640px);overflow:auto;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:#0005 transparent}
-.store-list::-webkit-scrollbar{width:8px}
-.store-list::-webkit-scrollbar-button{display:none;width:0;height:0}
-.store-list::-webkit-scrollbar-thumb{background:#0005;border-radius:8px}
+.store-list{height:clamp(460px,62vh,640px);overflow:auto;overscroll-behavior-y:contain}
 .empty{padding:28px 22px;font-size:15px}
 .retry{margin:0 22px 22px;text-decoration:underline}
 
@@ -221,18 +224,14 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .entry:hover img{filter:none}
 .criteria{margin-top:28px;font-size:13px;line-height:1.7;max-width:980px}
 
-/* Información */
-.view-head{padding-top:clamp(32px,4vw,56px)}
-.view-subnav{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;width:fit-content;margin:22px auto 0;padding:5px 10px;background:var(--rosa);border-radius:6px}
-.view-subnav a{padding:8px 12px;font:400 13px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
-.view-subnav a:hover,.view-subnav a:focus-visible{text-decoration:underline}
+/* Recursos: Glosario y Cuidados */
 .glossary-section{padding-block:clamp(40px,5vw,64px)}
 .glossary-layout{position:relative;display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:clamp(24px,5vw,80px);align-items:end}
 .glossary-layout .sticker-glossary{position:static;width:100%;max-width:260px}
 .filing-cabinet{min-width:0}
 /* Pestañas de carpeta: cada término tiene su papel. */
 .folder-tabs{display:flex;align-items:flex-end;gap:4px;padding-left:12px;overflow-x:auto;scrollbar-width:none}
-.folder-tab{flex:1 1 auto;min-height:44px;padding:10px 16px;border:1px solid #0003;border-bottom:0;border-radius:10px 10px 0 0;background:var(--paper) center/cover;font-size:13px;white-space:nowrap;transform:translateY(4px);transition:transform .15s}
+.folder-tab{flex:1 1 auto;min-height:44px;padding:10px 16px;border:1px solid #0003;border-bottom:0;border-radius:10px 10px 0 0;background:linear-gradient(#FAFAFA59,#FAFAFA59),var(--paper) center/cover;font-size:13px;white-space:nowrap;transform:translateY(4px);transition:transform .15s}
 .folder-tab:hover{transform:none}
 .folder-tab[aria-selected=true]{transform:none;min-height:52px;border-top:3px solid var(--negro);font-weight:700;text-decoration:underline;text-underline-offset:4px}
 .folder-tab:nth-child(1),.folder-panel[data-color="0"]{--paper:url("../assets/identidad/papel/papel_1.webp")}
@@ -240,7 +239,7 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .folder-tab:nth-child(3),.folder-panel[data-color="2"]{--paper:url("../assets/identidad/papel/papel_3.webp")}
 .folder-tab:nth-child(4),.folder-panel[data-color="3"]{--paper:url("../assets/identidad/papel/papel_4.webp")}
 .folder-tab:nth-child(5),.folder-panel[data-color="4"]{--paper:url("../assets/identidad/papel/papel_5.webp")}
-.folder-panel{min-height:clamp(240px,22vw,300px);padding:clamp(24px,3vw,40px);background:var(--paper) center/cover;border:1px solid #0003;box-shadow:3px 4px 0 #0000000F}
+.folder-panel{min-height:clamp(240px,22vw,300px);padding:clamp(24px,3vw,40px);background:linear-gradient(#FAFAFA80,#FAFAFA80),var(--paper) center/cover;border:1px solid #0003;box-shadow:3px 4px 0 #0000000F}
 .folder-panel h3{font:700 clamp(28px,3vw,40px)/1.05 var(--titulo);letter-spacing:-.03em;margin-bottom:16px}
 .folder-panel p{max-width:60ch;font-size:15px;line-height:1.75}
 #glossary-fallback .folder{border-top:1px solid var(--negro);padding:12px 0}
@@ -271,7 +270,7 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 #care-fallback p{margin-top:10px;max-width:72ch}
 
 /* Agenda: lista sobre papel blanco, sujetada con un gancho. */
-.agenda-top{padding-top:clamp(40px,5vw,64px);border-top:1px solid var(--negro)}
+.agenda-top{padding-top:clamp(40px,5vw,64px)}
 .agenda-head{grid-template-columns:minmax(0,1fr) auto;align-items:center;padding-right:0;margin-bottom:0;padding-bottom:clamp(56px,7vw,90px)}
 .agenda-head h2{grid-column:1}
 .agenda-lead{grid-column:1;font:400 14px/1.5 var(--mono)}
@@ -305,6 +304,7 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .band-dark .polaroid-photo img{padding:5px;background:#141210}
 .band-dark .polaroid-caption>p,.band-dark .polaroid-text p{font-size:14px}
 .band-dark .polaroid-turn{font-family:var(--mono);font-size:11px;text-transform:uppercase}
+.band-dark .polaroid-back{padding:24px 22px}
 .wall-empty{display:grid;grid-template-columns:repeat(3,minmax(0,220px));justify-content:center;gap:clamp(16px,3vw,40px);padding:10px 0}
 .wall-empty-frame{aspect-ratio:.82;background:var(--marfil);box-shadow:0 6px 18px #0008;padding:12px 12px 48px;transform:rotate(-2deg)}
 .wall-empty-frame::before{content:"";display:block;height:100%;background:#2A2622}
@@ -323,16 +323,17 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .collage-stars{width:78%;left:4%;top:0}
 .collage-selfie{width:56%;left:0;top:14%;transform:rotate(-6deg)}
 .collage-vermeer{width:44%;right:4%;bottom:0}
-.hallazgo-form{display:grid;gap:4px;padding:clamp(18px,2vw,26px) clamp(18px,2.2vw,30px);background:var(--blanco);box-shadow:0 2px 14px #0000001A}
-.hallazgo-form>label,.hallazgo-form .hallazgo-photo-field>label{display:grid;gap:4px;font:700 11px/1.4 var(--mono)}
+/* Misma estética que el panel de Armá tu recorrido. */
+.hallazgo-form{display:grid;gap:4px;padding:clamp(18px,2vw,26px) clamp(18px,2.2vw,30px);border:1px solid var(--borde);background:#E9E8E2;box-shadow:4px 4px 0 #0000001A}
+.hallazgo-form>label,.hallazgo-form .hallazgo-photo-field>label{display:grid;gap:6px;font-weight:700;font-size:13px;line-height:1.4}
 .hallazgo-form>label+*,.hallazgo-form>label{margin-top:4px}
-.hallazgo-form input,.hallazgo-form textarea{min-height:36px;padding:6px 10px;border-color:var(--borde);border-radius:4px}
+.hallazgo-form input,.hallazgo-form textarea{min-height:38px;padding:6px 10px}
 .hallazgo-form textarea{min-height:64px}
 .hallazgo-photo-field{display:grid;gap:4px;margin-top:4px}
-.photo-stage{position:relative;display:flex;align-items:center;justify-content:center;width:min(100%,220px);min-height:160px;padding:10px 10px 50px;border:1px solid var(--borde);border-radius:14px;text-align:center;overflow:hidden}
+.photo-stage{position:relative;display:flex;align-items:center;justify-content:center;width:min(100%,220px);min-height:160px;padding:10px 10px 50px;border:1px solid var(--negro);background:var(--blanco);text-align:center;overflow:hidden}
 .photo-stage>span{font-size:13px;color:var(--gris)}
 .photo-stage img{width:100%;height:110px;object-fit:contain}
-.photo-stage>.photo-choose{position:absolute;left:0;bottom:0;width:100%;padding:11px 10px;border-top:1px solid var(--borde);background:var(--marfil);color:var(--negro);font:400 12px/1.3 var(--mono);text-transform:uppercase;pointer-events:none}
+.photo-stage>.photo-choose{position:absolute;left:0;bottom:0;width:100%;padding:11px 10px;border-top:1px solid var(--negro);background:var(--marfil);color:var(--negro);font:400 12px/1.3 var(--mono);text-transform:uppercase;pointer-events:none}
 .photo-stage input{position:absolute;left:0;bottom:0;width:100%;height:42px;min-height:42px;opacity:0;cursor:pointer}
 .photo-stage:focus-within{outline:3px solid var(--azul);outline-offset:3px}
 #hallazgo-photo-help{font-size:11px}
@@ -371,9 +372,12 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .footer-contact{font-size:13px;line-height:1.5;color:var(--rosa)}
 .footer-contact a{text-decoration:none}
 .footer-contact a:hover{text-decoration:underline}
-.footer-brand{position:relative;display:block;width:clamp(220px,26vw,340px)}
-.footer-collage{width:82%}
-.footer-logo{position:absolute;right:0;bottom:0;width:62%}
+/* El logo se despega del collage con un contorno negro, como en el diseño. */
+.footer-brand{position:relative;display:block;width:clamp(250px,30vw,400px);padding-bottom:6%}
+.footer-collage{width:76%}
+.footer-logo{position:absolute;right:0;bottom:0;width:60%;filter:drop-shadow(0 0 1.5px var(--negro)) drop-shadow(0 0 1.5px var(--negro)) drop-shadow(3px 3px 0 var(--negro))}
+.footer-ig{display:none;color:var(--blanco)}
+.footer-ig:hover{color:var(--rosa)}
 .back-top{display:block;width:clamp(30px,3vw,42px);padding:6px 0;transition:transform .2s}
 .back-top:hover{transform:translateY(-6px)}
 
@@ -431,15 +435,32 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
 /* Teléfono */
 @media(max-width:640px){
   body{font-size:15px}
+  .hero-cta{min-width:0;min-height:40px;padding:8px 30px;font-size:14px;bottom:7%}
+  /* Zoom desde abajo: el Obelisco se ve más grande y sube hacia el centro (la foto no tiene nada debajo de la calle). */
+  .hero-photo{transform:scale(1.35);transform-origin:50% 100%}
+  /* Título, imagen y bajada, en ese orden. */
   .section-head{padding-right:0}
-  .section-head .sticker{position:static;transform:rotate(-4deg);width:110px;justify-self:end;margin-top:-6px}
+  .section-head .sticker{position:static;order:1;transform:rotate(-4deg);width:110px;justify-self:center;margin-top:-6px}
+  .section-head .lead{order:2}
+  .section-head .sticker-aportes{width:76px}
+  .filters select{font-size:13px;padding-inline:8px 22px}
+  #contact-write{min-width:0;min-height:36px;padding:6px 26px;font-size:13px}
+  #glosario .section-wrap{display:grid;gap:18px}
+  #glosario .section-head,#glosario .glossary-layout{display:contents}
+  #glosario .sticker-glossary{order:1;justify-self:center;max-width:150px}
+  #glosario .lead{order:2}
+  #glosario .filing-cabinet{order:3;margin-top:8px}
   .sticker-pin-route{width:76px;right:-14px;top:-30px}
-  .intro{flex-direction:column;align-items:stretch}
-  .intro .lead{flex:none}
-  .intro-links{flex-direction:row;justify-content:space-between;flex-wrap:wrap}
+  /* Sin la explicación: los dos botones claros, que toman color al tocarlos. */
+  .intro{flex-direction:column;align-items:stretch;margin-bottom:16px}
+  .intro .lead{display:none}
+  .intro-links{flex-direction:row;gap:10px}
+  .intro-route,.intro-add{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 10px;border:1.5px solid var(--negro);border-radius:999px;background:var(--blanco);font:400 12px/1.2 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center;box-shadow:none}
+  .intro-route:hover,.intro-route:active{background:var(--azul)}
+  .intro-add:hover,.intro-add:active{background:var(--rosa)}
   .filters{grid-template-columns:1fr 1fr;gap:10px}
   .filters .search{grid-column:1/-1}
-  .clear{grid-column:1/-1;grid-row:auto;justify-self:start;min-height:32px}
+  .clear{grid-column:auto;grid-row:auto;justify-self:start;align-self:end;min-height:42px}
   .view-switch{display:flex;border:1.5px solid var(--negro)}
   .view-switch button{min-height:34px;padding:4px 16px;font:400 12px var(--mono);text-transform:uppercase}
   .view-switch button[aria-pressed=true]{background:var(--negro);color:var(--blanco)}
@@ -447,12 +468,15 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
   .directory-grid[data-view=map] .list-column{display:none}
   .directory-grid[data-view=list] .map-column{display:none}
   .list-column{border-left:0}
-  #map{height:380px}
+  /* Alto: dos tercios de la pantalla. El resto queda libre para deslizar la página sin arrastrar el mapa. */
+  #map{height:380px;height:clamp(380px,68svh,640px);min-height:0}
   .store-list{height:auto;max-height:560px}
   .entry,.entry-reverse{grid-template-columns:1fr;gap:14px}
   .entry-reverse img{order:0}
-  .folder-tab{flex:0 0 auto;padding-inline:12px}
-  .folder-tabs{padding-left:0}
+  /* Las cinco pestañas entran en el ancho del teléfono. */
+  .folder-tabs{padding-left:0;gap:2px;overflow:visible}
+  .folder-tab{flex:1 1 0;min-width:0;padding:8px 3px;font-size:11px;line-height:1.15;white-space:normal}
+  .folder-tab[aria-selected=true]{min-height:48px}
   .garment{margin-left:-18px}
   .rail-arrow{display:none}
   .agenda-head{grid-template-columns:1fr}
@@ -463,7 +487,13 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
   .wall-empty-frame:nth-child(3){display:none}
   .lace{padding:40px 16px;border-width:34px}
   .about-shell{left:-6%}
-  .footer-bottom{grid-template-columns:1fr auto}
+  .footer{padding-block:80px 44px}
+  .footer-bottom{grid-template-columns:1fr auto;align-items:end;gap:28px 16px;margin-top:120px}
+  .footer-contact{display:none}
+  .footer-brand{width:min(74vw,300px);justify-self:center}
+  .footer-brand{grid-row:1}
+  .back-top{width:30px;grid-column:2;grid-row:1}
+  .footer-ig{display:flex;grid-column:1/-1;justify-self:center;padding:8px}
 }
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}

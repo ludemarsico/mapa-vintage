@@ -31,7 +31,7 @@ function seedsFor(candidates, index) {
   if (seeds.length <= MAX_SEEDS) return seeds;
   const step = seeds.length / MAX_SEEDS; return Array.from({ length: MAX_SEEDS }, (_, i) => seeds[Math.floor(i * step)]);
 }
-const preferenceFilter = prefs => ({ barrio: prefs.barrio, prendas: prefs.prenda ? [prefs.prenda] : [] });
+const preferenceFilter = prefs => ({ barrio: prefs.barrio, tipo: prefs.tipo });
 // Varias propuestas distintas, mejor primero: más paradas y, a igualdad, menos caminata. Se priorizan las que no comparten locales.
 export function generateRoutes(stores, prefs, count = 3) {
   const candidates = filterStores(stores, preferenceFilter(prefs));
@@ -69,7 +69,7 @@ export function encodeRoute(base, prefs, stops) {
   const url = new URL(base); url.search = ''; url.hash = 'recorridos';
   url.searchParams.set('ruta', stops.map(s => s.id).join(','));
   if (prefs.barrio) url.searchParams.set('barrio', prefs.barrio);
-  if (prefs.prenda) url.searchParams.set('prenda', prefs.prenda);
+  if (prefs.tipo) url.searchParams.set('tipo', prefs.tipo);
   url.searchParams.set('paseo', prefs.mode === 'full' ? 'full' : 'express');
   return url.href;
 }
@@ -77,13 +77,15 @@ export function restoreRoute(url, stores) {
   const params = new URL(url).searchParams;
   if (!params.has('ruta')) return null;
   const ids = params.get('ruta').split(',').filter(Boolean);
-  const prefs = { barrio: params.get('barrio') || '', prenda: params.get('prenda') || '', mode: params.get('paseo') === 'full' ? 'full' : 'express' };
+  const prefs = { barrio: params.get('barrio') || '', tipo: params.get('tipo') || '', mode: params.get('paseo') === 'full' ? 'full' : 'express' };
   const unique = [...new Set(ids)].slice(0, prefs.mode === 'full' ? 5 : 2);
   const stops = unique.map(id => stores.find(s => s.id === id)).filter(Boolean);
-  const missing = ids.length !== stops.length || stops.some(s => !matches(s, { barrio: prefs.barrio, prendas: prefs.prenda ? [prefs.prenda] : [] }));
+  const missing = ids.length !== stops.length || stops.some(s => !matches(s, preferenceFilter(prefs)));
   const discontinuous = stops.some((s, i) => i && distance(stops[i - 1], s) > CONFIG.route.maxLegKm);
   return { prefs, stops, missing, discontinuous };
 }
+// Mensaje para compartir el recorrido por WhatsApp.
+export const shareText = url => `Mirá el paseo que armé en Mapa Vintage:\n${url}\n\n¿Vamos?\nArmá el tuyo en www.mapavintage.com.ar`;
 export function googleRoute(stops) {
   if (!stops.length) return '';
   const u = new URL('https://www.google.com/maps/dir/'); u.searchParams.set('api', '1'); u.searchParams.set('travelmode', 'walking');

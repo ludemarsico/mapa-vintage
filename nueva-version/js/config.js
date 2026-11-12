@@ -11,11 +11,10 @@ export const CONFIG = {
   email: 'mapavintage.ba@gmail.com',
   // Logo y collage del pie están fijos en index.html.
   logo: '',
-  // Receptor independiente de imágenes. Nunca usar el Apps Script de locales aquí.
-  hallazgos: { endpoint: '', turnstileSiteKey: '' },
-  // Receptor nuevo de propuestas (integraciones/propuestas/Code.gs): escribe en "Agenda a verificar" y "Espacios a verificar".
-  // Mientras esté vacío se usa formEndpoint, el formulario original.
-  propuestas: { endpoint: '', turnstileSiteKey: '' },
+  // Receptor de aportes (integraciones/aportes/Code.gs, instalado en la planilla del Directorio): recibe locales, ferias,
+  // eventos y fotos de hallazgos, y entrega al muro los hallazgos publicados. Ver docs/RECEPCION-DE-APORTES.md.
+  // Mientras esté vacío, las propuestas usan los formularios originales (formEndpoint y agendaFormEndpoint) y las fotos no se envían.
+  aportes: { endpoint: 'https://script.google.com/macros/s/AKfycbw1lw3VirJc7kMTejhFyVnhwQLDZXNpGUv76opKGx44Dcx-3WGya4ejj7DiU8ThHOYVeg/exec' },
   // Cuidados: el perchero de prendas, en este orden. "cuidado" es el título del texto en content.js (CARE).
   // Una prenda sin texto de cuidado queda oculta hasta que se agregue su texto.
   prendas: [
@@ -59,8 +58,10 @@ export const CONFIG = {
   barrios: ['Agronomía', 'Almagro', 'Balvanera', 'Barracas', 'Belgrano', 'Boedo', 'Caballito', 'Chacarita', 'Coghlan', 'Colegiales', 'Constitución', 'Flores', 'Floresta', 'La Boca', 'La Paternal', 'Liniers', 'Mataderos', 'Monte Castro', 'Montserrat', 'Nueva Pompeya', 'Núñez', 'Palermo', 'Parque Avellaneda', 'Parque Chacabuco', 'Parque Chas', 'Parque Patricios', 'Puerto Madero', 'Recoleta', 'Retiro', 'Saavedra', 'San Cristóbal', 'San Nicolás', 'San Telmo', 'Vélez Sarsfield', 'Versalles', 'Villa Crespo', 'Villa del Parque', 'Villa Devoto', 'Villa General Mitre', 'Villa Lugano', 'Villa Luro', 'Villa Ortúzar', 'Villa Pueyrredón', 'Villa Real', 'Villa Riachuelo', 'Villa Santa Rita', 'Villa Soldati', 'Villa Urquiza'],
   // Categorías de prendas del filtro y del recorrido, en este orden. Se reconocen dentro de Especialidad.
   categories: ['Sastrería & Archivo', 'Denim & Streetwear 90s', 'Sin género / Oversized', 'Carteras, Calzado & Accesorios', 'Cuero & Tapados'],
-  // Respaldo mientras la columna Clasificación esté vacía. Otras tipologías quedan sin clasificar.
-  classificationByType: { 'boutique vintage': 'Vintage', 'feria americana': 'Segunda mano', 'cadena de reventa': 'Segunda mano' },
+  // Etiquetas de cada local. Un local puede tener varias.
+  classes: ['Vintage', 'Segunda mano', 'Feria americana'],
+  // Respaldo cuando la columna Clasificación no existe o está vacía: la etiqueta sale de la Tipología.
+  classificationByType: { 'boutique vintage': ['Vintage'], 'tienda de segunda mano': ['Segunda mano'], 'cadena de reventa': ['Segunda mano'], 'feria americana': ['Feria americana'] },
   // Solo valores originales del formulario. "Evento" se distingue dentro de descripcion.
   formTypes: ['Boutique Vintage', 'Feria americana', 'Feria colectiva', 'Cadena de reventa'],
   pageSize: 10,
