@@ -1,4 +1,4 @@
-import { safeURL, safeImage } from './data.js';
+import { safeURL, safeImage } from './data.js?v=202611191205';
 export const $ = selector => document.querySelector(selector);
 export function el(tag, attrs = {}, text = '') {
   const n = document.createElement(tag);

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { parseCSV, normalizeStores, classify, normalizeEvents, sheetDate, matches, fold, safeURL, safeImage, socialURL, nextEventDate, buenosAiresDate, validDate } from '../js/data.js';
+import { parseCSV, normalizeStores, classify, normalizeEvents, normalizeRegulars, sheetDate, matches, fold, safeURL, safeImage, socialURL, nextEventDate, buenosAiresDate, validDate } from '../js/data.js';
 import { socialHandle } from '../js/hallazgo.js';
 import { generateRoute, totals, alternatives, encodeRoute, restoreRoute, shareText } from '../js/routes.js';
 import { serializeProposal } from '../js/forms.js';
@@ -22,6 +22,13 @@ test('solo exige nombre y coordenadas válidas', () => { for (const bad of [{ No
 test('un ID repetido en la hoja no saca locales: se distingue con sufijo', () => { const { stores: list } = normalizeStores([row, { ...row, Nombre: 'Otro' }]); assert.equal(list.length, 2); assert.notEqual(list[0].id, list[1].id); });
 test('Agenda: fechas de Sheets, pasadas ocultas, sin fecha al final', () => { const rows = [{ Nombre: 'Sin fecha', Fecha: '', Horario: 'Domingos' }, { Nombre: 'Pasada', Fecha: '01/10/2026' }, { Nombre: 'Próxima', Fecha: '8/11/2026', Barrio: 'San Telmo', Instagram: '@feria' }, { Nombre: 'Antes', Fecha: '2026-11-01' }, { Nombre: 'Con estado', Fecha: '2026-11-02', Estado: 'borrador' }]; const list = normalizeEvents(rows, '2026-10-29'); assert.deepEqual(list.map(e => e.nombre), ['Antes', 'Con estado', 'Próxima', 'Sin fecha']); assert.equal(list[2].next, '2026-11-08'); assert.equal(list[2].enlace, 'https://www.instagram.com/feria/'); assert.equal(sheetDate('31/02/2026'), ''); });
 test('Agenda con las columnas de la hoja: Días, Horarios, Rango Precio, sin fecha', () => { const [e] = normalizeEvents([{ ID: '1', Nombre: 'Feria de prueba', Barrio: 'Palermo', Dirección: 'Calle 1', Latitud: '', Longitud: '', Tipología: 'Feria colectiva', 'Rango Precio': '$', Especialidad: 'Mix', Días: 'Sábados y domingos', Horarios: '11 a 19', Instagram: '@prueba', 'Descripción breve': 'Texto' }], '2026-10-29'); assert.equal(e.dias, 'Sábados y domingos'); assert.equal(e.horario, '11 a 19'); assert.equal(e.precio, '$'); assert.equal(e.tipo, 'Feria colectiva'); assert.equal(e.descripcion, 'Texto'); assert.equal(e.next, ''); });
+test('Ferias habituales: todas las filas, en orden, con Días como texto', () => {
+  const rows = [{ ID: '', Nombre: 'Parque los Andes', Barrio: 'Chacarita', 'Dirección': 'Corrientes 6210', 'Tipología': 'Feria Americana', 'Rango Precio': '$', 'Días': 'Sábados, domingos y feriados', Horarios: '10:00 a 19:00', Instagram: '@feria.losandes', 'Descripción breve': 'Al aire libre' },    { Nombre: '' }, { Nombre: 'Little Horse', 'Días': 'El primer viernes de cada mes' }, { Nombre: 'Little Horse', 'Días': 'El primer viernes de cada mes' }];  const list = normalizeRegulars(rows);  assert.deepEqual(list.map(e => e.nombre), ['Parque los Andes', 'Little Horse', 'Little Horse']);  assert.equal(list[0].dias, 'Sábados, domingos y feriados'); assert.equal(list[0].next, ''); assert.equal(list[0].horario, '10:00 a 19:00'); assert.equal(list[0].precio, '$');  assert.equal(list[0].enlace, 'https://www.instagram.com/feria.losandes/'); assert.equal(new Set(list.map(e => e.id)).size, 3);
+});
+test('el recorrido usa todos los locales, no los filtrados del mapa', () => {
+  const app = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
+  assert.match(app, /generateRoutes\(state\.stores,/); assert.match(app, /alternatives\(state\.stores,/); assert.doesNotMatch(app, /generateRoutes\(state\.filtered/);
+});
 test('Agenda: una fecha en la columna Días es la fecha del evento', () => { const rows = [{ Nombre: 'OGA', Días: '07/11/2026', Horarios: '10 a 18:30h' }, { Nombre: 'Pasada', Días: '01/11/2026' }, { Nombre: 'Fija', Días: 'Sábados' }]; const list = normalizeEvents(rows, '2026-11-04'); assert.deepEqual(list.map(e => [e.nombre, e.next, e.dias]), [['OGA', '2026-11-07', ''], ['Fija', '', 'Sábados']]); });
 test('Agenda acepta el formato anterior con recurrencia', () => { const [e] = normalizeEvents([{ titulo: 'Feria', fecha_inicio: '2026-10-01', recurrencia: 'semanal:7' }], '2026-10-29'); assert.equal(e.next, '2026-11-01'); });
 test('red social del hallazgo: @usuario, enlace seguro o vacío', () => { assert.equal(socialHandle('@mi.usuario'), 'https://www.instagram.com/mi.usuario/'); assert.equal(socialHandle('https://example.com/yo'), 'https://example.com/yo'); assert.equal(socialHandle('javascript:alert(1)'), ''); assert.equal(socialHandle('@ con espacios'), ''); assert.equal(socialHandle(''), ''); });
@@ -61,4 +68,12 @@ test('cada prenda del perchero tiene su texto de cuidado y su imagen', () => {
   const titles = new Set(CARE.map(c => c.titulo));
   CONFIG.prendas.forEach(p => { assert.ok(titles.has(p.cuidado), p.etiqueta); assert.ok(existsSync(new URL('../assets/identidad/prendas/' + p.imagen + '.webp', import.meta.url)), p.imagen); });
   assert.ok(!titles.has('Calzado de cuero'));
+});
+test('CSS y JS propios llevan todos la misma versión (el navegador no mezcla archivos viejos con nuevos)', () => {
+  const read = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
+  const html = ['index.html', 'demostracion.html'].map(read).join('\n'), js = ['app', 'config', 'contacto', 'content', 'data', 'demo', 'dom', 'editorial', 'forms', 'hallazgo', 'map', 'routes', 'views'].map(n => read('js/' + n + '.js')).join('\n');
+  const unversioned = [...html.matchAll(/(?:href|src)="((?:css|js)\/[\w-]+\.(?:css|js))"/g), ...js.matchAll(/from '(\.\/[\w-]+\.js)'/g)].map(m => m[1]);
+  assert.deepEqual(unversioned, []);
+  const versions = new Set([...html.matchAll(/(?:css|js)\/[\w-]+\.(?:css|js)\?v=([\w.-]+)"/g), ...js.matchAll(/from '\.\/[\w-]+\.js\?v=([\w.-]+)'/g)].map(m => m[1]));
+  assert.equal(versions.size, 1, 'Versiones distintas: ' + [...versions].join(', ') + '. Corré npm run version.');
 });

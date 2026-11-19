@@ -1,13 +1,13 @@
-import { CONFIG } from './config.js';
-import { fetchRows, normalizeStores, filterStores } from './data.js';
-import { generateRoutes, alternatives, encodeRoute, restoreRoute, googleRoute, shareText } from './routes.js';
-import { $, el, link } from './dom.js';
-import { createMap } from './map.js';
-import { initCare, initGlossary, initEditorial } from './editorial.js';
-import { initForms } from './forms.js';
-import { initHallazgo } from './hallazgo.js';
-import { initViews } from './views.js';
-import { initContact } from './contacto.js';
+import { CONFIG } from './config.js?v=202611191205';
+import { fetchRows, normalizeStores, filterStores } from './data.js?v=202611191205';
+import { generateRoutes, alternatives, encodeRoute, restoreRoute, googleRoute, shareText } from './routes.js?v=202611191205';
+import { $, el, link } from './dom.js?v=202611191205';
+import { createMap } from './map.js?v=202611191205';
+import { initCare, initGlossary, initEditorial } from './editorial.js?v=202611191205';
+import { initForms } from './forms.js?v=202611191205';
+import { initHallazgo } from './hallazgo.js?v=202611191205';
+import { initViews } from './views.js?v=202611191205';
+import { initContact } from './contacto.js?v=202611191205';
 
 // Navegación y diálogos no dependen de Sheets ni del mapa.
 // Al volver a la vista Mapa, Leaflet recalcula su tamaño (estaba oculto).
@@ -145,15 +145,15 @@ async function loadStores() {
 function prefsFromForm() { return { barrio: $('#route-barrio').value, tipo: $('#route-tipo').value, mode: $('#route-form').elements.mode.value }; }
 $('#route-form').addEventListener('submit', e => {
   e.preventDefault(); if (!state.loaded) return;
-  // Las propuestas parten de los locales que muestra el mapa con sus filtros actuales.
-  state.prefs = prefsFromForm(); state.proposals = generateRoutes(state.filtered, state.prefs, 3); state.proposal = 0;
+  // El recorrido es independiente de los filtros del mapa: parte de todos los locales y usa solo sus propias preferencias.
+  state.prefs = prefsFromForm(); state.proposals = generateRoutes(state.stores, state.prefs, 3); state.proposal = 0;
   state.stops = [...(state.proposals[0] || [])]; state.skipped.clear(); renderRoute(); updateRouteURL(false);
 });
 function updateRouteURL(replace = true) { const url = encodeRoute(location.href, state.prefs, state.stops); history[replace ? 'replaceState' : 'pushState']({ route: true }, '', url); }
 function renderRoute(extra = '') {
   $('#route-placeholder').hidden = true; $('#route-result').hidden = false; const stops = state.stops;
-  const minimum = state.prefs.mode === 'full' ? 3 : 2, narrowed = state.filtered.length < state.stores.length;
-  $('#route-status').textContent = [extra, stops.length < minimum ? 'Con estas preferencias no pudimos armar un recorrido completo. Podés ampliar la búsqueda o visitar los locales que sí encontramos.' : '', narrowed ? `Usamos los ${state.filtered.length} locales que muestra el mapa con tus filtros.` : ''].filter(Boolean).join(' ');
+  const minimum = state.prefs.mode === 'full' ? 3 : 2;
+  $('#route-status').textContent = [extra, stops.length < minimum ? 'Con estas preferencias no pudimos armar un recorrido completo. Podés ampliar la búsqueda o visitar los locales que sí encontramos.' : ''].filter(Boolean).join(' ');
   renderProposals();
   const root = $('#route-stops'); root.replaceChildren();
   stops.forEach((s, i) => {
@@ -161,7 +161,7 @@ function renderRoute(extra = '') {
     const actions = el('div', { class: 'actions' });
     const remove = el('button', { type: 'button', 'aria-label': 'Sacar del recorrido: ' + s.nombre }, 'Sacar del recorrido');
     remove.onclick = () => { state.stops.splice(i, 1); renderRoute(); updateRouteURL(); $('#route-stops').focus({ preventScroll: true }); };
-    const options = alternatives(state.filtered, stops, i, state.prefs);
+    const options = alternatives(state.stores, stops, i, state.prefs);
     if (options.length) {
       const replace = el('button', { type: 'button', 'aria-label': 'Cambiar este local: ' + s.nombre }, 'Cambiar este local');
       // Se saltean los locales ya descartados hasta agotar las alternativas, para no alternar siempre entre los mismos dos.

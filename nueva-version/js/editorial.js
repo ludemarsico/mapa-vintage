@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js';
-import { CARE, GLOSSARY } from './content.js';
-import { fetchRows, published, normalizeEvents, safeImage, safeURL, validDate, receiverPosts } from './data.js';
-import { $, el, link, picture, paragraphs } from './dom.js';
-import { DEMO, DEMO_AGENDA, DEMO_WALL, DEMO_NOTES, demoStamp } from './demo.js';
-import { aportesEndpoint } from './forms.js';
+import { CONFIG } from './config.js?v=202611191205';
+import { CARE, GLOSSARY } from './content.js?v=202611191205';
+import { fetchRows, published, normalizeEvents, normalizeRegulars, safeImage, safeURL, validDate, receiverPosts } from './data.js?v=202611191205';
+import { $, el, link, picture, paragraphs } from './dom.js?v=202611191205';
+import { DEMO, DEMO_AGENDA, DEMO_WALL, DEMO_NOTES, demoStamp } from './demo.js?v=202611191205';
+import { aportesEndpoint } from './forms.js?v=202611191205';
 
 export function initGlossary() {
   const root = $('#glossary-files'), fallback = el('div', { id: 'glossary-fallback' });
@@ -91,53 +91,66 @@ export async function initEditorial(openReader) {
     const button = el('button', { type: 'button' }, 'Reintentar'); button.onclick = () => { status.replaceChildren(); retry(); }; status.append(button);
   };
   const stamp = () => el('span', { class: 'demo-stamp' }, demoStamp());
-  // Agenda: listado paginado con la información de la hoja "Agenda".
+  // Agenda: listado paginado con la información de las hojas "Agenda" y "Habituales".
   const day = (iso, options) => new Intl.DateTimeFormat('es-AR', { timeZone: CONFIG.timezone, ...options }).format(new Date(iso + 'T12:00:00-03:00'));
   const shortDate = iso => day(iso, { day: '2-digit', month: '2-digit' });
   const weekday = iso => { const w = day(iso, { weekday: 'long' }); return w.charAt(0).toUpperCase() + w.slice(1); };
   const dateLabel = iso => day(iso, { weekday: 'long', day: 'numeric', month: 'long' });
-  const loadAgenda = async () => {
+  // Dos pestañas con el mismo estilo de lista: "Próximos eventos" (hoja Agenda) y "Ferias habituales" (hoja Habituales).
+  const AGENDA_TABS = {
+    proximos: { source: 'agenda', normalize: rows => normalizeEvents(rows), unit: ['fecha', 'fechas'],
+      empty: 'Todavía no hay próximas fechas publicadas. Si conocés una feria o estás organizando un evento, podés proponerlo.' },
+    habituales: { source: 'habituales', normalize: rows => normalizeRegulars(rows), unit: ['feria', 'ferias'],
+      empty: 'Todavía no hay ferias habituales publicadas. Si conocés una que se repite, podés proponerla.' }
+  };
+  const agenda = { tab: 'proximos', page: 1, lists: {}, failed: {} };
+  const loadAgendaTab = async key => {
+    agenda.failed[key] = false;
     try {
-      let events;
-      if (DEMO) events = DEMO_AGENDA.map(r => ({ id: r.id, nombre: r.titulo, descripcion: r.descripcion, demo: true, next: '' }));
-      else {
-        const { connected, rows } = await fetchRows(CONFIG.sources.agenda); if (!connected) return;
-        events = normalizeEvents(rows);
-      }
-      if (!events.length) return;
-      $('#agenda-fechas').classList.remove('is-empty');
-      let page = 1;
-      const render = () => {
-        const board = $('#agenda-board'); board.replaceChildren();
-        const pages = Math.ceil(events.length / CONFIG.pageSize);
-        $('#agenda-pagination').hidden = pages < 2;
-        $('#agenda-count').textContent = `Página ${page} de ${pages} · ${events.length} fechas`;
-        $('#agenda-prev').disabled = page <= 1; $('#agenda-next').disabled = page >= pages;
-        events.slice((page - 1) * CONFIG.pageSize, page * CONFIG.pageSize).forEach(r => {
-          // Como en el diseño: fecha (o días) a la izquierda, nombre al centro y los datos prácticos a la derecha.
-          const row = el('article', { class: 'agenda-row', 'aria-label': r.nombre });
-          if (r.demo) row.append(stamp());
-          const when = el('p', { class: 'agenda-when' });
-          if (r.next) when.append(el('time', { datetime: r.next, title: dateLabel(r.next) }, shortDate(r.next)));
-          else when.textContent = r.dias || r.fechaTexto || (r.demo ? 'Fecha' : '');
-          const main = el('div', { class: 'agenda-main' }); main.append(el('h3', {}, r.nombre));
-          const kind = [r.tipo, r.precio].filter(Boolean).join(' · '); if (kind) main.append(el('p', { class: 'agenda-kind' }, kind));
-          if (r.descripcion) main.append(el('p', { class: 'agenda-description' }, r.descripcion));
-          const img = picture(r.imagen, r.nombre); if (img) main.append(img);
-          const facts = el('ul', { class: 'agenda-facts' });
-          const place = [r.direccion, r.barrio].filter(Boolean).join(', ');
-          [r.next ? r.dias || weekday(r.next) : '', r.horario, place, r.acceso, r.especialidad].filter(Boolean).forEach(t => facts.append(el('li', {}, t)));
-          const links = el('li', { class: 'agenda-links' });
-          if (r.direccion) links.append(link('Cómo llegar ↗', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place + ', CABA')));
-          if (r.enlace) links.append(link('Instagram ↗', r.enlace));
-          if (links.children.length) facts.append(links);
-          row.append(when, main, facts); board.append(row);
-        });
-      };
-      $('#agenda-prev').onclick = () => { if (page > 1) { page--; render(); $('#agenda-board').scrollTop = 0; } };
-      $('#agenda-next').onclick = () => { if (page * CONFIG.pageSize < events.length) { page++; render(); $('#agenda-board').scrollTop = 0; } };
-      render();
-    } catch { $('#agenda-board').hidden = true; errorState('#agenda-status', () => { $('#agenda-board').hidden = false; loadAgenda(); }); }
+      if (DEMO) agenda.lists[key] = key === 'proximos' ? DEMO_AGENDA.map(r => ({ id: r.id, nombre: r.titulo, descripcion: r.descripcion, demo: true, next: '' })) : [];
+      else { const { rows } = await fetchRows(CONFIG.sources[AGENDA_TABS[key].source]); agenda.lists[key] = AGENDA_TABS[key].normalize(rows); }
+    } catch { agenda.lists[key] = []; agenda.failed[key] = true; }
+  };
+  const loadAgenda = async () => {
+    await Promise.all(Object.keys(AGENDA_TABS).map(loadAgendaTab));
+    const tabs = { proximos: $('#agenda-tab-proximos'), habituales: $('#agenda-tab-habituales') };
+    const render = () => {
+      const tab = AGENDA_TABS[agenda.tab], events = agenda.lists[agenda.tab] || [], board = $('#agenda-board');
+      Object.entries(tabs).forEach(([key, button]) => button.setAttribute('aria-pressed', String(key === agenda.tab)));
+      board.dataset.tab = agenda.tab; board.hidden = false; board.replaceChildren(); $('#agenda-status').replaceChildren();
+      $('#agenda-fechas').classList.toggle('is-empty', !events.length);
+      const pages = Math.ceil(events.length / CONFIG.pageSize);
+      $('#agenda-pagination').hidden = pages < 2;
+      $('#agenda-count').textContent = `Página ${agenda.page} de ${pages} · ${events.length} ${tab.unit[events.length === 1 ? 0 : 1]}`;
+      $('#agenda-prev').disabled = agenda.page <= 1; $('#agenda-next').disabled = agenda.page >= pages;
+      if (agenda.failed[agenda.tab]) { board.hidden = true; errorState('#agenda-status', () => loadAgendaTab(agenda.tab).then(render)); return; }
+      if (!events.length) { const empty = el('div', { class: 'agenda-empty' }); empty.append(el('p', {}, tab.empty)); board.append(empty); return; }
+      events.slice((agenda.page - 1) * CONFIG.pageSize, agenda.page * CONFIG.pageSize).forEach(r => {
+        // Como en el diseño: fecha (o días) a la izquierda, nombre al centro y los datos prácticos a la derecha.
+        const row = el('article', { class: 'agenda-row', 'aria-label': r.nombre });
+        if (r.demo) row.append(stamp());
+        const when = el('p', { class: 'agenda-when' });
+        if (r.next) when.append(el('time', { datetime: r.next, title: dateLabel(r.next) }, shortDate(r.next)));
+        else when.textContent = r.dias || r.fechaTexto || (r.demo ? 'Fecha' : '');
+        const main = el('div', { class: 'agenda-main' }); main.append(el('h3', {}, r.nombre));
+        const kind = [r.tipo, r.precio].filter(Boolean).join(' · '); if (kind) main.append(el('p', { class: 'agenda-kind' }, kind));
+        if (r.descripcion) main.append(el('p', { class: 'agenda-description' }, r.descripcion));
+        const img = picture(r.imagen, r.nombre); if (img) main.append(img);
+        const facts = el('ul', { class: 'agenda-facts' });
+        const place = [r.direccion, r.barrio].filter(Boolean).join(', ');
+        [r.next ? r.dias || weekday(r.next) : '', r.horario, place, r.acceso, r.especialidad].filter(Boolean).forEach(t => facts.append(el('li', {}, t)));
+        const links = el('li', { class: 'agenda-links' });
+        if (r.direccion) links.append(link('Cómo llegar ↗', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place + ', CABA')));
+        if (r.enlace) links.append(link('Instagram ↗', r.enlace));
+        if (links.children.length) facts.append(links);
+        row.append(when, main, facts); board.append(row);
+      });
+    };
+    const show = key => { if (key === agenda.tab) return; agenda.tab = key; agenda.page = 1; render(); $('#agenda-board').scrollTop = 0; };
+    Object.entries(tabs).forEach(([key, button]) => { button.onclick = () => show(key); });
+    $('#agenda-prev').onclick = () => { if (agenda.page > 1) { agenda.page--; render(); $('#agenda-board').scrollTop = 0; } };
+    $('#agenda-next').onclick = () => { if (agenda.page * CONFIG.pageSize < (agenda.lists[agenda.tab] || []).length) { agenda.page++; render(); $('#agenda-board').scrollTop = 0; } };
+    render();
   };
   // Muro: Polaroids. Al frente, la foto con el nombre; al tocarla se da vuelta y el dorso muestra la historia completa.
   // Se ven 3 en escritorio, 2 en tablet y 1 en el teléfono; las flechas (o deslizar) pasan a las siguientes.

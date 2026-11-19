@@ -1,7 +1,7 @@
-import { CONFIG } from './config.js';
-import { safeURL } from './data.js';
-import { DEMO } from './demo.js';
-import { $, el } from './dom.js';
+import { CONFIG } from './config.js?v=202611191205';
+import { safeURL } from './data.js?v=202611191205';
+import { DEMO } from './demo.js?v=202611191205';
+import { $, el } from './dom.js?v=202611191205';
 export const EVENT_TYPE = 'Feria colectiva';
 const DETAIL_FIELDS = ['direccion', 'barrio', 'horarios', 'fecha', 'horario', 'descripcion'];
 export function serializeProposal({ source, type, event, text, details = {} }) {
