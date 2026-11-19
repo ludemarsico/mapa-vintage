@@ -7,11 +7,11 @@
   <meta name="theme-color" content="#FAFAFA">
   <link rel="icon" href="assets/identidad/logo/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="assets/identidad/logo/favicon-180.png">
   <link rel="preload" href="assets/fonts/rosario-700.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/open-sauce-sans-400.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="css/fonts.css"><link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="vendor/MarkerCluster.css">
-  <link rel="stylesheet" href="css/identidad.css">
-  <link rel="stylesheet" href="css/muro.css">
-  <noscript><link rel="stylesheet" href="css/sin-js.css"></noscript>
-  <script defer src="vendor/leaflet.js"></script><script defer src="vendor/leaflet.markercluster.js"></script><script type="module" src="js/app.js"></script>
+  <link rel="stylesheet" href="css/fonts.css?v=202611191205"><link rel="stylesheet" href="vendor/leaflet.css"><link rel="stylesheet" href="vendor/MarkerCluster.css">
+  <link rel="stylesheet" href="css/identidad.css?v=202611191205">
+  <link rel="stylesheet" href="css/muro.css?v=202611191205">
+  <noscript><link rel="stylesheet" href="css/sin-js.css?v=202611191205"></noscript>
+  <script defer src="vendor/leaflet.js"></script><script defer src="vendor/leaflet.markercluster.js"></script><script type="module" src="js/app.js?v=202611191205"></script>
 </head>
 <body id="inicio">
 <a class="skip" href="#mapa-seccion">Ir al mapa</a>
@@ -30,7 +30,7 @@
   <a class="pill pill-pink hero-cta" href="#mapa-seccion">Ver mapa</a>
 </section>
 <section id="mapa-seccion" class="directory band-white" aria-label="Directorio de locales"><div class="section-wrap">
-  <div class="intro"><p class="lead">Encontrá locales a la calle, filtrá por barrio, prendas y precios, y armá tu recorrido.</p><div class="intro-links"><a class="pill pill-blue intro-route" href="#recorridos">Armá tu recorrido</a><a class="mono-link intro-add" href="#aportes">Sumá tu espacio</a></div></div>
+  <div class="intro"><p class="lead">Encontrá locales a la calle, filtrá por barrio, prendas y precios, y armá tu recorrido.</p><div class="intro-links"><a class="pill intro-route" href="#recorridos">Armá tu recorrido</a><a class="pill intro-add" href="#aportes">Sumá tu espacio</a></div></div>
   <form class="filters" id="filters" role="search" aria-label="Filtrar locales">
     <label class="search">Buscar<input name="query" id="search" type="search" placeholder="Nombre del local" autocomplete="off"></label>
     <label>Barrio<select name="barrio" id="filter-barrio"><option value="">Sin preferencia</option></select></label>
@@ -68,7 +68,7 @@
 <div class="view" id="agenda" data-view="agenda" role="region" aria-label="Agenda" hidden>
 <section id="agenda-fechas" class="agenda-section is-empty" aria-labelledby="agenda-title">
   <div class="band-ivory agenda-top"><div class="section-wrap"><div class="section-head agenda-head"><h2 id="agenda-title">Agenda</h2><p class="agenda-lead">Ferias y eventos para sumar a tu próximo paseo.</p><button type="button" class="pill pill-pink-outline agenda-propose" data-contribute="evento">Proponer feria o evento</button></div></div></div>
-  <div class="band-white agenda-bottom"><div class="section-wrap"><div class="agenda-directory"><img class="sticker sticker-clip" src="assets/identidad/stickers/gancho.webp" width="520" height="435" alt="" loading="lazy"><div class="agenda-list" id="agenda-board"><div class="agenda-empty"><p>Todavía no hay próximas fechas publicadas. Si conocés una feria o estás organizando un evento, podés proponerlo.</p></div></div><nav id="agenda-pagination" class="pagination" aria-label="Páginas de la agenda" hidden><button id="agenda-prev" type="button" aria-label="Página anterior">←</button><span id="agenda-count"></span><button id="agenda-next" type="button" aria-label="Página siguiente">→</button></nav></div><p id="agenda-status" class="small" role="status"></p></div></div>
+  <div class="band-white agenda-bottom"><div class="section-wrap"><div class="agenda-directory"><img class="sticker sticker-clip" src="assets/identidad/stickers/gancho.webp" width="520" height="435" alt="" loading="lazy"><div class="view-switch agenda-switch" role="group" aria-label="Qué ver en la agenda"><button type="button" id="agenda-tab-proximos" aria-pressed="true" aria-controls="agenda-board">Próximos eventos</button><button type="button" id="agenda-tab-habituales" aria-pressed="false" aria-controls="agenda-board">Ferias habituales</button></div><div class="agenda-list" id="agenda-board"><div class="agenda-empty"><p>Todavía no hay próximas fechas publicadas. Si conocés una feria o estás organizando un evento, podés proponerlo.</p></div></div><nav id="agenda-pagination" class="pagination" aria-label="Páginas de la agenda" hidden><button id="agenda-prev" type="button" aria-label="Página anterior">←</button><span id="agenda-count"></span><button id="agenda-next" type="button" aria-label="Página siguiente">→</button></nav></div><p id="agenda-status" class="small" role="status"></p></div></div>
 </section>
 </div>
 <div class="view" id="recursos" data-view="recursos" role="region" aria-label="Recursos" hidden>

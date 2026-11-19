@@ -100,6 +100,7 @@ html,dialog,#navigation,.store-list{scrollbar-width:thin;scrollbar-color:#0006 t
 .hero{position:relative;height:calc(100vh - var(--header));height:calc(100svh - var(--header));min-height:420px;overflow:hidden;background:var(--marfil)}
 .hero-photo{width:100%;height:100%;object-fit:cover;object-position:50% 100%}
 .hero::after{content:"";position:absolute;inset:0;background:rgb(250 250 250 / .32);pointer-events:none}
+/* "Ver mapa" y "Sumá tu espacio": uno al lado del otro en escritorio, uno debajo del otro en el teléfono. */
 .hero-cta{position:absolute;z-index:1;left:50%;bottom:9%;transform:translateX(-50%);min-width:min(280px,80vw);min-height:50px;font-size:18px}
 .hero-cta:hover:not(:disabled){transform:translate(-50%,-1px)}
 
@@ -107,7 +108,11 @@ html,dialog,#navigation,.store-list{scrollbar-width:thin;scrollbar-color:#0006 t
 .directory{padding-block:clamp(28px,4vw,48px) clamp(50px,6vw,80px)}
 .intro{display:flex;align-items:center;justify-content:space-between;gap:24px 40px;flex-wrap:wrap;margin-bottom:22px}
 .intro .lead{flex:1 1 420px}
-.intro-links{display:flex;flex-direction:column;align-items:center;gap:12px}
+/* Armá tu recorrido y Sumá tu espacio: blancos, del mismo ancho y a la altura de la leyenda; al pasar el mouse, azul y rosa. */
+.intro-links{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:12px}
+.intro-route,.intro-add{background:var(--blanco);padding-inline:26px;white-space:nowrap}
+.intro-route:hover,.intro-route:focus-visible,.intro-route:active{background:var(--azul)}
+.intro-add:hover,.intro-add:focus-visible,.intro-add:active{background:var(--rosa)}
 .filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:14px 18px;align-items:end;padding-bottom:16px}
 .filters label{display:grid;gap:6px;font-weight:700;font-size:13px}
 input,select,textarea{width:100%;min-height:42px;padding:8px 12px;border:1px solid var(--negro);border-radius:0;background:var(--blanco);font-size:14px}
@@ -278,7 +283,15 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .agenda-bottom{padding-bottom:clamp(56px,7vw,90px)}
 .agenda-directory{position:relative;max-width:900px;margin-inline:auto}
 .sticker-clip{left:50%;top:0;width:clamp(90px,10vw,130px);transform:translate(-50%,-62%) rotate(-6deg);z-index:2}
-.agenda-list{padding-top:30px}
+/* Próximos eventos / Ferias habituales: el mismo selector que Mapa / Lista, en escritorio y teléfono. */
+.view-switch.agenda-switch{display:flex;width:fit-content;margin:0 auto;border:1.5px solid var(--negro);position:relative;top:clamp(48px,5vw,60px)}
+.agenda-switch button{min-height:40px;padding:6px 20px;font:400 13px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.agenda-switch button[aria-pressed=true]{background:var(--negro);color:var(--blanco)}
+.agenda-switch button[aria-pressed=false]:hover{background:var(--rosa)}
+.agenda-list{padding-top:clamp(78px,8vw,92px)}
+/* En Ferias habituales, Días es un texto ("Sábados, domingos y feriados"): columna más ancha y letra más chica. */
+.agenda-list[data-tab=habituales] .agenda-row{grid-template-columns:170px minmax(0,1fr) minmax(0,250px)}
+.agenda-list[data-tab=habituales] .agenda-when{font-size:15px;line-height:1.35}
 .agenda-row{position:relative;display:grid;grid-template-columns:110px minmax(0,1fr) minmax(0,250px);gap:12px 28px;align-items:start;padding:22px 20px;border-top:1.5px solid var(--negro)}
 .agenda-row:last-child{border-bottom:1.5px solid var(--negro)}
 .agenda-when{font:700 clamp(18px,1.8vw,22px)/1.2 var(--mono)}
@@ -372,10 +385,10 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:18px;ac
 .footer-contact{font-size:13px;line-height:1.5;color:var(--rosa)}
 .footer-contact a{text-decoration:none}
 .footer-contact a:hover{text-decoration:underline}
-/* El logo se despega del collage con un contorno negro, como en el diseño. */
-.footer-brand{position:relative;display:block;width:clamp(250px,30vw,400px);padding-bottom:6%}
-.footer-collage{width:76%}
-.footer-logo{position:absolute;right:0;bottom:0;width:60%;filter:drop-shadow(0 0 1.5px var(--negro)) drop-shadow(0 0 1.5px var(--negro)) drop-shadow(3px 3px 0 var(--negro))}
+/* El logo se despega del collage con un contorno negro y queda muy cerca, sin tocarlo (medido sobre la transparencia de las dos imágenes). */
+.footer-brand{position:relative;display:block;width:clamp(265px,31.8vw,424px);padding-bottom:5.66%}
+.footer-collage{width:71.7%}
+.footer-logo{position:absolute;right:0;bottom:0;width:56.6%;filter:drop-shadow(0 0 1.5px var(--negro)) drop-shadow(0 0 1.5px var(--negro)) drop-shadow(3px 3px 0 var(--negro))}
 .footer-ig{display:none;color:var(--blanco)}
 .footer-ig:hover{color:var(--rosa)}
 .back-top{display:block;width:clamp(30px,3vw,42px);padding:6px 0;transition:transform .2s}
@@ -424,6 +437,7 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
   .glossary-layout{grid-template-columns:1fr}
   .glossary-layout .sticker-glossary{max-width:170px}
   .agenda-row{grid-template-columns:90px minmax(0,1fr);}
+  .agenda-list[data-tab=habituales] .agenda-row{grid-template-columns:130px minmax(0,1fr)}
   .agenda-facts{grid-column:2}
   .hallazgo-layout{grid-template-columns:1fr}
   .hallazgo-collage{max-width:260px}
@@ -451,13 +465,11 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
   #glosario .lead{order:2}
   #glosario .filing-cabinet{order:3;margin-top:8px}
   .sticker-pin-route{width:76px;right:-14px;top:-30px}
-  /* Sin la explicación: los dos botones claros, que toman color al tocarlos. */
+  /* Sin la explicación: los botones claros de Armá tu recorrido y Sumá tu espacio, que toman color al tocarlos. */
   .intro{flex-direction:column;align-items:stretch;margin-bottom:16px}
   .intro .lead{display:none}
-  .intro-links{flex-direction:row;gap:10px}
-  .intro-route,.intro-add{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 10px;border:1.5px solid var(--negro);border-radius:999px;background:var(--blanco);font:400 12px/1.2 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center;box-shadow:none}
-  .intro-route:hover,.intro-route:active{background:var(--azul)}
-  .intro-add:hover,.intro-add:active{background:var(--rosa)}
+  .intro-links{gap:10px}
+  .intro-route,.intro-add{white-space:normal;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 10px;border:1.5px solid var(--negro);border-radius:999px;background:var(--blanco);font:400 12px/1.2 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center;box-shadow:none}
   .filters{grid-template-columns:1fr 1fr;gap:10px}
   .filters .search{grid-column:1/-1}
   .clear{grid-column:auto;grid-row:auto;justify-self:start;align-self:end;min-height:42px}
@@ -481,7 +493,9 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
   .rail-arrow{display:none}
   .agenda-head{grid-template-columns:1fr}
   .agenda-propose{grid-column:1;grid-row:auto;justify-self:start}
-  .agenda-row{grid-template-columns:1fr;padding-inline:4px}
+  .agenda-row,.agenda-list[data-tab=habituales] .agenda-row{grid-template-columns:1fr;padding-inline:4px}
+  .view-switch.agenda-switch{width:100%}
+  .agenda-switch button{flex:1 1 0;padding-inline:8px;font-size:12px}
   .agenda-facts{grid-column:1}
   .wall-empty{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wall-empty-frame:nth-child(3){display:none}
@@ -490,7 +504,7 @@ dialog fieldset{margin:0;padding:0;border:0;min-width:0}
   .footer{padding-block:80px 44px}
   .footer-bottom{grid-template-columns:1fr auto;align-items:end;gap:28px 16px;margin-top:120px}
   .footer-contact{display:none}
-  .footer-brand{width:min(74vw,300px);justify-self:center}
+  .footer-brand{width:min(78vw,318px);justify-self:center}
   .footer-brand{grid-row:1}
   .back-top{width:30px;grid-column:2;grid-row:1}
   .footer-ig{display:flex;grid-column:1/-1;justify-self:center;padding:8px}

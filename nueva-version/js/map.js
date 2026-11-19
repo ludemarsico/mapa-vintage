@@ -1,4 +1,4 @@
-import { $, el } from './dom.js';
+import { $, el } from './dom.js?v=202611191205';
 export function createMap(onSelect) {
   const L = window.L;
   const error = $('#map-error');

@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { matches, filterStores } from './data.js';
+import { CONFIG } from './config.js?v=202611191205';
+import { matches, filterStores } from './data.js?v=202611191205';
 export function distance(a, b) {
   const rad = v => v * Math.PI / 180;
   const dlat = rad(b.lat - a.lat), dlng = rad(b.lng - a.lng);

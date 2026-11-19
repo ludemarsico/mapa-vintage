@@ -1,5 +1,5 @@
-import { CONFIG } from './config.js';
-import { $ } from './dom.js';
+import { CONFIG } from './config.js?v=202611191205';
+import { $ } from './dom.js?v=202611191205';
 // "Escribime" ofrece elegir la app de correo. Sin JavaScript queda el mailto original.
 export function mailOptions(email) {
   const to = encodeURIComponent(email);

@@ -1,8 +1,11 @@
 export const CONFIG = {
   sources: {
-    locales: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8k2lfSgDs566JtZ3TGN9e1u5Wx7XFV-bIsk4iq4aGhKtbZBEMvW385AdhMRd3nfHyoZC12-ti3rUU/pub?output=csv',
+    locales: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsAoeFQ2vaP732z5lp1Xutvq11zKJjMQbMOfhnG9wa4nM_HGBmxDN9yQpH-q1fEYsH-fzATibuoCl-/pub?gid=0&single=true&output=csv',
     // Hoja "Agenda" publicada como CSV. Sin filas, la Agenda muestra su mensaje inicial.
-    agenda: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbU4KQpjNNFSobTo2kBLCCTzIOc_0VV5CvJTdnRWTY0KwGFcWtd2PlgoHFOC52Z0xtbPNoJIVaLhNV/pub?gid=0&single=true&output=csv',
+    agenda: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbB4Zr_yiLn0RiCHB-IGsuLKobK1EzvVwWx90ps98mGkOfCkb15KKv5aQU3lorf3UsaZcherRuFFgy/pub?gid=0&single=true&output=csv',
+    // Hoja "Habituales" de la misma planilla, publicada como CSV: las ferias que se repiten. En Días va el texto
+    // tal como se muestra ("Sábados, domingos y feriados", "El primer viernes de cada mes").
+    habituales: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbB4Zr_yiLn0RiCHB-IGsuLKobK1EzvVwWx90ps98mGkOfCkb15KKv5aQU3lorf3UsaZcherRuFFgy/pub?gid=983594457&single=true&output=csv',
     notas: '', muro: ''
   },
   formEndpoint: 'https://script.google.com/macros/s/AKfycbyAOwtD6FOe6xkByXj2hK89gkCdFfydW9FqIH7WDYIdkurvwpYdUD7T9seNHL-CrcjS_Q/exec',

@@ -2,11 +2,30 @@
 
 ## Lectura existente, conservada literalmente
 
-`https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8k2lfSgDs566JtZ3TGN9e1u5Wx7XFV-bIsk4iq4aGhKtbZBEMvW385AdhMRd3nfHyoZC12-ti3rUU/pub?output=csv`
+`https://docs.google.com/spreadsheets/d/e/2PACX-1vSsAoeFQ2vaP732z5lp1Xutvq11zKJjMQbMOfhnG9wa4nM_HGBmxDN9yQpH-q1fEYsH-fzATibuoCl-/pub?gid=0&single=true&output=csv`
 
 Encabezados observados en la consulta real del 17/10/2026: `ID`, `Nombre`, `Barrio`, `Dirección`, `Latitud`, `Longitud`, `Tipología`, `Rango Precio`, `Especialidad`, `Horarios`, `Instagram`, `Descripción breve`. 29 filas. La normalización de esta entrega admite 21 para directorio y aparta 8; esto es una lectura de la fuente, no una verificación presencial independiente de los comercios.
 
 **Etiquetas de cada local (10/11/2026).** Cada local muestra Vintage, Segunda mano o Feria americana, y el filtro Tipo y Armá tu recorrido usan esas etiquetas. Salen de la Tipología: Boutique Vintage → Vintage; Tienda de segunda mano y Cadena de reventa → Segunda mano; Feria americana → Feria americana. Para sumar varias etiquetas a un local, agregá una columna **Clasificación** y escribilas separadas por coma (por ejemplo `Vintage, Segunda mano`): cuando la celda tiene algo, manda sobre la Tipología.
+
+## Hojas que lee el sitio (18/11/2026)
+
+El sitio no lee las planillas directamente, sino su versión **publicada en la web** como CSV (en `CONFIG.sources`):
+
+| Planilla | Hoja | Dónde se ve |
+|---|---|---|
+| DIRECTORIO VINTAGE BUENOS AIRES | Directorio | Mapa y lista |
+| Agenda | Agenda | Agenda → Próximos eventos (solo fechas de hoy en adelante) |
+| Agenda | Habituales | Agenda → Ferias habituales (todas las filas, en el orden de la hoja) |
+
+Habituales tiene las mismas columnas que la Agenda. En **Días** va el texto tal como se muestra ("Sábados, domingos y feriados", "El primer viernes de cada mes"). Su enlace va en `sources.habituales`.
+
+Para que una fila nueva aparezca sola, cada hoja tiene que estar publicada con **Volver a publicar automáticamente cuando se realicen cambios** activado:
+- Dónde se revisa: Archivo → Compartir → Publicar en la web → Contenido publicado y configuración.
+- Sin esa opción, el sitio sigue mostrando la versión del momento en que se publicó.
+- Aun con la opción activada, Google tarda unos minutos en actualizar la versión publicada.
+
+Las hojas Aportes y Hallazgos no se publican, porque tienen datos de quienes escriben.
 
 ## Normalización y supuestos
 
@@ -37,7 +56,8 @@ El iframe no proporciona comprobación de persistencia. Carga, error y tiempo de
 
 | Configuración | Estado | Acción exacta |
 |---|---|---|
-| `sources.agenda` | Cadena vacía | Crear pestaña usando `plantillas/agenda.csv`, publicar esa pestaña como CSV y pegar URL |
+| `sources.agenda` | Conectada (hoja Agenda) | — |
+| `sources.habituales` | Conectada (hoja Habituales, gid 983594457) | — |
 | `sources.notas` | Cadena vacía | Repetir con `plantillas/notas.csv` |
 | `sources.muro` | Cadena vacía | Repetir con `plantillas/muro.csv`; guardar fotos aprobadas en assets |
 | Confirmación verificable del receptor | No disponible | Acceso al código Apps Script y protocolo de respuesta en un entorno de pruebas; mejora posterior |
@@ -48,6 +68,8 @@ No se crean automáticamente pestañas ni se conecta contenido de muestra. En la
 ## Recorridos
 
 Haversine × 1,3 para distancia aproximada; 4 km/h para caminar; 25 minutos por visita. Valores centralizados en `CONFIG.route`. Se evalúa cada candidato como punto inicial y se añaden los vecinos próximos compatibles, sin repetir, con tramos de hasta 1,8 km estimados y dentro del presupuesto (120/240 min). Se elige la propuesta que completa más paradas y, a igualdad, camina menos. Es una heurística, no una optimización ni un motor de rutas por calles.
+
+El recorrido es independiente de los filtros del mapa: parte de todos los locales y usa solo sus propias preferencias (¿Qué buscás?, barrio y tiempo). Filtrar el mapa no cambia el recorrido, y armar un recorrido no cambia el mapa.
 
 Express: hasta 2 paradas. Tarde: hasta 5. No se amplían filtros silenciosamente; si faltan coincidencias, se avisa. Reemplazos cumplen preferencias, distancia y presupuesto; quitar recalcula. No se dibujan segmentos rectos como itinerarios reales. Horarios se muestran, pero no se estructura ni valida apertura.
 

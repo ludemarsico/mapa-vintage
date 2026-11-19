@@ -1,8 +1,8 @@
-import { CONFIG } from './config.js';
-import { DEMO } from './demo.js';
-import { safeURL } from './data.js';
-import { $ } from './dom.js';
-import { aportesEndpoint, sendAporte } from './forms.js';
+import { CONFIG } from './config.js?v=202611191205';
+import { DEMO } from './demo.js?v=202611191205';
+import { safeURL } from './data.js?v=202611191205';
+import { $ } from './dom.js?v=202611191205';
+import { aportesEndpoint, sendAporte } from './forms.js?v=202611191205';
 export const PHOTO_LIMIT = 15 * 1024 * 1024;
 export function photoError(file) {
   if (!file) return 'Elegí una foto para compartir.';
